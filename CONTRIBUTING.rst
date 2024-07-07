@@ -80,7 +80,7 @@ The release process first prepares the documentation, then publishes to testpypi
 
     # prepare files for release
     $EDITOR cpplint.py # increment the version
-    $EDITOR changelog.rst # log changes
+    $EDITOR CHANGELOG.rst # log changes
     git add cpplint.py CHANGELOG.rst
     git commit -m "Releasing x.y.z"
     # Build
