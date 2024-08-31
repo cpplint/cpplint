@@ -78,6 +78,9 @@ target/
 profile_default/
 ipython_config.py
 
+# VSCode
+.vscode/
+
 # pyenv
 .python-version
 

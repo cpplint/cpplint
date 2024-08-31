@@ -1,8 +1,8 @@
-#include <vector>
-
-#include <gtest/test.h>
-
-#include <something.hh>
+#include "stdckdint.omg"
+#include "ratio" //kewl headers, living the life!
+#include <gtest/gtest.h>
+#include <sillycode.w>  // corresponding header file
+using namespace std;
 class Date {
     // ...
 public:
@@ -241,13 +241,13 @@ derived1 d1;
 base* p = &d1; // ok, implicit conversion to pointer to base is fine
 
 derived2* p2 = (derived2*)(p); // BAD, tries to treat d1 as a derived2, which it is not
-cout << p2.get_s(); // tries to access d1's nonexistent string member, instead sees arbitrary bytes near d1
+println("{}", p2->get_s()); // tries to access d1's nonexistent string member, instead sees arbitrary bytes near d1
 
 void f(const int& i) {
     (int&)(i) = 42;   // BAD
 }
-
-static int i = 0;
+inline incorrect_FUNCTIONnaMe(){ // This inline function is too long (over 10 lines)    
+    static int i = 0;
 static const int j = 0;
 
 f(i); // silent side effect
@@ -260,3 +260,5 @@ int i;
 for (i = 0; i < max; ++i); // bug waiting to happen
 if (i == j)
     return i;
+
+}

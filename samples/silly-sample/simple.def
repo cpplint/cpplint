@@ -1,11 +1,18 @@
-src/*.cpp
+src/*
 1
-3
+4
 Done processing src/sillycode.cpp
-Total errors found: 111
+Done processing src/sillycode.w
+Total errors found: 126
 
 src/sillycode.cpp:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
-src/sillycode.cpp:3:  Found C system header after C++ system header. Should be: sillycode.h, c system, c++ system, other.  [build/include_order] [4]
+src/sillycode.cpp:1:  Include the directory when naming header files  [build/include_subdir] [4]
+src/sillycode.cpp:2:  At least two spaces is best between code and comments  [whitespace/comments] [2]
+src/sillycode.cpp:2:  Should have a space between // and comment  [whitespace/comments] [4]
+src/sillycode.cpp:2:  <ratio> is an unapproved C++11 header.  [build/c++11] [5]
+src/sillycode.cpp:3:  Found C system header after other header. Should be: sillycode.h, c system, c++ system, other.  [build/include_order] [4]
+src/sillycode.cpp:4:  Found C system header after other header. Should be: sillycode.h, c system, c++ system, other.  [build/include_order] [4]
+src/sillycode.cpp:5:  Do not use namespace using-directives.  Use using-declarations instead.  [build/namespaces] [5]
 src/sillycode.cpp:8:  public: should be indented +1 space inside class Date  [whitespace/indent] [3]
 src/sillycode.cpp:14:  Is this a non-const reference? If so, make const or use a pointer: vector<string>& v  [runtime/references] [2]
 src/sillycode.cpp:15:  { should almost always be at the end of the previous line  [whitespace/braces] [4]
@@ -31,7 +38,6 @@ src/sillycode.cpp:80:  At least two spaces is best between code and comments  [w
 src/sillycode.cpp:84:  public: should be indented +1 space inside class X3  [whitespace/indent] [3]
 src/sillycode.cpp:85:  Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]
 src/sillycode.cpp:86:  Tab found; better to use spaces  [whitespace/tab] [1]
-src/sillycode.cpp:86:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
 src/sillycode.cpp:94:  public: should be indented +1 space inside class Foo  [whitespace/indent] [3]
 src/sillycode.cpp:100:  { should almost always be at the end of the previous line  [whitespace/braces] [4]
 src/sillycode.cpp:110:  Tab found; better to use spaces  [whitespace/tab] [1]
@@ -99,20 +105,30 @@ src/sillycode.cpp:228:  At least two spaces is best between code and comments  [
 src/sillycode.cpp:228:  Using C-style cast.  Use reinterpret_cast<double*>(...) instead  [readability/casting] [4]
 src/sillycode.cpp:236:  public: should be indented +1 space inside class derived2  [whitespace/indent] [3]
 src/sillycode.cpp:241:  At least two spaces is best between code and comments  [whitespace/comments] [2]
-src/sillycode.cpp:243:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
+src/sillycode.cpp:243:  Lines should be <= 84 characters long  [whitespace/line_length] [2]
 src/sillycode.cpp:243:  At least two spaces is best between code and comments  [whitespace/comments] [2]
 src/sillycode.cpp:243:  Using C-style cast.  Use reinterpret_cast<derived2*>(...) instead  [readability/casting] [4]
-src/sillycode.cpp:244:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
+src/sillycode.cpp:244:  Lines should be <= 84 characters long  [whitespace/line_length] [2]
 src/sillycode.cpp:244:  At least two spaces is best between code and comments  [whitespace/comments] [2]
+src/sillycode.cpp:249:  Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
+src/sillycode.cpp:249:  Lines should be <= 84 characters long  [whitespace/line_length] [2]
+src/sillycode.cpp:249:  At least two spaces is best between code and comments  [whitespace/comments] [2]
+src/sillycode.cpp:249:  Missing space before {  [whitespace/braces] [5]
 src/sillycode.cpp:253:  At least two spaces is best between code and comments  [whitespace/comments] [2]
 src/sillycode.cpp:254:  At least two spaces is best between code and comments  [whitespace/comments] [2]
 src/sillycode.cpp:257:  Tab found; better to use spaces  [whitespace/tab] [1]
 src/sillycode.cpp:257:  At least two spaces is best between code and comments  [whitespace/comments] [2]
 src/sillycode.cpp:260:  Empty loop bodies should use {} or continue  [whitespace/empty_loop_body] [5]
 src/sillycode.cpp:260:  At least two spaces is best between code and comments  [whitespace/comments] [2]
+src/sillycode.cpp:263:  Redundant blank line at the end of a code block should be deleted.  [whitespace/blank_line] [3]
+src/sillycode.cpp:14:  Add #include <vector> for vector<>  [build/include_what_you_use] [4]
 src/sillycode.cpp:126:  Add #include <utility> for swap  [build/include_what_you_use] [4]
 src/sillycode.cpp:168:  Add #include <memory> for unique_ptr<>  [build/include_what_you_use] [4]
+src/sillycode.cpp:179:  Add #include <iostream> for cin  [build/include_what_you_use] [4]
 src/sillycode.cpp:224:  Add #include <limits> for numeric_limits<>  [build/include_what_you_use] [4]
 src/sillycode.cpp:237:  Add #include <string> for string  [build/include_what_you_use] [4]
-src/sillycode.cpp:244:  Add #include <iostream> for cout  [build/include_what_you_use] [4]
+src/sillycode.cpp:264:  Could not find a newline character at the end of the file.  [whitespace/ending_newline] [5]
+src/sillycode.w:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
+src/sillycode.w:0:  No #ifndef header guard found, suggested CPP variable is: SAMPLES_SILLY_SAMPLE_SRC_SILLYCODE_W_  [build/header_guard] [5]
+src/sillycode.w:3:  Should have a space between // and comment  [whitespace/comments] [4]
 
