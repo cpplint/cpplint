@@ -2807,6 +2807,21 @@ class CpplintTest(CpplintTestBase):
 
     self.TestLint('file_tocs_[i] = (FileToc) {a, b, c};', '')
     self.TestMultiLineLint('class X : public Y,\npublic Z {};', '')
+    self.TestMultiLineLint('template<typename T>\n'
+                           'concept Addable = requires(T x) { x + x; };',
+                           '')
+    self.TestMultiLineLint('template <typename T>\n'
+                           'concept C = requires(T a, T b) {\n'
+                           '    requires a == b;\n'
+                           '};',
+                           '')
+    self.TestMultiLineLint('template <typename T, typename U>\n'
+                           'concept C = (std::integral<T> || std::floating_point<T>) &&\n'
+                           '            (std::integral<U> || std::floating_point<U>) &&\n'
+                           '            requires(T t, U u) {\n'
+                           '    std::min(static_cast<float>(t), static_cast<float>(u));\n'
+                           '};',
+                           '')
 
   def testSpacingBeforeBrackets(self):
     self.TestLint('int numbers [] = { 1, 2, 3 };',
