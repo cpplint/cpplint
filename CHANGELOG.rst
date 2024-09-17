@@ -20,6 +20,7 @@ A bunch of long-overdue modernizations of the codebase!
 * Indented functions inside namespaces will now be correctly erred on, courtesy of @Yujinmon (https://github.com/cpplint/cpplint/pull/235)
 * The check for C-style casts now looks for the standard fixed-width integer typenames instead of non-standard ones (e.g. int32_t instead of int32) thanks to @nate-thirdwave (https://github.com/cpplint/cpplint/pull/282)
 * `[[(un)likely]]` no longer clouds readability/braces's super spy−scanning of braces, courtesy of @aaronliu0130 (https://github.com/cpplint/cpplint/pull/265)
+* `readability/braces` will realize that C++20 concepts require a semicolon, courtesy of @armandas (https://github.com/cpplint/cpplint/pull/288)
 * C++20 headers will no longer be flagged as C headers thanks to @miker2 (https://github.com/cpplint/cpplint/pull/216)
    * Same goes for C++23 and C23 headers, thanks to @aaronliu0130 (https://github.com/cpplint/cpplint/pull/239)
    * "complex.h" will be treated as the C99 header instead of the legacy C++ header by @tkruse (https://github.com/cpplint/cpplint/pull/219)
