@@ -29,11 +29,13 @@ A bunch of long-overdue modernizations of the codebase!
       * The filesystem header will now also be blocked, and the build/c++17 category has been added.
 * We will no longer bother you if you mark a no-arg constructor as explicit thanks to @markww (https://github.com/cpplint/cpplint/pull/227)
    * In the same PR, @aaronliu0130 also decreased the verbosity of nagging to mark single-arg constructors as explicit to 4, as the styleguide includes a major exception to this rule that would be very hard to detect.
+* Processing C++ files through stdin/piping is now fixed thanks to @aaronliu0130 (https://github.com/cpplint/cpplint/pull/289)
 * You can now specify the name of the CPPLINT.cfg file through `--config` as long as it is in the same directory, thanks to @gedankenexperimenter (https://github.com/cpplint/cpplint/pull/198)
 * The new __VA_OPT__(,) will now be recognized by the Whitespace linter as a function thanks to @elrinor (https://github.com/cpplint/cpplint/pull/237)
 * The check for including a source file's header file will now scan all files with the same base name. Thanks to @crogre for figuring out what code needed to be changed and @aaronliu0130 for fixing it (https://github.com/cpplint/cpplint/pull/104)
 * `build/class` and `build/namespaces` no longer check for whether a namespace or class has a closing brace from @geoffviola (https://github.com/cpplint/cpplint/pull/272). This should be done in a more efficient manner by a compiler or language server instead. As part of this, the `build/class` category was removed.
 * Fixed false positive when an if/else statement has braces everywhere but one of the closing braces before the final block is on a separate line by @aaronliu0130 (https://github.com/cpplint/cpplint/pull/265)
+* For header files, the check for a header guard's name will now be cached and only run once, as opposed to previously being run on every line. This results in a ~5.6% reduction in run time thanks to @matyalatte, who figured it out, and @aaronliu0130 for implementing it (https://github.com/cpplint/cpplint/pull/291)
 * Usages of the deprecated sre_compile were refectored by @jspricke (https://github.com/cpplint/cpplint/pull/214)
 * Usages of deprecated unittest aliases were refactored by @tirkarthi (https://github.com/cpplint/cpplint/pull/182), @aaronliu0130 and @jayvdb
 * Typos in this changelog, comments and functions were fixed by @jayvdb (https://github.com/cpplint/cpplint/pull/245), @aaronliu0130 and @tkruse
