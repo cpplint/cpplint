@@ -24,7 +24,8 @@ disable=
   useless-object-inheritance,
   consider-using-dict-comprehension,
   consider-using-in,
-  unnecessary-pass
+  unnecessary-pass,
+  too-many-positional-arguments
 
 [REPORTS]
 output-format=colorized
