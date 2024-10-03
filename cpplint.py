@@ -2481,7 +2481,7 @@ def GetHeaderGuardCPPVariable(filename):
   return re.sub(r'[^a-zA-Z0-9]', '_', file_path_from_root).upper() + '_'
 
 
-def CheckForHeaderGuard(filename, clean_lines, error):
+def CheckForHeaderGuard(filename, clean_lines, error, cppvar):
   """Checks that the file contains a header guard.
 
   Logs an error if no #ifndef header guard is present.  For other
@@ -2508,8 +2508,6 @@ def CheckForHeaderGuard(filename, clean_lines, error):
   for i in raw_lines:
     if re.search(r'^\s*#pragma\s+once', i):
       return
-
-  cppvar = GetHeaderGuardCPPVariable(filename)
 
   ifndef = ''
   ifndef_linenum = 0
@@ -4913,7 +4911,7 @@ def GetLineWidth(line):
 
 
 def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state,
-               error):
+               error, cppvar=None):
   """Checks rules from the 'C++ style rules' section of cppguide.html.
 
   Most of these rules are hard to test (naming, comment style), but we
@@ -4928,6 +4926,7 @@ def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state,
     nesting_state: A NestingState instance which maintains information about
                    the current stack of nested blocks being parsed.
     error: The function to call with any errors found.
+    cppvar: The header guard variable returned by GetHeaderGuardCPPVar.
   """
 
   # Don't use "elided" lines here, otherwise we can't check commented lines.
@@ -4980,7 +4979,6 @@ def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state,
   # Check if the line is a header guard.
   is_header_guard = False
   if IsHeaderExtension(file_extension):
-    cppvar = GetHeaderGuardCPPVariable(filename)
     if (line.startswith(f'#ifndef {cppvar}') or
         line.startswith(f'#define {cppvar}') or
         line.startswith(f'#endif  // {cppvar}')):
@@ -6417,7 +6415,7 @@ def CheckItemIndentationInNamespace(filename, raw_lines_no_comments, linenum,
 
 def ProcessLine(filename, file_extension, clean_lines, line,
                 include_state, function_state, nesting_state, error,
-                extra_check_functions=None):
+                extra_check_functions=None, cppvar=None):
   """Processes a single line in the file.
 
   Args:
@@ -6435,6 +6433,7 @@ def ProcessLine(filename, file_extension, clean_lines, line,
     extra_check_functions: An array of additional check functions that will be
                            run on each source line. Each function takes 4
                            arguments: filename, clean_lines, line, error
+    cppvar: The header guard variable returned by GetHeaderGuardCPPVar.
   """
   raw_lines = clean_lines.raw_lines
   ParseNolintSuppressions(filename, raw_lines[line], line, error)
@@ -6444,7 +6443,7 @@ def ProcessLine(filename, file_extension, clean_lines, line,
   if nesting_state.InAsmBlock(): return
   CheckForFunctionLengths(filename, clean_lines, line, function_state, error)
   CheckForMultilineCommentsAndStrings(filename, clean_lines, line, error)
-  CheckStyle(filename, clean_lines, line, file_extension, nesting_state, error)
+  CheckStyle(filename, clean_lines, line, file_extension, nesting_state, error, cppvar)
   CheckLanguage(filename, clean_lines, line, file_extension, include_state,
                 nesting_state, error)
   CheckForNonConstReference(filename, clean_lines, line, nesting_state, error)
@@ -6517,13 +6516,15 @@ def ProcessFileData(filename, file_extension, lines, error,
   RemoveMultiLineComments(filename, lines, error)
   clean_lines = CleansedLines(lines)
 
+  cppvar = None
   if IsHeaderExtension(file_extension):
-    CheckForHeaderGuard(filename, clean_lines, error)
+    cppvar = GetHeaderGuardCPPVariable(filename)
+    CheckForHeaderGuard(filename, clean_lines, error, cppvar)
 
   for line in range(clean_lines.NumLines()):
     ProcessLine(filename, file_extension, clean_lines, line,
                 include_state, function_state, nesting_state, error,
-                extra_check_functions)
+                extra_check_functions, cppvar)
     FlagCxxHeaders(filename, clean_lines, line, error)
   if _error_suppressions.HasOpenBlock():
     error(filename, _error_suppressions.GetOpenBlockStart(), 'readability/nolint', 5,
