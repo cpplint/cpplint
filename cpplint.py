@@ -6662,10 +6662,7 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
     # If after the split a trailing '\r' is present, it is removed
     # below.
     if filename == '-':
-      lines = codecs.StreamReaderWriter(sys.stdin,
-                                        codecs.getreader('utf8'),
-                                        codecs.getwriter('utf8'),
-                                        'replace').read().split('\n')
+      lines = sys.stdin.read().split('\n')
     else:
       with codecs.open(filename, 'r', 'utf8', 'replace') as target_file:
         lines = target_file.read().split('\n')
