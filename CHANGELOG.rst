@@ -2,10 +2,10 @@
 Changelog
 *********
 
-2.0 (Unreleased)
-==================
+2.0 (2024-10-06)
+================
 
-A bunch of long-overdue modernizations of the codebase!
+A large long-overdue modernization of the codebase!
 
 * Python 2 is no longer supported. Python 3.12 support was added along with fixed CI for 3.7 and 3.8, courtesy of @jayvdb
    * As a result of all this, setup.py's lint subcommand was removed. Please run the commands directly instead.
