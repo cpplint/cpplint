@@ -70,7 +70,7 @@ std::string ReplaceWordA(const std::string &str, const std::string &word, const 
 	return output;
 }
 
-// Helper string find metho
+// Helper string find method
 wxString ReplaceWord(const wxString &str, const wxString &word, const wxString &replaceWith)
 {
 	wxString currChar;
@@ -155,7 +155,7 @@ void PPToken::processArgs(const wxString &argsList)
 {
 	args = wxStringTokenize(argsList, wxT(","), wxTOKEN_STRTOK);
 
-	// replace all occurances of 'arg' with %1, %2 etc
+	// replace all occurrences of 'arg' with %1, %2 etc
 	for(size_t i=0; i<args.GetCount(); i++) {
 		wxString replaceWith = wxString::Format(wxT("%%%d"), (int)i);
 #if wxVERSION_NUMBER < 2900
@@ -511,7 +511,7 @@ wxString PPTable::Export()
 
 		} else {
 			// macros with replacement but they are not in a form of a function
-			// we take only macros that thier replacement is not a number
+			// we take only macros that their replacement is not a number
 			long v(-1);
 			if(!replacement.ToLong(&v) && !replacement.ToLong(&v, 8) && !replacement.ToLong(&v, 16) && replacement.find(wxT('"')) == wxString::npos && !replacement.StartsWith(wxT("0x"))) {
 				table << iter->second.fullname() << wxT("=") << replacement << wxT("\n");
@@ -545,7 +545,7 @@ bool CLReplacePattern(const wxString& in, const wxString& pattern, const wxStrin
 	if(where != wxNOT_FOUND) {
 		wxString replacement(replaceWith);
 
-		// a patterened expression
+		// a patterned expression
 		wxString searchFor = pattern.BeforeFirst(wxT('('));
 		where = in.Find(searchFor);
 		if(where == wxNOT_FOUND) {
@@ -642,7 +642,7 @@ void CLReplacement::construct(const std::string& pattern, const std::string& rep
 	full_pattern = pattern;
 	is_compound  = full_pattern.find("%0") != std::string::npos;
 	if(is_compound) {
-		// a patterened expression
+		// a patterned expression
 		replaceWith = replacement;
 		size_t where = pattern.find('(');
 		if(where == std::string::npos) {

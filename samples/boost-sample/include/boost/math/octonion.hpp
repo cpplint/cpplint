@@ -272,7 +272,7 @@ namespace boost
             //            but unlike them there is no meaningful notion of "imaginary part".
             //            Instead there is an "unreal part" which itself is an octonion, and usually
             //            nothing simpler (as opposed to the complex number case).
-            //            However, for practicallity, there are accessors for the other components
+            //            However, for practicality, there are accessors for the other components
             //            (these are necessary for the templated copy constructor, for instance).
             
             BOOST_OCTONION_ACCESSOR_GENERATOR(T)
@@ -925,7 +925,7 @@ namespace boost
     
 // There is quite a lot of repetition in the code below. This is intentional.
 // The last conditional block is the normal form, and the others merely
-// consist of workarounds for various compiler deficiencies. Hopefuly, when
+// consist of workarounds for various compiler deficiencies. Hopefully, when
 // more compilers are conformant and we can retire support for those that are
 // not, we will be able to remove the clutter. This is makes the situation
 // (painfully) explicit.

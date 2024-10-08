@@ -1194,12 +1194,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 // For NaCl content handling plugins, the NaCl manifest is stored in an
-// additonal 'nacl' param associated with the MIME type.
+// additional 'nacl' param associated with the MIME type.
 //  static
 GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
     const std::string& actual_mime_type,
     const content::WebPluginInfo& plugin) {
-  // Look for the manifest URL among the MIME type's additonal parameters.
+  // Look for the manifest URL among the MIME type's additional parameters.
   for (const auto& mime_type : plugin.mime_types) {
     if (mime_type.mime_type == actual_mime_type) {
       for (const auto& p : mime_type.additional_params) {
@@ -1217,7 +1217,7 @@ void ChromeContentRendererClient::GetInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   // TODO(crbug.com/977637): Get rid of the use of this implementation of
   // |service_manager::LocalInterfaceProvider|. This was done only to avoid
-  // churning spellcheck code while eliminting the "chrome" and
+  // churning spellcheck code while eliminating the "chrome" and
   // "chrome_renderer" services. Spellcheck is (and should remain) the only
   // consumer of this implementation.
   RenderThread::Get()->BindHostReceiver(

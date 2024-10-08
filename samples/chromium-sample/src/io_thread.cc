@@ -188,7 +188,7 @@ const char kNpnTrialDisabledGroupNamePrefix[] = "Disable";
 // Field trial for priority dependencies.
 const char kSpdyDependenciesFieldTrial[] = "SpdyEnableDependencies";
 const char kSpdyDependenciesFieldTrialEnable[] = "Enable";
-const char kSpdyDepencenciesFieldTrialDisable[] = "Disable";
+const char kSpdyDependenciesFieldTrialDisable[] = "Disable";
 
 #if defined(OS_MACOSX)
 void ObserveKeychainEvents() {
@@ -1086,7 +1086,7 @@ void IOThread::NetworkSessionConfigurator::ConfigurePriorityDependencies(
           kSpdyDependenciesFieldTrialEnable)) {
     params->enable_priority_dependencies = true;
   } else if (priority_dependencies_trial_group.starts_with(
-                 kSpdyDepencenciesFieldTrialDisable)) {
+                 kSpdyDependenciesFieldTrialDisable)) {
     params->enable_priority_dependencies = false;
   }
 }

@@ -2251,7 +2251,7 @@ TEST_F(MiscTest, DefaultValues) {
   AddField(message_proto, "empty_string", 11, label, FD::TYPE_STRING)
     ->set_default_value("");
 
-  // Add a second set of fields with implicit defalut values.
+  // Add a second set of fields with implicit default values.
   AddField(message_proto, "implicit_int32" , 21, label, FD::TYPE_INT32 );
   AddField(message_proto, "implicit_int64" , 22, label, FD::TYPE_INT64 );
   AddField(message_proto, "implicit_uint32", 23, label, FD::TYPE_UINT32);
@@ -4647,7 +4647,7 @@ TEST_F(ValidationErrorTest, RepeatedMessageOption) {
 }
 
 TEST_F(ValidationErrorTest, ResolveUndefinedOption) {
-  // The following should produce an eror that baz.bar is resolved but not
+  // The following should produce an error that baz.bar is resolved but not
   // defined.
   // foo.proto:
   //   package baz
@@ -5085,7 +5085,7 @@ TEST_F(ValidationErrorTest, NoLiteServices) {
 
     "foo.proto: Foo: NAME: Files with optimize_for = LITE_RUNTIME cannot "
     "define services unless you set both options cc_generic_services and "
-    "java_generic_sevices to false.\n");
+    "java_generic_services to false.\n");
 
   BuildFile(
     "name: \"bar.proto\" "
@@ -5834,7 +5834,7 @@ TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
       "  field { name:'name' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "  field { name:'Name' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "}",
-      "foo.proto: Foo: OTHER: The JSON camcel-case name of field \"Name\" "
+      "foo.proto: Foo: OTHER: The JSON camel-case name of field \"Name\" "
       "conflicts with field \"name\". This is not allowed in proto3.\n");
   // Underscores are ignored.
   BuildFileWithErrors(
@@ -6222,7 +6222,7 @@ TEST_F(DatabaseBackedPoolTest, DoesntRetryDbUnnecessarily) {
   EXPECT_EQ(0, call_counter.call_count_);
 }
 
-TEST_F(DatabaseBackedPoolTest, DoesntReloadFilesUncesessarily) {
+TEST_F(DatabaseBackedPoolTest, DoesntReloadFilesUnnesessarily) {
   // If FindFileContainingSymbol() or FindFileContainingExtension() return a
   // file that is already in the DescriptorPool, it should not attempt to
   // reload the file.

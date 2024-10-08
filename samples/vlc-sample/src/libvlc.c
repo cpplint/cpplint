@@ -87,7 +87,7 @@ static void GetFilenames  ( libvlc_int_t *, unsigned, const char *const [] );
 
 /**
  * Allocate a blank libvlc instance, also setting the exit handler.
- * Vlc's threading system must have been initialized first
+ * VLC's threading system must have been initialized first
  */
 libvlc_int_t * libvlc_InternalCreate( void )
 {
