@@ -2,6 +2,13 @@
 Changelog
 *********
 
+2.0.1 (2025-01-??)
+==================
+
+Yet another overdue... hotfix. Sorry this took so long.
+
+* The false positive for indented function parameters in namespaces was eradicated.
+
 2.0 (2024-10-06)
 ================
 

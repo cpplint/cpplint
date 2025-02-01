@@ -309,9 +309,10 @@ class CpplintTest(CpplintTestBase):
                       'Do not indent within a namespace. '
                       ' [whitespace/indent_namespace] [4]'])
 
-  def testNamespaceIndentationNoError(self):
+  def testNamespaceIndentationIndentedParameter(self):
     lines = ['namespace Test {',
-             'void foo() { }',
+             'void foo('
+             '    SuperLongTypeName d = 418) { }',
              '}  // namespace Test']
 
     results = self.GetNamespaceResults(lines)

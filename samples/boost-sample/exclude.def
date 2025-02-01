@@ -3,15 +3,13 @@
 4
 Done processing src/inspect/unnamed_namespace_check.hpp
 Done processing src/tr1/c_policy.hpp
-Total errors found: 126
+Total errors found: 121
 
 src/inspect/unnamed_namespace_check.hpp:0:  No #ifndef header guard found, suggested CPP variable is: SAMPLES_BOOST_SAMPLE_SRC_INSPECT_UNNAMED_NAMESPACE_CHECK_HPP_  [build/header_guard] [5]
 src/inspect/unnamed_namespace_check.hpp:11:  Include the directory when naming header files  [build/include_subdir] [4]
 src/inspect/unnamed_namespace_check.hpp:14:  Do not use unnamed namespaces in header files.  See https://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Namespaces for more information.  [build/namespaces_headers] [4]
 src/inspect/unnamed_namespace_check.hpp:17:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/inspect/unnamed_namespace_check.hpp:18:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 src/inspect/unnamed_namespace_check.hpp:18:  At least two spaces is best between code and comments  [whitespace/comments] [2]
-src/inspect/unnamed_namespace_check.hpp:19:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 src/inspect/unnamed_namespace_check.hpp:19:  Closing ) should be moved to the previous line  [whitespace/parens] [2]
 src/inspect/unnamed_namespace_check.hpp:21:  Anonymous namespace should be terminated with "// namespace"  [readability/namespace] [5]
 src/inspect/unnamed_namespace_check.hpp:21:  At least two spaces is best between code and comments  [whitespace/comments] [2]
@@ -44,9 +42,6 @@ src/inspect/unnamed_namespace_check.hpp:38:  Do not indent within a namespace.  
 src/inspect/unnamed_namespace_check.hpp:38:  Weird number of spaces at line-start.  Are you using a 2-space indent?  [whitespace/indent] [3]
 src/inspect/unnamed_namespace_check.hpp:40:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 src/inspect/unnamed_namespace_check.hpp:40:  Weird number of spaces at line-start.  Are you using a 2-space indent?  [whitespace/indent] [3]
-src/inspect/unnamed_namespace_check.hpp:41:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/inspect/unnamed_namespace_check.hpp:42:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/inspect/unnamed_namespace_check.hpp:43:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 src/inspect/unnamed_namespace_check.hpp:44:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 src/inspect/unnamed_namespace_check.hpp:44:  { should almost always be at the end of the previous line  [whitespace/braces] [4]
 src/inspect/unnamed_namespace_check.hpp:48:  Lines should be <= 80 characters long  [whitespace/line_length] [2]

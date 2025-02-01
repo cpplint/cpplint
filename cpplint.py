@@ -3035,6 +3035,11 @@ class NestingState(object):
     # the full nesting stack would slow down cpplint by ~10%.
     self.previous_stack_top = []
 
+    # The number of open parentheses in the previous stack top before the last update.
+    # Used to prevent false indentation detection when e.g. a function parameter is indented.
+    # We can't use previous_stack_top, a shallow copy whose open_parentheses value is updated.
+    self.previous_open_parentheses = 0
+
     # Stack of _PreprocessorInfo objects.
     self.pp_stack = []
 
@@ -3206,6 +3211,7 @@ class NestingState(object):
     # deepcopy would slow down cpplint by ~28%.
     if self.stack:
       self.previous_stack_top = self.stack[-1]
+      self.previous_open_parentheses = self.stack[-1].open_parentheses
     else:
       self.previous_stack_top = None
 
@@ -6374,7 +6380,7 @@ def IsBlockInNameSpace(nesting_state, is_forward_declaration):
   return False
 
 
-def ShouldCheckNamespaceIndentation(nesting_state, is_namespace_indent_item,
+def ShouldCheckNamespaceIndentation(nesting_state: NestingState, is_namespace_indent_item,
                                     raw_lines_no_comments, linenum):
   """This method determines if we should apply our namespace indentation check.
 
@@ -6399,6 +6405,10 @@ def ShouldCheckNamespaceIndentation(nesting_state, is_namespace_indent_item,
 
   # If we are in a macro, we do not want to check the namespace indentation.
   if IsMacroDefinition(raw_lines_no_comments, linenum):
+    return False
+
+  # Skip if we are inside an open parenthesis block (e.g. function parameters).
+  if nesting_state.previous_stack_top and nesting_state.previous_open_parentheses > 0:
     return False
 
   return IsBlockInNameSpace(nesting_state, is_forward_declaration)
