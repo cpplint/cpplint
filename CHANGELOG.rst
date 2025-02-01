@@ -7,7 +7,8 @@ Changelog
 
 Yet another overdue... hotfix. Sorry this took so long.
 
-* The false positive for indented function parameters in namespaces was eradicated.
+* The false positive for indented function parameters in namespaces was eradicated. (https://github.com/cpplint/cpplint/pull/304)
+* Files that end in ".c", ".C", or ".cu" will now also automatically suppress C++-only categories. Previously, `// NO_LINT_C` was required. (https://github.com/cpplint/cpplint/pull/308)
 
 2.0 (2024-10-06)
 ================

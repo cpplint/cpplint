@@ -4,7 +4,7 @@ src/*
 Done processing src/libvlc.c
 Done processing src/libvlc.h
 Done processing src/missing.c
-Total errors found: 602
+Total errors found: 600
 
 src/libvlc.c:41:  Found C system header after other header. Should be: libvlc.h, c system, c++ system, other.  [build/include_order] [4]
 src/libvlc.c:47:  Found C system header after other header. Should be: libvlc.h, c system, c++ system, other.  [build/include_order] [4]
@@ -19,7 +19,6 @@ src/libvlc.c:86:  Extra space before ( in function call  [whitespace/parens] [4]
 src/libvlc.c:86:  Extra space before )  [whitespace/parens] [2]
 src/libvlc.c:92:  Extra space after ( in function call  [whitespace/parens] [4]
 src/libvlc.c:93:  { should almost always be at the end of the previous line  [whitespace/braces] [4]
-src/libvlc.c:98:  Using C-style cast.  Use reinterpret_cast<vlc_object_t *>(...) instead  [readability/casting] [4]
 src/libvlc.c:99:  Extra space before )  [whitespace/parens] [2]
 src/libvlc.c:100:  Missing space before ( in if(  [whitespace/parens] [5]
 src/libvlc.c:103:  Extra space before ( in function call  [whitespace/parens] [4]
@@ -74,7 +73,6 @@ src/libvlc.c:219:  Extra space before )  [whitespace/parens] [2]
 src/libvlc.c:220:  Missing space before ( in if(  [whitespace/parens] [5]
 src/libvlc.c:221:  { should almost always be at the end of the previous line  [whitespace/braces] [4]
 src/libvlc.c:222:  Extra space after ( in function call  [whitespace/parens] [4]
-src/libvlc.c:222:  Using C-style cast.  Use static_cast<int>(...) instead  [readability/casting] [4]
 src/libvlc.c:223:  Extra space after ( in function call  [whitespace/parens] [4]
 src/libvlc.c:223:  Extra space before )  [whitespace/parens] [2]
 src/libvlc.c:224:  Extra space after ( in function call  [whitespace/parens] [4]
