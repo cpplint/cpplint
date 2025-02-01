@@ -8,6 +8,7 @@ Changelog
 Yet another overdue... hotfix. Sorry this took so long.
 
 * The false positive for indented function parameters in namespaces was eradicated.
+* build/include-what-you-use now recognizes c-style headers, such as <stdio.h> for symbols from <cstdio>. (https://github.com/cpplint/cpplint/pull/306)
 
 2.0 (2024-10-06)
 ================
