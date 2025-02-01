@@ -477,10 +477,18 @@ class CpplintTest(CpplintTestBase):
     self.TestLint(
         'long a = (int64_t) 65;  // NOLINT(runtime/int,readability/casting)',
         '')
-
     # All categories suppressed: (two aliases)
     self.TestLint('long a = (int64_t) 65;  // NOLINT', '')
     self.TestLint('long a = (int64_t) 65;  // NOLINT(*)', '')
+    # Linting a C file
+    error_collector = ErrorCollector(self.assertTrue)
+    cpplint.ProcessFileData('test.c', 'c',
+                            ['// Copyright 2014 Your Majesty.',
+                             'int64_t a = (int64_t) 65;',
+                             ''],
+                            error_collector)
+    self.assertEqual('', error_collector.Results())
+
     # Malformed NOLINT directive:
     self.TestLint(
         'long a = 65;  // NOLINT(foo)',

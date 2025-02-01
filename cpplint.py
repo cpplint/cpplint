@@ -1111,21 +1111,18 @@ def ParseNolintSuppressions(filename, raw_line, linenum, error):
           error(filename, linenum, 'readability/nolint', 5,
                 f'Unknown NOLINT error category: {category}')
 
-def ProcessGlobalSuppresions(lines):
-  """Deprecated; use ProcessGlobalSuppressions."""
-  ProcessGlobalSuppressions(lines)
-
-def ProcessGlobalSuppressions(lines):
+def ProcessGlobalSuppressions(filename, lines):
   """Updates the list of global error suppressions.
 
   Parses any lint directives in the file that have global effect.
 
   Args:
+    filename: str, the name of the input file.
     lines: An array of strings, each representing a line of the file, with the
            last element being empty if the file is terminated with a newline.
   """
   for line in lines:
-    if _SEARCH_C_FILE.search(line):
+    if _SEARCH_C_FILE.search(line) or filename.endswith(('.c', '.cu', '.C')):
       for category in _DEFAULT_C_SUPPRESSED_CATEGORIES:
         _error_suppressions.AddGlobalSuppression(category)
     if _SEARCH_KERNEL_FILE.search(line):
@@ -6522,7 +6519,7 @@ def ProcessFileData(filename, file_extension, lines, error,
   ResetNolintSuppressions()
 
   CheckForCopyright(filename, lines, error)
-  ProcessGlobalSuppressions(lines)
+  ProcessGlobalSuppressions(filename, lines)
   RemoveMultiLineComments(filename, lines, error)
   clean_lines = CleansedLines(lines)
 
