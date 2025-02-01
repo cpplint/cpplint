@@ -40,6 +40,7 @@ import shutil
 import tempfile
 from pytest import mark
 from testfixtures import compare
+from parameterized import parameterized
 
 BASE_CMD = sys.executable + ' ' + os.path.abspath('./cpplint.py ')
 
@@ -62,10 +63,11 @@ def RunShellCommand(cmd: str, args: str, cwd='.'):
 
     # Make output system-agnostic, aka support Windows
     if os.sep == '\\':
-        # TODO: Support scenario with multiple folder inputs
-        win_path = (os.path.dirname(args.split(' ')[-1]) + '\\').encode()
-        good_path = win_path.replace(b'\\', b'/')
-        out, err = out.replace(win_path, good_path), err.replace(win_path, good_path)
+        args_paths = args.split(' ')
+        for path in args_paths:
+            win_path = (os.path.dirname(path) + '\\').encode()
+            good_path = win_path.replace(b'\\', b'/')
+            out, err = out.replace(win_path, good_path), err.replace(win_path, good_path)
     if os.linesep == '\r\n':
         out, err = out.replace(b'\r\n', b'\n'), err.replace(b'\r\n', b'\n')
 
@@ -128,10 +130,10 @@ class TemporaryFolderClassSetup(object):
             for f in fnames:
                 if f.endswith('.def'):
                     count += 1
-                    self._checkDef(os.path.join(dirpath, f))
+                    self.checkDef(os.path.join(dirpath, f))
         self.assertEqual(count, expectedDefs)
 
-    def _checkDef(self, path):
+    def checkDef(self, path):
         """runs command and compares to expected output from def file"""
         # self.maxDiff = None # to see full diff
         with open(path, 'rb') as filehandle:
@@ -176,29 +178,19 @@ class NoRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
     """runs in a temporary folder (under /tmp in linux) without any .git/.hg/.svn file"""
 
     def get_extra_command_args(self, cwd):
-        return (' --repository %s ' % self._root)
+        return f' --repository {self._root} '
 
-    def testChromiumSample(self):
-        self.checkAllInFolder('./samples/chromium-sample', 1)
+    def _test_name_func(fun, _, x):
+        del fun
+        return f'test{x.args[0].capitalize()}Sample-{x.args[1]}'
 
-    def testVlcSample(self):
-        self.checkAllInFolder('./samples/vlc-sample', 1)
-
-    def testSillySample(self):
-        self.checkAllInFolder('./samples/silly-sample', 5)
-
-    def testBoostSample(self):
-        self.checkAllInFolder('./samples/boost-sample', 4)
-
+    @parameterized.expand([(folder, case[:-4])
+           for folder in ['chromium', 'vlc', 'silly', 'boost', 'protobuf', 'codelite', 'v8']
+           for case in os.listdir(f'./samples/{folder}-sample') if case.endswith('.def')],
+                          name_func=_test_name_func)
     @mark.timeout(180)
-    def testProtobufSample(self):
-        self.checkAllInFolder('./samples/protobuf-sample', 1)
-
-    def testCodeliteSample(self):
-        self.checkAllInFolder('./samples/codelite-sample', 1)
-
-    def testV8Sample(self):
-        self.checkAllInFolder('./samples/v8-sample', 1)
+    def testSamples(self, folder, case):
+        self.checkDef(os.path.join(f'./samples/{folder}-sample', case + '.def'))
 
 class GitRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
     """runs in a temporary folder with .git file"""
