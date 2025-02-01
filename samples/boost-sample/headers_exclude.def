@@ -1,4 +1,4 @@
-src/inspect/*
+--recursive --exclude=src/tr1/* src
 1
 3
 Done processing src/inspect/unnamed_namespace_check.hpp
