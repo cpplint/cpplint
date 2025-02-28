@@ -7,7 +7,6 @@ def read_without_comments(filename):
     with open(filename) as f:
         return [line for line in f.read().splitlines() if not len(line) == 0 and not line.startswith('#')]
 
-test_required = read_without_comments('test-requirements')
 
 setup(name='cpplint',
       version=cpplint.__VERSION__,
@@ -30,19 +29,19 @@ setup(name='cpplint',
                    'License :: OSI Approved :: BSD License',
                    'Natural Language :: English',
                    'Programming Language :: Python :: 3 :: Only',
-                   'Programming Language :: Python :: 3.8',
                    'Programming Language :: Python :: 3.9',
                    'Programming Language :: Python :: 3.10',
                    'Programming Language :: Python :: 3.11',
                    'Programming Language :: Python :: 3.12',
+                   'Programming Language :: Python :: 3.13',
                    'Programming Language :: C++',
                    'Topic :: Software Development :: Quality Assurance'],
       description='Automated checker to ensure C++ files follow Google\'s style guide',
       long_description=open('README.rst').read(),
+      long_description_content_type='text/x-rst',
       license='BSD-3-Clause',
-      tests_require=test_required,
       # extras_require allow pip install .[dev]
       extras_require={
-          'test': test_required,
-          'dev': read_without_comments('dev-requirements') + test_required
+          'test': read_without_comments('test-requirements'),
+          'dev': read_without_comments('dev-requirements'),
       })

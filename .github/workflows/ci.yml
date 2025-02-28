@@ -11,29 +11,43 @@ concurrency:
 jobs:
   build-test:
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python-version }}
+      PYTHONIOENCODING: utf-8
+      PIP_DOWNLOAD_CACHE: ${{ github.workspace }}/../.pip_download_cache
     strategy:
-      matrix:
-        # Python 3.8 is the last non-EOL version. Also adapt tox.ini
-        python-version: ['3.8', 'pypy3.10', '3.12']
-        os: [ubuntu-latest, windows-latest]
       fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+        python-version: [3.9, '3.10', '3.11', '3.12']
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: x64
+          allow-prereleases: true
           cache: 'pip'
           cache-dependency-path: '**/test-requirements'
+        env:
+          SETUPTOOLS_USE_DISTUTILS: ${{ matrix.os == 'macos-latest' && matrix.python-version == '3.9' && 'stdlib' || 'local' }}
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e .[dev]
-          python -m pip install 'tox-gh-actions<4.0.0'
+          pip install tox tox-gh-actions
+
       - name: Test with tox
-        run: tox
+        run: |
+          tox
+        env:
+          PLATFORM: ${{ matrix.os }}
