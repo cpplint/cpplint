@@ -16,7 +16,7 @@ jobs:
         # Python 3.9 is the last non-EOL version. Also adapt tox.ini
         python-version: ['3.9', 'pypy3.11', '3.12']
         # macOS in Intel, macOS on ARM, Ubuntu on x64, Ubuntu on ARM, Windows on X64
-        os: [macos-13, macos-latest, ubuntu-latest, ubuntu-20.04-arm, windows-latest, windows-2025]
+        os: [macos-13, macos-latest, ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-2025]
       fail-fast: false
 
     steps:
