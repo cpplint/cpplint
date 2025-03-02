@@ -1,5 +1,5 @@
 # requirements to run development steps
 
 flake8>=7.1.2
-pylint>=2.11.0
+pylint>=3.3.4
 setuptools
