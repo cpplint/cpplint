@@ -44,7 +44,7 @@ same line, but it is far from perfect (in either direction).
 import codecs
 import collections
 import copy
-import getopt
+import getopt  # pylint: disable=deprecated-module
 import glob
 import itertools
 import math  # for log

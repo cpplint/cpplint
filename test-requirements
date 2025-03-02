@@ -1,8 +1,0 @@
-# requirements for testing steps
-tox<5.0.0
-
-pytest
-pytest-cov
-pytest-timeout
-testfixtures
-parameterized
