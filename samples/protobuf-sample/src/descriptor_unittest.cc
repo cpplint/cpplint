@@ -419,7 +419,7 @@ TEST_F(FileDescriptorTest, FindExtensionByNumber) {
 }
 
 TEST_F(FileDescriptorTest, BuildAgain) {
-  // Test that if te call BuildFile again on the same input we get the same
+  // Test that if the call BuildFile again on the same input we get the same
   // FileDescriptor back.
   FileDescriptorProto file;
   foo_file_->CopyTo(&file);
@@ -431,7 +431,7 @@ TEST_F(FileDescriptorTest, BuildAgain) {
 }
 
 TEST_F(FileDescriptorTest, BuildAgainWithSyntax) {
-  // Test that if te call BuildFile again on the same input we get the same
+  // Test that if the call BuildFile again on the same input we get the same
   // FileDescriptor back even if syntax param is specified.
   FileDescriptorProto proto_syntax2;
   proto_syntax2.set_name("foo_syntax2");
@@ -2251,7 +2251,7 @@ TEST_F(MiscTest, DefaultValues) {
   AddField(message_proto, "empty_string", 11, label, FD::TYPE_STRING)
     ->set_default_value("");
 
-  // Add a second set of fields with implicit defalut values.
+  // Add a second set of fields with implicit default values.
   AddField(message_proto, "implicit_int32" , 21, label, FD::TYPE_INT32 );
   AddField(message_proto, "implicit_int64" , 22, label, FD::TYPE_INT64 );
   AddField(message_proto, "implicit_uint32", 23, label, FD::TYPE_UINT32);
@@ -4647,7 +4647,7 @@ TEST_F(ValidationErrorTest, RepeatedMessageOption) {
 }
 
 TEST_F(ValidationErrorTest, ResolveUndefinedOption) {
-  // The following should produce an eror that baz.bar is resolved but not
+  // The following should produce an error that baz.bar is resolved but not
   // defined.
   // foo.proto:
   //   package baz

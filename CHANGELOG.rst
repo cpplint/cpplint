@@ -43,7 +43,7 @@ A large long-overdue modernization of the codebase!
 * `build/class` and `build/namespaces` no longer check for whether a namespace or class has a closing brace from @geoffviola (https://github.com/cpplint/cpplint/pull/272). This should be done in a more efficient manner by a compiler or language server instead. As part of this, the `build/class` category was removed.
 * Fixed false positive when an if/else statement has braces everywhere but one of the closing braces before the final block is on a separate line by @aaronliu0130 (https://github.com/cpplint/cpplint/pull/265)
 * For header files, the check for a header guard's name will now be cached and only run once, as opposed to previously being run on every line. This results in a ~5.6% reduction in run time thanks to @matyalatte, who figured it out, and @aaronliu0130 for implementing it (https://github.com/cpplint/cpplint/pull/291)
-* Usages of the deprecated sre_compile were refectored by @jspricke (https://github.com/cpplint/cpplint/pull/214)
+* Usages of the deprecated sre_compile were refactored by @jspricke (https://github.com/cpplint/cpplint/pull/214)
 * Usages of deprecated unittest aliases were refactored by @tirkarthi (https://github.com/cpplint/cpplint/pull/182), @aaronliu0130 and @jayvdb
 * Typos in this changelog, comments and functions were fixed by @jayvdb (https://github.com/cpplint/cpplint/pull/245), @aaronliu0130 and @tkruse
 * %-strings were modernized into f-strings by @aaronliu0130
