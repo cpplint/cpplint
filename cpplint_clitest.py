@@ -54,24 +54,19 @@ def run_shell_command(cmd: str, args: str, cwd='.'):
         args: A string with arguments to the command.
         cwd: from which folder to run.
     """
-
-    stdout_target = subprocess.PIPE
-    stderr_target = subprocess.PIPE
-
-    with subprocess.Popen(cmd + ' ' + args,
-                            shell=True,
-                            cwd=cwd,
-                            stdout=stdout_target,
-                            stderr=stderr_target) as proc:
-        out, err = proc.communicate()
+    cmd, args = cmd.split(), args.split()
+    proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True)
+    out, err = proc.stdout, proc.stderr
 
     # Make output system-agnostic, aka support Windows
     if os.sep == '\\':
-        args_paths = args.split(' ')
-        for path in args_paths:
-            win_path = (os.path.dirname(path) + '\\').encode()
-            good_path = win_path.replace(b'\\', b'/')
-            out, err = out.replace(win_path, good_path), err.replace(win_path, good_path)
+        # TODO: Support scenario with multiple input names
+        # We currently only support the last arguments as the input name
+        # to prevent accidentally replacing sed tests.
+        # Fixing would likely need coding an internal "replace slashes" option for cpplint itself.
+        win_path = (os.path.dirname(args[-1]) + '\\').encode()
+        good_path = win_path.replace(b'\\', b'/')
+        out, err = out.replace(win_path, good_path), err.replace(win_path, good_path)
     if os.linesep == '\r\n':
         out, err = out.replace(b'\r\n', b'\n'), err.replace(b'\r\n', b'\n')
 
