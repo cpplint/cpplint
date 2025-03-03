@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-latest, windows-latest]
+        os: [macos-15, macos-latest, ubuntu-latest, ubuntu-22.04, ubuntu-24.04-arm, windows-latest, windows-2025]
         python-version: [3.9, '3.10', '3.11', '3.12']
 
     steps:
@@ -39,7 +39,7 @@ jobs:
           cache: 'pip'
           cache-dependency-path: '**/test-requirements'
         env:
-          SETUPTOOLS_USE_DISTUTILS: ${{ matrix.os == 'macos-latest' && matrix.python-version == '3.9' && 'stdlib' || 'local' }}
+          SETUPTOOLS_USE_DISTUTILS: ${{ startsWith(matrix.os, 'macos') || matrix.os == 'ubuntu-24.04-arm' && matrix.python-version == '3.9' && 'stdlib' || 'local' }}
 
       - name: Install dependencies
         run: |
