@@ -6228,9 +6228,10 @@ def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error,
   # All the lines have been processed, report the errors found.
   for header in sorted(required, key=required.__getitem__):
     template = required[header][1]
-    if (header.strip('<>"') not in include_dict
-            and not (header.strip('<>"')[0] == 'c'
-                     and (header.strip('<>"')[1:] + '.h') in include_dict)):
+    header_stripped = header.strip('<>"')
+    if (header_stripped not in include_dict
+            and not (header_stripped[0] == 'c'
+                     and (header_stripped[1:] + '.h') in include_dict)):
       error(filename, required[header][0],
             'build/include_what_you_use', 4,
             'Add #include ' + header + ' for ' + template)
