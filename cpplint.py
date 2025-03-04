@@ -1122,7 +1122,7 @@ def ProcessGlobalSuppressions(filename, lines):
            last element being empty if the file is terminated with a newline.
   """
   for line in lines:
-    if _SEARCH_C_FILE.search(line) or filename.endswith(('.c', '.cu', '.C')):
+    if _SEARCH_C_FILE.search(line) or filename.lower().endswith(('.c', '.cu')):
       for category in _DEFAULT_C_SUPPRESSED_CATEGORIES:
         _error_suppressions.AddGlobalSuppression(category)
     if _SEARCH_KERNEL_FILE.search(line):
