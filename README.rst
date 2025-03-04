@@ -41,19 +41,37 @@ To install cpplint from PyPI, run:
 
 Externally managed environments
 -------------------------------
+cpplint can be installed (in an isolated virtual environment) and run on-the-fly with either command:
+.. code-block:: bash
+
+    $ pipx run cpplint [OPTIONS] [files]
+    # - or -
+    $ uvx cpplint [OPTIONS] [files]
+
 If you get the "This environment is externally managed" error, try to search and install cpplint with your system's package manager (e.g. apt, rpm, pacman...). If it doesn't exist, you can either package cpplint for your distribution or repeat the steps above with the :code:`--break-system-packages` flag.
 
 Usage
 -----
 .. code-block:: bash
 
-    $ cpplint [OPTIONS] files
+    $ cpplint [OPTIONS] [files]
 
 For full usage instructions, run:
 
 .. code-block:: bash
 
     $ cpplint --help
+
+cpplint can also be run as a pre-commit hook by adding to `.pre-commit-config.yaml`:
+
+.. code-block:: yaml
+
+  - repo: https://github.com/cpplint/cpplint
+    rev: 2.0.0
+    hooks:
+      - id: cpplint
+        args:
+          - --filter=-whitespace/line_length,-whitespace/parens
 
 Changes
 =======
