@@ -1111,7 +1111,7 @@ def ParseNolintSuppressions(filename, raw_line, linenum, error):
           error(filename, linenum, 'readability/nolint', 5,
                 f'Unknown NOLINT error category: {category}')
 
-def ProcessGlobalSuppressions(filename, lines):
+def ProcessGlobalSuppressions(filename: str, lines: list[str]) -> None:
   """Updates the list of global error suppressions.
 
   Parses any lint directives in the file that have global effect.
