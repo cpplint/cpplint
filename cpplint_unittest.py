@@ -1132,6 +1132,9 @@ class CpplintTest(CpplintTestBase):
         'printf("hello world");',
         'Add #include <cstdio> for printf  [build/include_what_you_use] [4]')
     self.TestIncludeWhatYouUse(
+      """#include <stdio.h>
+      printf("hello world");""", '')  # Avoid false positives w/ c-style include
+    self.TestIncludeWhatYouUse(
         'void a(const string &foobar);',
         'Add #include <string> for string  [build/include_what_you_use] [4]')
     self.TestIncludeWhatYouUse(
