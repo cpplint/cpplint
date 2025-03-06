@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: pipx run pre-commit --all-files
+      - run: pipx run pre-commit run --all-files
 
   build-test:
     runs-on: ${{ matrix.os }}
