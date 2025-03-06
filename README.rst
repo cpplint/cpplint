@@ -33,15 +33,11 @@ This fork aims to update cpplint to modern specifications, and be (somewhat) mor
 Installation
 ============
 
-To install cpplint from PyPI, run:
+Use [`pipx`](https://pipx.pypa.io) to install cpplint from PyPI, run:
 
 .. code-block:: bash
 
-    $ pip install cpplint
-
-Externally managed environments
--------------------------------
-If you get the "This environment is externally managed" error, try to search and install cpplint with your system's package manager (e.g. apt, rpm, pacman...). If it doesn't exist, you can either package cpplint for your distribution or repeat the steps above with the :code:`--break-system-packages` flag.
+    $ pipx install cpplint
 
 Usage
 -----
