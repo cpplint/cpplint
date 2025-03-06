@@ -54,7 +54,7 @@ Usage
 -----
 .. code-block:: bash
 
-    $ cpplint [OPTIONS] [files]
+    $ cpplint [OPTIONS] files
 
 For full usage instructions, run:
 
