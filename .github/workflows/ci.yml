@@ -20,8 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Python 3.9 is the last non-EOL version. Also adapt tox.ini
-        python-version: ['3.9', 'pypy3.11', '3.x']
+        # Python 3.8 is EOL. Also adapt tox.ini
+        python-version: ['3.8', 'pypy3.11', '3.x']
         # macOS on ARM, Ubuntu on x86, Windows on X86
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
