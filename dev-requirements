@@ -1,5 +1,0 @@
-# requirements to run development steps
-
-flake8>=4.0.1
-pylint>=2.11.0
-setuptools
