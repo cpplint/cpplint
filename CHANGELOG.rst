@@ -2,22 +2,23 @@
 Changelog
 *********
 
-2.0.1 (2025-01-??)
+2.0.1 (2025-03-08)
 ==================
 
 Yet another overdue... hotfix. Sorry this took so long.
 
-* The false positive for indented function parameters in namespaces was eradicated.
-* build/include-what-you-use now recognizes c-style headers, such as <stdio.h> for symbols from <cstdio>. (https://github.com/cpplint/cpplint/pull/306)
+* The false positive for indented function parameters in namespaces was eradicated. (https://github.com/cpplint/cpplint/pull/304)
+* build/include-what-you-use now recognizes c-style headers, such as <stdio.h> for symbols from <cstdio>. (https://github.com/cpplint/cpplint/pull/319)
 
 2.0 (2024-10-06)
 ================
 
 A large long-overdue modernization of the codebase!
 
-* Python 2 is no longer supported. Python 3.12 support was added along with fixed CI for 3.7 and 3.8, courtesy of @jayvdb
+* Python 2 and 3.7 are no longer supported. Python 3.12 support was added along with fixed CI for 3.7 and 3.8, courtesy of @jayvdb
    * As a result of all this, setup.py's lint subcommand was removed. Please run the commands directly instead.
 * You can now specify blocks of code that exclude linting with NOLINTBEGIN and NOLINTEND, courtesy of @n3world (https://github.com/cpplint/cpplint/pull/213)
+* The config filename can now be specified through `--config` thanks to @gedankenexperimenter (https://github.com/cpplint/cpplint/pull/198). Specifying a config file not under the current directory will be available in a future release.
 * The `--filter` option can now be only applied to a specific file or even a specific line through utilizing colons, e.g. `-filter=-whitespace:foo.h,+whitespace/braces:foo.h:418`. Courtesy of @PhilLab (https://github.com/cpplint/cpplint/pull/171)
 * NOLINT and NOLINTNEXTLINE comments now support a comma-separated list of categories, courtesy of @n3world (https://github.com/cpplint/cpplint/pull/220)
 * NOLINT and NOLINTNEXTLINE will now ignore categories known to be from clang-tidy thanks to @xatier (https://github.com/cpplint/cpplint/pull/231)
