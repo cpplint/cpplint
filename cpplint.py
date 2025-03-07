@@ -1620,8 +1620,7 @@ class _FunctionState(object):
     if self.lines_in_function > trigger:
       error_level = int(math.log2(self.lines_in_function / base_trigger))
       # 50 => 0, 100 => 1, 200 => 2, 400 => 3, 800 => 4, 1600 => 5, ...
-      if error_level > 5:
-        error_level = 5
+      error_level = min(error_level, 5)
       error(filename, linenum, 'readability/fn_size', error_level,
             'Small and focused functions are preferred:'
             f' {self.current_function} has {self.lines_in_function} non-comment lines'
@@ -1759,8 +1758,8 @@ def _ShouldPrintError(category, confidence, filename, linenum):
   for one_filter in _Filters():
     filter_cat, filter_file, filter_line = _ParseFilterSelector(one_filter[1:])
     category_match = category.startswith(filter_cat)
-    file_match = filter_file == "" or filter_file == filename
-    line_match = filter_line == linenum or filter_line == -1
+    file_match = filter_file in ("", filename)
+    line_match = filter_line in (linenum, -1)
 
     if one_filter.startswith('-'):
       if category_match and file_match and line_match:
@@ -3344,7 +3343,7 @@ class NestingState(object):
           if _MATCH_ASM.match(line):
             self.stack[-1].inline_asm = _BLOCK_ASM
 
-      elif token == ';' or token == ')':
+      elif token in {';', ')'}:
         # If we haven't seen an opening brace yet, but we already saw
         # a semicolon, this is probably a forward declaration.  Pop
         # the stack for these.
@@ -3674,8 +3673,7 @@ def CheckForFunctionLengths(filename, clean_lines, linenum,
     # If the name is all caps and underscores, figure it's a macro and
     # ignore it, unless it's TEST or TEST_F.
     function_name = match_result.group(1).split()[-1]
-    if function_name == 'TEST' or function_name == 'TEST_F' or (
-        not re.match(r'[A-Z_]+$', function_name)):
+    if function_name in {'TEST', 'TEST_F'} or not re.match(r'[A-Z_]+$', function_name):
       starting_func = True
 
   if starting_func:
@@ -3753,7 +3751,7 @@ def CheckComment(line, filename, linenum, next_line_start, error):
         middle_whitespace = match.group(3)
         # Comparisons made explicit for correctness
         #  -- pylint: disable=g-explicit-bool-comparison
-        if middle_whitespace != ' ' and middle_whitespace != '':
+        if middle_whitespace not in {' ', ''}:
           error(filename, linenum, 'whitespace/todo', 2,
                 'TODO(my_username) should be followed by a space')
 
@@ -4973,7 +4971,7 @@ def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state,
   # (of lines ending in double quotes, commas, equals, or angle brackets)
   # because the rules for how to indent those are non-trivial.
   if (not re.search(r'[",=><] *$', prev) and
-      (initial_spaces == 1 or initial_spaces == 3) and
+      (initial_spaces in {1, 3}) and
       not re.match(scope_or_label_pattern, cleansed_line) and
       not (clean_lines.raw_lines[linenum] != line and
            re.match(r'^\s*""', line))):
@@ -5138,8 +5136,7 @@ def _ClassifyInclude(fileinfo, include, used_angle_brackets, include_order="defa
   target_dir_pub = os.path.normpath(target_dir + '/../public')
   target_dir_pub = target_dir_pub.replace('\\', '/')
   if target_base == include_base and (
-      include_dir == target_dir or
-      include_dir == target_dir_pub):
+      include_dir in (target_dir, target_dir_pub)):
     return _LIKELY_MY_HEADER
 
   # If the target and include share some initial basename
@@ -6824,7 +6821,7 @@ def ParseArguments(args):
       output_format = val
     elif opt == '--quiet':
       quiet = True
-    elif opt == '--verbose' or opt == '--v':
+    elif opt in {'--verbose', '--v'}:
       verbosity = int(val)
     elif opt == '--filter':
       filters = val
