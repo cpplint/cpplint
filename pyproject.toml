@@ -65,6 +65,9 @@ scripts.cpplint = "cpplint:main"
 py-modules = [ "cpplint" ]
 include-package-data = false
 
+[tool.ruff]
+lint.ignore = [ "E701" ]
+
 [tool.pytest.ini_options]
 python_files = [ "*test.py" ]
 testpaths = [ "." ]
