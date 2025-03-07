@@ -309,9 +309,10 @@ class CpplintTest(CpplintTestBase):
                       'Do not indent within a namespace. '
                       ' [whitespace/indent_namespace] [4]'])
 
-  def testNamespaceIndentationNoError(self):
+  def testNamespaceIndentationIndentedParameter(self):
     lines = ['namespace Test {',
-             'void foo() { }',
+             'void foo('
+             '    SuperLongTypeName d = 418) { }',
              '}  // namespace Test']
 
     results = self.GetNamespaceResults(lines)
@@ -1122,6 +1123,9 @@ class CpplintTest(CpplintTestBase):
     self.TestIncludeWhatYouUse(
         'printf("hello world");',
         'Add #include <cstdio> for printf  [build/include_what_you_use] [4]')
+    self.TestIncludeWhatYouUse(
+      """#include <stdio.h>
+      printf("hello world");""", '')  # Avoid false positives w/ c-style include
     self.TestIncludeWhatYouUse(
         'void a(const string &foobar);',
         'Add #include <string> for string  [build/include_what_you_use] [4]')

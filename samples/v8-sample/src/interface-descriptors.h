@@ -180,7 +180,7 @@ class V8_EXPORT_PRIVATE CallInterfaceDescriptorData {
   RegList allocatable_registers_ = 0;
 
   // |registers_params_| defines registers that are used for parameter passing.
-  // |machine_types_| defines machine types for resulting values and incomping
+  // |machine_types_| defines machine types for resulting values and incoming
   // parameters.
   // Both arrays are allocated dynamically by the InterfaceDescriptor and
   // freed on destruction. This is because static arrays cause creation of
@@ -945,7 +945,7 @@ class BinaryOpDescriptor : public CallInterfaceDescriptor {
   DECLARE_DESCRIPTOR(BinaryOpDescriptor, CallInterfaceDescriptor)
 };
 
-// This desciptor is shared among String.p.charAt/charCodeAt/codePointAt
+// This descriptor is shared among String.p.charAt/charCodeAt/codePointAt
 // as they all have the same interface.
 class StringAtDescriptor final : public CallInterfaceDescriptor {
  public:

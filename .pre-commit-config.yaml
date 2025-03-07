@@ -1,0 +1,25 @@
+# Learn more about this config here: https://pre-commit.com/
+
+# To enable these pre-commit hooks run:
+# `pipx install pre-commit` or `brew install pre-commit`
+# Then in the project root directory run `pre-commit install`
+
+repos:
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        args:
+          - --ignore-words-list=alse,ons
+        additional_dependencies:
+          - tomli
+
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: v2.5.1
+    hooks:
+      - id: pyproject-fmt
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.23
+    hooks:
+      - id: validate-pyproject

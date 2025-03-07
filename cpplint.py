@@ -44,7 +44,7 @@ same line, but it is far from perfect (in either direction).
 import codecs
 import collections
 import copy
-import getopt
+import getopt  # pylint: disable=deprecated-module
 import glob
 import itertools
 import math  # for log
@@ -3036,6 +3036,11 @@ class NestingState(object):
     # the full nesting stack would slow down cpplint by ~10%.
     self.previous_stack_top = []
 
+    # The number of open parentheses in the previous stack top before the last update.
+    # Used to prevent false indentation detection when e.g. a function parameter is indented.
+    # We can't use previous_stack_top, a shallow copy whose open_parentheses value is updated.
+    self.previous_open_parentheses = 0
+
     # Stack of _PreprocessorInfo objects.
     self.pp_stack = []
 
@@ -3207,6 +3212,7 @@ class NestingState(object):
     # deepcopy would slow down cpplint by ~28%.
     if self.stack:
       self.previous_stack_top = self.stack[-1]
+      self.previous_open_parentheses = self.stack[-1].open_parentheses
     else:
       self.previous_stack_top = None
 
@@ -5250,7 +5256,7 @@ def _GetTextInside(text, start_pattern):
   Given a string of lines and a regular expression string, retrieve all the text
   following the expression and between opening punctuation symbols like
   (, [, or {, and the matching close-punctuation symbol. This properly nested
-  occurrences of the punctuations, so for the text like
+  occurrences of the punctuation, so for the text like
     printf(a(), b(c()));
   a call to _GetTextInside(text, r'printf\(') will return 'a(), b(c())'.
   start_pattern must match string having an open punctuation symbol at the end.
@@ -5267,7 +5273,7 @@ def _GetTextInside(text, start_pattern):
   # TODO(unknown): Audit cpplint.py to see what places could be profitably
   # rewritten to use _GetTextInside (and use inferior regexp matching today).
 
-  # Give opening punctuations to get the matching close-punctuations.
+  # Give opening punctuation to get the matching close-punctuation.
   matching_punctuation = {'(': ')', '{': '}', '[': ']'}
   closing_punctuation = set(dict.values(matching_punctuation))
 
@@ -5281,22 +5287,22 @@ def _GetTextInside(text, start_pattern):
       'start_pattern must ends with an opening punctuation.')
   assert text[start_position - 1] in matching_punctuation, (
       'start_pattern must ends with an opening punctuation.')
-  # Stack of closing punctuations we expect to have in text after position.
+  # Stack of closing punctuation we expect to have in text after position.
   punctuation_stack = [matching_punctuation[text[start_position - 1]]]
   position = start_position
   while punctuation_stack and position < len(text):
     if text[position] == punctuation_stack[-1]:
       punctuation_stack.pop()
     elif text[position] in closing_punctuation:
-      # A closing punctuation without matching opening punctuations.
+      # A closing punctuation without matching opening punctuation.
       return None
     elif text[position] in matching_punctuation:
       punctuation_stack.append(matching_punctuation[text[position]])
     position += 1
   if punctuation_stack:
-    # Opening punctuations left without matching close-punctuations.
+    # Opening punctuation left without matching close-punctuation.
     return None
-  # punctuations match.
+  # punctuation match.
   return text[start_position:position - 1]
 
 
@@ -6221,12 +6227,15 @@ def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error,
                        for item in sublist])
 
   # All the lines have been processed, report the errors found.
-  for required_header_unstripped in sorted(required, key=required.__getitem__):
-    template = required[required_header_unstripped][1]
-    if required_header_unstripped.strip('<>"') not in include_dict:
-      error(filename, required[required_header_unstripped][0],
+  for header in sorted(required, key=required.__getitem__):
+    template = required[header][1]
+    header_stripped = header.strip('<>"')
+    if (header_stripped not in include_dict
+            and not (header_stripped[0] == 'c'
+                     and (header_stripped[1:] + '.h') in include_dict)):
+      error(filename, required[header][0],
             'build/include_what_you_use', 4,
-            'Add #include ' + required_header_unstripped + ' for ' + template)
+            'Add #include ' + header + ' for ' + template)
 
 
 _RE_PATTERN_EXPLICIT_MAKEPAIR = re.compile(r'\bmake_pair\s*<')
@@ -6373,7 +6382,7 @@ def IsBlockInNameSpace(nesting_state, is_forward_declaration):
   return False
 
 
-def ShouldCheckNamespaceIndentation(nesting_state, is_namespace_indent_item,
+def ShouldCheckNamespaceIndentation(nesting_state: NestingState, is_namespace_indent_item,
                                     raw_lines_no_comments, linenum):
   """This method determines if we should apply our namespace indentation check.
 
@@ -6398,6 +6407,10 @@ def ShouldCheckNamespaceIndentation(nesting_state, is_namespace_indent_item,
 
   # If we are in a macro, we do not want to check the namespace indentation.
   if IsMacroDefinition(raw_lines_no_comments, linenum):
+    return False
+
+  # Skip if we are inside an open parenthesis block (e.g. function parameters).
+  if nesting_state.previous_stack_top and nesting_state.previous_open_parentheses > 0:
     return False
 
   return IsBlockInNameSpace(nesting_state, is_forward_declaration)

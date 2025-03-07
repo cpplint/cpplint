@@ -5,12 +5,9 @@ Done processing src/chrome_content_renderer_client.cc
 Done processing src/chrome_content_renderer_client.h
 Done processing src/io_thread.cc
 Done processing src/io_thread.h
-Total errors found: 25
+Total errors found: 18
 
 src/chrome_content_renderer_client.cc:303:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/chrome_content_renderer_client.cc:308:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/chrome_content_renderer_client.cc:309:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/chrome_content_renderer_client.cc:310:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 src/chrome_content_renderer_client.cc:308:  Add #include <vector> for vector<>  [build/include_what_you_use] [4]
 src/chrome_content_renderer_client.cc:1540:  Add #include <set> for set<>  [build/include_what_you_use] [4]
 src/chrome_content_renderer_client.cc:1841:  Add #include <string> for string  [build/include_what_you_use] [4]
@@ -19,10 +16,6 @@ src/chrome_content_renderer_client.h:5:  #ifndef header guard has wrong style, p
 src/chrome_content_renderer_client.h:225:  #endif line should be "#endif  // SAMPLES_CHROMIUM_SAMPLE_SRC_CHROME_CONTENT_RENDERER_CLIENT_H_"  [build/header_guard] [5]
 src/chrome_content_renderer_client.h:115:  Use int16_t/int64_t/etc, rather than the C type long  [runtime/int] [4]
 src/chrome_content_renderer_client.h:117:  Use int16_t/int64_t/etc, rather than the C type long  [runtime/int] [4]
-src/io_thread.cc:242:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/io_thread.cc:286:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/io_thread.cc:298:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-src/io_thread.cc:299:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 src/io_thread.cc:1148:  Closing ) should be moved to the previous line  [whitespace/parens] [2]
 src/io_thread.cc:1547:  Missing space around colon in range-based for loop  [whitespace/forcolon] [2]
 src/io_thread.cc:651:  Add #include <map> for map<>  [build/include_what_you_use] [4]
