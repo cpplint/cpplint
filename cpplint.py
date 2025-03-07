@@ -57,7 +57,7 @@ import unicodedata
 import xml.etree.ElementTree
 
 # if empty, use defaults
-_valid_extensions = set([])
+_valid_extensions = set()
 
 __VERSION__ = '2.0.1'
 
@@ -826,7 +826,7 @@ _CHECK_MACROS = [
     ]
 
 # Replacement macros for CHECK/DCHECK/EXPECT_TRUE/EXPECT_FALSE
-_CHECK_REPLACEMENT = dict([(macro_var, {}) for macro_var in _CHECK_MACROS])
+_CHECK_REPLACEMENT = {macro_var: {} for macro_var in _CHECK_MACROS}
 
 for op, replacement in [('==', 'EQ'), ('!=', 'NE'),
                         ('>=', 'GE'), ('>', 'GT'),
@@ -945,7 +945,7 @@ _config_filename = "CPPLINT.cfg"
 
 # Treat all headers starting with 'h' equally: .h, .hpp, .hxx etc.
 # This is set by --headers flag.
-_hpp_headers = set([])
+_hpp_headers = set()
 
 class ErrorSuppressions:
   """Class to track all error suppressions for cpplint"""
@@ -1038,13 +1038,12 @@ def GetHeaderExtensions():
     return _hpp_headers
   if _valid_extensions:
     return {h for h in _valid_extensions if 'h' in h}
-  return set(['h', 'hh', 'hpp', 'hxx', 'h++', 'cuh'])
+  return {'h', 'hh', 'hpp', 'hxx', 'h++', 'cuh'}
 
 # The allowed extensions for file names
 # This is set by --extensions flag
 def GetAllExtensions():
-  return GetHeaderExtensions().union(_valid_extensions or set(
-    ['c', 'cc', 'cpp', 'cxx', 'c++', 'cu']))
+  return GetHeaderExtensions().union(_valid_extensions or {'c', 'cc', 'cpp', 'cxx', 'c++', 'cu'})
 
 def ProcessExtensionsOption(val):
   global _valid_extensions
@@ -1101,7 +1100,7 @@ def ParseNolintSuppressions(filename, raw_line, linenum, error):
     if categories in (None, '(*)'):  # => "suppress all"
       ProcessCategory(None)
     elif categories.startswith('(') and categories.endswith(')'):
-      for category in set(map(lambda c: c.strip(), categories[1:-1].split(','))):
+      for category in {c.strip() for c in categories[1:-1].split(',')}:
         if category in _ERROR_CATEGORIES:
           ProcessCategory(category)
         elif any(c for c in _OTHER_NOLINT_CATEGORY_PREFIXES if category.startswith(c)):
@@ -6073,13 +6072,12 @@ _HEADERS_FUNCTIONS = (
 
 _re_pattern_headers_maybe_templates = []
 for _header, _templates in _HEADERS_MAYBE_TEMPLATES:
-  for _template in _templates:
-    # Match max<type>(..., ...), max(..., ...), but not foo->max, foo.max or
-    # 'type::max()'.
-    _re_pattern_headers_maybe_templates.append(
-        (re.compile(r'((\bstd::)|[^>.:])\b' + _template + r'(<.*?>)?\([^\)]'),
-            _template,
-            _header))
+  # Match max<type>(..., ...), max(..., ...), but not foo->max, foo.max or
+  # 'type::max()'.
+  _re_pattern_headers_maybe_templates.extend(
+      (re.compile(r'((\bstd::)|[^>.:])\b' + _template + r'(<.*?>)?\([^\)]'),
+          _template,
+          _header) for _template in _templates)
 
 # Map is often overloaded. Only check, if it is fully qualified.
 # Match 'std::map<type>(...)', but not 'map<type>(...)''
@@ -6091,29 +6089,26 @@ _re_pattern_headers_maybe_templates.append(
 # Other scripts may reach in and modify this pattern.
 _re_pattern_templates = []
 for _header, _templates in _HEADERS_CONTAINING_TEMPLATES:
-  for _template in _templates:
-    _re_pattern_templates.append(
-        (re.compile(r'((^|(^|\s|((^|\W)::))std::)|[^>.:]\b)' + _template + r'\s*\<'),
-         _template + '<>',
-         _header))
+  _re_pattern_templates.extend(
+      (re.compile(r'((^|(^|\s|((^|\W)::))std::)|[^>.:]\b)' + _template + r'\s*\<'),
+       _template + '<>',
+       _header) for _template in _templates)
 
 _re_pattern_types_or_objs = []
 for _header, _types_or_objs in _HEADERS_TYPES_OR_OBJS:
-  for _type_or_obj in _types_or_objs:
-    _re_pattern_types_or_objs.append(
-        (re.compile(r'\b' + _type_or_obj + r'\b'),
-            _type_or_obj,
-            _header))
+  _re_pattern_types_or_objs.extend(
+      (re.compile(r'\b' + _type_or_obj + r'\b'),
+          _type_or_obj,
+          _header) for _type_or_obj in _types_or_objs)
 
 _re_pattern_functions = []
 for _header, _functions in _HEADERS_FUNCTIONS:
-  for _function in _functions:
-    # Match printf(..., ...), but not foo->printf, foo.printf or
-    # 'type::printf()'.
-    _re_pattern_functions.append(
-        (re.compile(r'([^>.]|^)\b' + _function + r'\([^\)]'),
-            _function,
-            _header))
+  # Match printf(..., ...), but not foo->printf, foo.printf or
+  # 'type::printf()'.
+  _re_pattern_functions.extend(
+      (re.compile(r'([^>.]|^)\b' + _function + r'\([^\)]'),
+          _function,
+          _header) for _function in _functions)
 
 def FilesBelongToSameModule(filename_cc, filename_h):
   """Check if these two filenames belong to the same module.
@@ -6750,8 +6745,8 @@ def PrintUsage(message):
   Args:
     message: The optional error message.
   """
-  sys.stderr.write(_USAGE  % (sorted(list(GetAllExtensions())),
-       ','.join(sorted(list(GetAllExtensions()))),
+  sys.stderr.write(_USAGE  % (sorted(GetAllExtensions()),
+       ','.join(sorted(GetAllExtensions())),
        sorted(GetHeaderExtensions()),
        ','.join(sorted(GetHeaderExtensions()))))
 
@@ -6933,11 +6928,8 @@ def _ExpandDirectories(filenames):
           fullname = fullname[len('.' + os.path.sep):]
         expanded.add(fullname)
 
-  filtered = []
-  for filename in expanded:
-    if os.path.splitext(filename)[1][1:] in GetAllExtensions():
-      filtered.append(filename)
-  return filtered
+  return [filename for filename in expanded
+          if os.path.splitext(filename)[1][1:] in GetAllExtensions()]
 
 def _FilterExcludedFiles(fnames):
   """Filters out files listed in the --exclude command line switch. File paths

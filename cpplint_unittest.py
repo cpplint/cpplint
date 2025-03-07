@@ -4260,27 +4260,27 @@ class CpplintTest(CpplintTestBase):
       self.assertEqual(['foo.h'],
                        cpplint.ParseArguments(['--linelength=120', 'foo.h']))
       self.assertEqual(120, cpplint._line_length)
-      self.assertEqual(set(['h', 'hh', 'hpp', 'hxx', 'h++', 'cuh']), cpplint.GetHeaderExtensions())  # Default value
+      self.assertEqual({'h', 'hh', 'hpp', 'hxx', 'h++', 'cuh'}, cpplint.GetHeaderExtensions())  # Default value
 
       cpplint._hpp_headers = old_headers
       cpplint._valid_extensions = old_valid_extensions
       self.assertEqual(['foo.h'],
                        cpplint.ParseArguments(['--headers=h', 'foo.h']))
-      self.assertEqual(set(['h', 'c', 'cc', 'cpp', 'cxx', 'c++', 'cu']), cpplint.GetAllExtensions())
+      self.assertEqual({'h', 'c', 'cc', 'cpp', 'cxx', 'c++', 'cu'}, cpplint.GetAllExtensions())
 
       cpplint._hpp_headers = old_headers
       cpplint._valid_extensions = old_valid_extensions
       self.assertEqual(['foo.h'],
                        cpplint.ParseArguments(['--extensions=hpp,cpp,cpp', 'foo.h']))
-      self.assertEqual(set(['hpp', 'cpp']), cpplint.GetAllExtensions())
-      self.assertEqual(set(['hpp']), cpplint.GetHeaderExtensions())
+      self.assertEqual({'hpp', 'cpp'}, cpplint.GetAllExtensions())
+      self.assertEqual({'hpp'}, cpplint.GetHeaderExtensions())
 
       cpplint._hpp_headers = old_headers
       cpplint._valid_extensions = old_valid_extensions
       self.assertEqual(['foo.h'],
                        cpplint.ParseArguments(['--extensions=cpp,cpp', '--headers=hpp,h', 'foo.h']))
-      self.assertEqual(set(['hpp', 'h']), cpplint.GetHeaderExtensions())
-      self.assertEqual(set(['hpp', 'h', 'cpp']), cpplint.GetAllExtensions())
+      self.assertEqual({'hpp', 'h'}, cpplint.GetHeaderExtensions())
+      self.assertEqual({'hpp', 'h', 'cpp'}, cpplint.GetAllExtensions())
 
     finally:
       sys.stdout = sys.__stdout__
@@ -4330,8 +4330,8 @@ class CpplintTest(CpplintTestBase):
     finally:
         os.chdir(working_dir)
         shutil.rmtree(temp_dir)
-        cpplint._hpp_headers = set([])
-        cpplint._valid_extensions = set([])
+        cpplint._hpp_headers = set()
+        cpplint._valid_extensions = set()
 
   def testRecursiveExclude(self):
     working_dir = os.getcwd()
@@ -4356,7 +4356,7 @@ class CpplintTest(CpplintTestBase):
       ]
       cpplint._excludes = None
       actual = cpplint.ParseArguments(['src'])
-      self.assertEqual(set(['src']), set(actual))
+      self.assertEqual({'src'}, set(actual))
 
       cpplint._excludes = None
       actual = cpplint.ParseArguments(['--recursive', 'src'])
@@ -4374,11 +4374,11 @@ class CpplintTest(CpplintTestBase):
           '--exclude=src/two.cc', '--exclude=src/three.cc', 'src'])
       self.assertEqual(set(expected), set(actual))
 
-      expected = set([
+      expected = {
         os.path.join('src2', 'one.cc'),
         os.path.join('src2', 'two.cc'),
         os.path.join('src2', 'three.cc')
-      ])
+      }
       cpplint._excludes = None
       actual = cpplint.ParseArguments(['--recursive',
           '--exclude=src', '.'])
@@ -5629,8 +5629,8 @@ class OrderOfIncludesTest(CpplintTestBase):
                                       False))
 
   def testTryDropCommonSuffixes(self):
-    cpplint._hpp_headers = set([])
-    cpplint._valid_extensions = set([])
+    cpplint._hpp_headers = set()
+    cpplint._valid_extensions = set()
     self.assertEqual('foo/foo', cpplint._DropCommonSuffixes('foo/foo-inl.h'))
     self.assertEqual('foo/foo', cpplint._DropCommonSuffixes('foo/foo-inl.hxx'))
     self.assertEqual('foo/foo', cpplint._DropCommonSuffixes('foo/foo-inl.h++'))

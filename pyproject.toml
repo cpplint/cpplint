@@ -74,6 +74,7 @@ lint.select = [
   "ASYNC", # flake8-async
   "B",     # flake8-bugbear
   "BLE",   # flake8-blind-except
+  "C4",    # flake8-comprehensions
   "C90",   # McCabe cyclomatic complexity
   "DJ",    # flake8-django
   "DTZ",   # flake8-datetimez
@@ -113,7 +114,6 @@ lint.select = [
   "YTT",   # flake8-2020
   # "ANN", # flake8-annotations
   # "ARG", # flake8-unused-arguments
-  # "C4",  # flake8-comprehensions
   # "COM", # flake8-commas
   # "CPY", # flake8-copyright
   # "D",   # pydocstyle
