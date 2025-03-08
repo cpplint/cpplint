@@ -3,22 +3,17 @@
 4
 Done processing src/sillycode.cpp
 Done processing src/sillycode.w
-Total errors found: 26
+Total errors found: 21
 
 src/sillycode.cpp:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
 src/sillycode.cpp:2:  <ratio> is an unapproved C++11 header.  [build/c++11] [5]
 src/sillycode.cpp:3:  Found C system header after other header. Should be: sillycode.h, c system, c++ system, other.  [build/include_order] [4]
 src/sillycode.cpp:4:  Found C system header after other header. Should be: sillycode.h, c system, c++ system, other.  [build/include_order] [4]
-src/sillycode.cpp:14:  Is this a non-const reference? If so, make const or use a pointer: vector<string>& v  [runtime/references] [2]
 src/sillycode.cpp:40:  If/else bodies with multiple statements require braces  [readability/braces] [4]
 src/sillycode.cpp:66:  Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]
 src/sillycode.cpp:76:  Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]
 src/sillycode.cpp:85:  Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]
 src/sillycode.cpp:86:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
-src/sillycode.cpp:118:  Is this a non-const reference? If so, make const or use a pointer: N::X& a  [runtime/references] [2]
-src/sillycode.cpp:118:  Is this a non-const reference? If so, make const or use a pointer: N::X& b  [runtime/references] [2]
-src/sillycode.cpp:123:  Is this a non-const reference? If so, make const or use a pointer: N::X& a  [runtime/references] [2]
-src/sillycode.cpp:123:  Is this a non-const reference? If so, make const or use a pointer: N::X& b  [runtime/references] [2]
 src/sillycode.cpp:171:  Do not use variable-length arrays.  Use an appropriately named ('k' followed by CamelCase) compile-time constant for the size.  [runtime/arrays] [1]
 src/sillycode.cpp:178:  Static/global string variables are not permitted.  [runtime/string] [4]
 src/sillycode.cpp:199:  If an else has a brace on one side, it should have it on both  [readability/braces] [5]
