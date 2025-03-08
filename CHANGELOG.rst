@@ -9,6 +9,7 @@ Yet another overdue... hotfix. Sorry this took so long.
 
 * The false positive for indented function parameters in namespaces was eradicated.
 * build/include-what-you-use now recognizes c-style headers, such as <stdio.h> for symbols from <cstdio>. (https://github.com/cpplint/cpplint/pull/306)
+* The warning on non-const references (runtime/references) is now disabled by default pursuant to the May 2020 Google style guide update. (https://github.com/cpplint/cpplint/pull/305)
 
 2.0 (2024-10-06)
 ================
