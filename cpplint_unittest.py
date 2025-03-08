@@ -43,16 +43,17 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from parameterized import parameterized
+
 import pytest
+from parameterized import parameterized
 
 import cpplint
+
 
 def codecs_latin_encode(x):
   if sys.version_info < (3,):
     return x
-  else:
-    return codecs.latin_1_encode(x)[0]
+  return codecs.latin_1_encode(x)[0]
 
 # This class works as an error collector and replaces cpplint.Error
 # function for the unit tests.  We also verify each category we see
@@ -80,8 +81,7 @@ class ErrorCollector(object):
   def Results(self):
     if len(self._errors) < 2:
       return ''.join(self._errors)  # Most tests expect to have a string.
-    else:
-      return self._errors  # Let's give a list if there is more than one.
+    return self._errors  # Let's give a list if there is more than one.
 
   def ResultList(self):
     return self._errors
@@ -115,7 +115,7 @@ class MockIo(object):
       def __enter__(self):
         return self
 
-      def __exit__(self, type, value, tb):
+      def __exit__(self, type, value, tb):  # noqa: A002
         return self
     self.mock_file = EnterableList(mock_file)
 
@@ -4283,8 +4283,8 @@ class CpplintTest(CpplintTestBase):
       self.assertEqual(set(['hpp', 'h', 'cpp']), cpplint.GetAllExtensions())
 
     finally:
-      sys.stdout == sys.__stdout__
-      sys.stderr == sys.__stderr__
+      sys.stdout = sys.__stdout__
+      sys.stderr = sys.__stderr__
       cpplint._cpplint_state.output_format = old_output_format
       cpplint._cpplint_state.verbose_level = old_verbose_level
       cpplint._cpplint_state.filters = old_filters
@@ -4657,6 +4657,7 @@ class CpplintTest(CpplintTestBase):
           error)
       if matched is not None:
         return matched.group(1)
+    return None
 
   def testBuildHeaderGuard(self):
     file_path = 'mydir/foo.h'
@@ -5276,7 +5277,7 @@ class CpplintTest(CpplintTestBase):
     # Make sure that the declaration is logged if there's an error.
     # Seed generator with an integer for absolute reproducibility.
     random.seed(25)
-    for unused_i in range(10):
+    for _i in range(10):
       # Build up random list of non-storage-class declaration specs.
       other_decl_specs = [random.choice(qualifiers), random.choice(signs),
                           random.choice(types)]
@@ -5660,7 +5661,7 @@ class OrderOfIncludesTest(CpplintTestBase):
     def Format(includes):
       include_list = []
       for item in includes:
-        if item.startswith('"') or item.startswith('<'):
+        if item.startswith(('"', '<')):
           include_list.append('#include %s\n' % item)
         else:
           include_list.append(item + '\n')

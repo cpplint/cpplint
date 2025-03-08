@@ -65,7 +65,83 @@ py-modules = [ "cpplint" ]
 include-package-data = false
 
 [tool.ruff]
-lint.ignore = [ "E701" ]
+target-version = "py38"
+
+line-length = 116
+lint.select = [
+  "A",     # flake8-builtins
+  "AIR",   # Airflow
+  "ASYNC", # flake8-async
+  "B",     # flake8-bugbear
+  "BLE",   # flake8-blind-except
+  "C90",   # McCabe cyclomatic complexity
+  "DJ",    # flake8-django
+  "DTZ",   # flake8-datetimez
+  "E",     # pycodestyle
+  "EM",    # flake8-errmsg
+  "EXE",   # flake8-executable
+  "F",     # Pyflakes
+  "FA",    # flake8-future-annotations
+  "FAST",  # FastAPI
+  "FBT",   # flake8-boolean-trap
+  "FIX",   # flake8-fixme
+  "FLY",   # flynt
+  "FURB",  # refurb
+  "G",     # flake8-logging-format
+  "I",     # isort
+  "ICN",   # flake8-import-conventions
+  "INP",   # flake8-no-pep420
+  "INT",   # flake8-gettext
+  "ISC",   # flake8-implicit-str-concat
+  "LOG",   # flake8-logging
+  "NPY",   # NumPy-specific rules
+  "PD",    # pandas-vet
+  "PERF",  # Perflint
+  "PGH",   # pygrep-hooks
+  "PIE",   # flake8-pie
+  "PLC",   # Pylint conventions
+  "PLE",   # Pylint errors
+  "PYI",   # flake8-pyi
+  "RET",   # flake8-return
+  "RSE",   # flake8-raise
+  "SLOT",  # flake8-slots
+  "T10",   # flake8-debugger
+  "TC",    # flake8-type-checking
+  "TID",   # flake8-tidy-imports
+  "TRY",   # tryceratops
+  "W",     # pycodestyle
+  "YTT",   # flake8-2020
+  # "ANN", # flake8-annotations
+  # "ARG", # flake8-unused-arguments
+  # "C4",  # flake8-comprehensions
+  # "COM", # flake8-commas
+  # "CPY", # flake8-copyright
+  # "D",   # pydocstyle
+  # "DOC", # pydoclint
+  # "ERA", # eradicate
+  # "N",   # pep8-naming
+  # "PLR", # Pylint refactor
+  # "PLW", # Pylint warnings
+  # "PT",  # flake8-pytest-style
+  # "PTH", # flake8-use-pathlib
+  # "Q",   # flake8-quotes
+  # "RUF", # Ruff-specific rules
+  # "S",   # flake8-bandit
+  # "SIM", # flake8-simplify
+  # "SLF", # flake8-self
+  # "T20", # flake8-print
+  # "TD",  # flake8-todos
+  # "UP",  # pyupgrade
+]
+lint.ignore = [
+  "FBT003", # flake8-boolean-trap
+  "FIX002", # flake8-fixme
+  "ISC003", # flake8-implicit-str-concat
+  "PIE790", # Unnecessary `pass` statement
+]
+lint.per-file-ignores."cpplint.py" = [ "ICN001", "PERF401" ]
+lint.per-file-ignores."cpplint_unittest.py" = [ "FLY002" ]
+lint.mccabe.max-complexity = 29
 
 [tool.pytest.ini_options]
 python_files = [ "*test.py" ]

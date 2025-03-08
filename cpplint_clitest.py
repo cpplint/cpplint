@@ -33,11 +33,12 @@
 
 import glob
 import os
-import sys
-import subprocess
-import unittest
 import shutil
+import subprocess
+import sys
 import tempfile
+import unittest
+
 from pytest import mark
 from testfixtures import compare
 
@@ -101,7 +102,7 @@ class TemporaryFolderClassSetup(object):
         except Exception:
             try:
                 cls.tearDownClass()
-            except Exception:
+            except Exception:  # noqa: BLE001
                 pass
             raise
 

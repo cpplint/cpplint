@@ -1407,9 +1407,9 @@ class _CppLintState(object):
       if clean_filt:
         self.filters.append(clean_filt)
     for filt in self.filters:
-      if not (filt.startswith('+') or filt.startswith('-')):
-        raise ValueError('Every filter in --filters must start with + or -'
-                        f' ({filt} does not)')
+      if not filt.startswith(('+', '-')):
+        msg = f'Every filter in --filters must start with + or - ({filt} does not)'
+        raise ValueError(msg)
 
   def BackupFilters(self):
     """ Saves the current filter list to backup storage."""
@@ -1618,7 +1618,7 @@ class _FunctionState(object):
     trigger = base_trigger * 2**_VerboseLevel()
 
     if self.lines_in_function > trigger:
-      error_level = int(math.log(self.lines_in_function / base_trigger, 2))
+      error_level = int(math.log2(self.lines_in_function / base_trigger))
       # 50 => 0, 100 => 1, 200 => 2, 400 => 3, 800 => 4, 1600 => 5, ...
       if error_level > 5:
         error_level = 5
@@ -1769,7 +1769,9 @@ def _ShouldPrintError(category, confidence, filename, linenum):
       if category_match and file_match and line_match:
         is_filtered = False
     else:
-      assert False  # should have been checked for in SetFilter.
+      # should have been checked for in SetFilter.
+      msg = f'Invalid filter: {one_filter}'
+      raise ValueError(msg)
   if is_filtered:
     return False
 
@@ -2357,7 +2359,8 @@ def CheckForCopyright(filename, lines, error):
   # We'll say it should occur by line 10. Don't forget there's a
   # placeholder line at the front.
   for line in range(1, min(len(lines), 11)):
-    if re.search(r'Copyright', lines[line], re.I): break
+    if re.search(r'Copyright', lines[line], re.IGNORECASE):
+      break
   else:                       # means no copyright line was found
     error(filename, 0, 'legal/copyright', 5,
           'No copyright message found.  '
@@ -2376,8 +2379,7 @@ def GetIndentLevel(line):
   indent = re.match(r'^( *)\S', line)
   if indent:
     return len(indent.group(1))
-  else:
-    return 0
+  return 0
 
 def PathSplitToList(path):
   """Returns the path split into a list by the separator.
@@ -3108,14 +3110,16 @@ class NestingState(object):
       # These things do not look like template argument list:
       #   class Suspect {
       #   class Suspect x; }
-      if token in ('{', '}', ';'): return False
+      if token in ('{', '}', ';'):
+        return False
 
       # These things look like template argument list:
       #   template <class Suspect>
       #   template <class Suspect = default_value>
       #   template <class Suspect[]>
       #   template <class Suspect...>
-      if token in ('>', '=', '[', ']', '.'): return True
+      if token in ('>', '=', '[', ']', '.'):
+        return True
 
       # Check if token is an unmatched '<'.
       # If not, move on to the next character.
@@ -4912,8 +4916,7 @@ def GetLineWidth(line):
 
         width += 1
     return width
-  else:
-    return len(line)
+  return len(line)
 
 
 def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state,
@@ -4985,9 +4988,7 @@ def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state,
   # Check if the line is a header guard.
   is_header_guard = False
   if IsHeaderExtension(file_extension):
-    if (line.startswith(f'#ifndef {cppvar}') or
-        line.startswith(f'#define {cppvar}') or
-        line.startswith(f'#endif  // {cppvar}')):
+    if line.startswith((f'#ifndef {cppvar}', f'#define {cppvar}', f'#endif  // {cppvar}')):
       is_header_guard = True
   # #include lines and header guards can be long, since there's no clean way to
   # split them.
@@ -5126,8 +5127,7 @@ def _ClassifyInclude(fileinfo, include, used_angle_brackets, include_order="defa
       return _CPP_SYS_HEADER
     if is_std_c_header:
       return _C_SYS_HEADER
-    else:
-      return _OTHER_SYS_HEADER
+    return _OTHER_SYS_HEADER
 
   # If the target file and the include we're checking share a
   # basename when we drop common extensions, and the include
@@ -5277,7 +5277,7 @@ def _GetTextInside(text, start_pattern):
   closing_punctuation = set(dict.values(matching_punctuation))
 
   # Find the position to start extracting text.
-  match = re.search(start_pattern, text, re.M)
+  match = re.search(start_pattern, text, re.MULTILINE)
   if not match:  # start_pattern not found in text.
     return None
   start_position = match.end(0)
@@ -5422,7 +5422,7 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
     match = re.match(r'([\w.\->()]+)$', printf_args)
     if match and match.group(1) != '__VA_ARGS__':
       function_name = re.search(r'\b((?:string)?printf)\s*\(',
-                                line, re.I).group(1)
+                                line, re.IGNORECASE).group(1)
       error(filename, linenum, 'runtime/printf', 4,
             'Potential format string bug. Do'
             f' {function_name}("%s", {match.group(1)}) instead.')
@@ -5458,17 +5458,25 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
         skip_next = False
         continue
 
-      if re.search(r'sizeof\(.+\)', tok): continue
-      if re.search(r'arraysize\(\w+\)', tok): continue
+      if re.search(r'sizeof\(.+\)', tok):
+        continue
+      if re.search(r'arraysize\(\w+\)', tok):
+        continue
 
       tok = tok.lstrip('(')
       tok = tok.rstrip(')')
-      if not tok: continue
-      if re.match(r'\d+', tok): continue
-      if re.match(r'0[xX][0-9a-fA-F]+', tok): continue
-      if re.match(r'k[A-Z0-9]\w*', tok): continue
-      if re.match(r'(.+::)?k[A-Z0-9]\w*', tok): continue
-      if re.match(r'(.+::)?[A-Z][A-Z0-9_]*', tok): continue
+      if not tok:
+        continue
+      if re.match(r'\d+', tok):
+        continue
+      if re.match(r'0[xX][0-9a-fA-F]+', tok):
+        continue
+      if re.match(r'k[A-Z0-9]\w*', tok):
+        continue
+      if re.match(r'(.+::)?k[A-Z0-9]\w*', tok):
+        continue
+      if re.match(r'(.+::)?[A-Z][A-Z0-9_]*', tok):
+        continue
       # A catch all for tricky sizeof cases, including 'sizeof expression',
       # 'sizeof(*type)', 'sizeof(const type)', 'sizeof(struct StructName)'
       # requires skipping the next token because we split on ' ' and '*'.
@@ -5783,7 +5791,7 @@ def CheckForNonConstReference(filename, clean_lines, linenum,
                            r')\s*\(')
   if re.search(allowed_functions, line):
     return
-  elif not re.search(r'\S+\([^)]*$', line):
+  if not re.search(r'\S+\([^)]*$', line):
     # Don't see an allowed function on this line.  Actually we
     # didn't see any function name on this line, so this is likely a
     # multi-line parameter list.  Try a bit harder to catch this case.
@@ -5955,8 +5963,7 @@ def CheckCStyleCast(filename, clean_lines, linenum, cast_type, pattern, error):
     return False
 
   # operator++(int) and operator--(int)
-  if (context.endswith(' operator++') or context.endswith(' operator--') or
-      context.endswith('::operator++') or context.endswith('::operator--')):
+  if context.endswith((' operator++', ' operator--', '::operator++', '::operator--')):
     return False
 
   # A single unnamed argument for a function tends to look like old style cast.
@@ -6273,7 +6280,8 @@ def CheckRedundantVirtual(filename, clean_lines, linenum, error):
   # Look for "virtual" on current line.
   line = clean_lines.elided[linenum]
   virtual = re.match(r'^(.*)(\bvirtual\b)(.*)$', line)
-  if not virtual: return
+  if not virtual:
+    return
 
   # Ignore "virtual" keywords that are near access-specifiers.  These
   # are only used in class base-specifier and do not apply to member
@@ -6285,7 +6293,8 @@ def CheckRedundantVirtual(filename, clean_lines, linenum, error):
   # Ignore the "virtual" keyword from virtual base classes.  Usually
   # there is a column on the same line in these cases (virtual base
   # classes are rare in google3 because multiple inheritance is rare).
-  if re.match(r'^.*[^:]:[^:].*$', line): return
+  if re.match(r'^.*[^:]:[^:].*$', line):
+    return
 
   # Look for the next opening parenthesis.  This is the start of the
   # parameter list (possibly on the next line shortly after virtual).
@@ -6374,7 +6383,7 @@ def IsBlockInNameSpace(nesting_state, is_forward_declaration):
   if len(nesting_state.stack) >= 1:
     if isinstance(nesting_state.stack[-1], _NamespaceInfo):
       return True
-    elif (len(nesting_state.stack) > 1 and
+    if (len(nesting_state.stack) > 1 and
           isinstance(nesting_state.previous_stack_top, _NamespaceInfo) and
           isinstance(nesting_state.stack[-2], _NamespaceInfo)):
       return True
@@ -6453,7 +6462,8 @@ def ProcessLine(filename, file_extension, clean_lines, line,
   nesting_state.Update(filename, clean_lines, line, error)
   CheckForNamespaceIndentation(filename, nesting_state, clean_lines, line,
                                error)
-  if nesting_state.InAsmBlock(): return
+  if nesting_state.InAsmBlock():
+    return
   CheckForFunctionLengths(filename, clean_lines, line, function_state, error)
   CheckForMultilineCommentsAndStrings(filename, clean_lines, line, error)
   CheckStyle(filename, clean_lines, line, file_extension, nesting_state, error, cppvar)
@@ -6895,9 +6905,8 @@ def _ParseFilterSelector(parameter):
   second_colon_pos = parameter.find(":", colon_pos + 1)
   if second_colon_pos == -1:
     return category, parameter[colon_pos + 1:], -1
-  else:
-    return category, parameter[colon_pos + 1: second_colon_pos], \
-      int(parameter[second_colon_pos + 1:])
+  return category, parameter[colon_pos + 1: second_colon_pos], \
+    int(parameter[second_colon_pos + 1:])
 
 def _ExpandDirectories(filenames):
   """Searches a list of filenames and replaces directories in the list with
