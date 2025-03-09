@@ -31,7 +31,6 @@ classifiers = [
 dependencies = [  ]
 
 optional-dependencies.dev = [
-  "flake8>=4.0.1",
   "parameterized",
   "pylint>=2.11",
   "pytest",
@@ -64,6 +63,9 @@ scripts.cpplint = "cpplint:main"
 [tool.setuptools]
 py-modules = [ "cpplint" ]
 include-package-data = false
+
+[tool.ruff]
+lint.ignore = [ "E701" ]
 
 [tool.pytest.ini_options]
 python_files = [ "*test.py" ]
