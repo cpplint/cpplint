@@ -15,7 +15,7 @@ Yet another overdue... hotfix. Sorry this took so long.
 
 A large long-overdue modernization of the codebase!
 
-* Python 2 and 3.7 are no longer supported. Python 3.12 support was added along with fixed CI for 3.7 and 3.8, courtesy of @jayvdb
+* Python versions less than 3.8 are no longer supported. Python 3.12 support was added along with fixed CI for 3.7 and 3.8, courtesy of @jayvdb
    * As a result of all this, setup.py's lint subcommand was removed. Please run the commands directly instead.
 * You can now specify blocks of code that exclude linting with NOLINTBEGIN and NOLINTEND, courtesy of @n3world (https://github.com/cpplint/cpplint/pull/213)
 * The config filename can now be specified through `--config` thanks to @gedankenexperimenter (https://github.com/cpplint/cpplint/pull/198). Specifying a config file not under the current directory will be available in a future release.
