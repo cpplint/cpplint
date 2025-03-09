@@ -43,10 +43,10 @@ from parameterized import parameterized
 from pytest import mark
 from testfixtures import compare
 
-BASE_CMD = sys.executable + ' ' + os.path.abspath('./cpplint.py ')
+BASE_CMD = sys.executable + " " + os.path.abspath("./cpplint.py ")
 
 
-def run_shell_command(cmd: str, args: str, cwd='.'):
+def run_shell_command(cmd: str, args: str, cwd="."):
     """Executes a command
 
     Args:
@@ -59,28 +59,27 @@ def run_shell_command(cmd: str, args: str, cwd='.'):
     out, err = proc.stdout, proc.stderr
 
     # Make output system-agnostic, aka support Windows
-    if os.sep == '\\':
+    if os.sep == "\\":
         # TODO: Support scenario with multiple input names
         # We currently only support the last arguments as the input name
         # to prevent accidentally replacing sed tests.
         # Fixing would likely need coding an internal "replace slashes" option for cpplint itself.
-        win_path = (os.path.dirname(args[-1]) + '\\').encode()
-        good_path = win_path.replace(b'\\', b'/')
+        win_path = (os.path.dirname(args[-1]) + "\\").encode()
+        good_path = win_path.replace(b"\\", b"/")
         out, err = out.replace(win_path, good_path), err.replace(win_path, good_path)
-    if os.linesep == '\r\n':
-        out, err = out.replace(b'\r\n', b'\n'), err.replace(b'\r\n', b'\n')
+    if os.linesep == "\r\n":
+        out, err = out.replace(b"\r\n", b"\n"), err.replace(b"\r\n", b"\n")
 
     # print(err) # to get the output at time of test
     return proc.returncode, out, err
 
 
 class UsageTest(unittest.TestCase):
-
     def testHelp(self):
-        (status, out, err) = run_shell_command(BASE_CMD, '--help')
+        (status, out, err) = run_shell_command(BASE_CMD, "--help")
         self.assertEqual(0, status)
-        self.assertEqual(b'', out)
-        self.assertTrue(err.startswith(b'\nSyntax: cpplint'))
+        self.assertEqual(b"", out)
+        self.assertTrue(err.startswith(b"\nSyntax: cpplint"))
 
 
 class TemporaryFolderClassSetup(unittest.TestCase):
@@ -98,7 +97,7 @@ class TemporaryFolderClassSetup(unittest.TestCase):
         """setup tmp folder for testing with samples and custom additions by subclasses"""
         try:
             cls._root = os.path.realpath(tempfile.mkdtemp())
-            shutil.copytree('samples', os.path.join(cls._root, 'samples'))
+            shutil.copytree("samples", os.path.join(cls._root, "samples"))
             cls.prepare_directory(cls._root)
         except Exception:
             try:
@@ -120,7 +119,7 @@ class TemporaryFolderClassSetup(unittest.TestCase):
 
     def get_extra_command_args(self, cwd):
         """Override in subclass to add arguments to command"""
-        return ''
+        return ""
 
     def check_all_in_folder(self, folder_name, expected_defs):
         # uncomment to show complete diff
@@ -128,7 +127,7 @@ class TemporaryFolderClassSetup(unittest.TestCase):
         count = 0
         for dirpath, _, fnames in os.walk(folder_name):
             for f in fnames:
-                if f.endswith('.def'):
+                if f.endswith(".def"):
                     count += 1
                     self.check_def(os.path.join(dirpath, f))
         self.assertEqual(count, expected_defs)
@@ -136,63 +135,61 @@ class TemporaryFolderClassSetup(unittest.TestCase):
     def check_def(self, path):
         """runs command and compares to expected output from def file"""
         # self.maxDiff = None # to see full diff
-        with open(path, 'rb') as file_handle:
+        with open(path, "rb") as file_handle:
             data = file_handle.readlines()
             stdout_lines = int(data[2])
-            filenames = data[0].decode('utf8').strip()
+            filenames = data[0].decode("utf8").strip()
             args, _, filenames = filenames.rpartition(" ")
-            if '*' in filenames:
+            if "*" in filenames:
                 rel_cwd = os.path.dirname(path)
-                filenames = ' '.join(
-                    filename[len(rel_cwd) + 1:]
-                    for filename in glob.glob(rel_cwd + '/' + filenames)
+                filenames = " ".join(
+                    filename[len(rel_cwd) + 1 :]
+                    for filename in glob.glob(rel_cwd + "/" + filenames)
                 )
-            args += ' ' + filenames
-            self._run_and_compare(path, args, int(data[1]),
-                                  [line.decode('utf8').strip()
-                                   for line in data[3:3 + stdout_lines]],
-                                  [line.decode('utf8').strip()
-                                   for line in data[3 + stdout_lines:]])
+            args += " " + filenames
+            self._run_and_compare(
+                path,
+                args,
+                int(data[1]),
+                [line.decode("utf8").strip() for line in data[3 : 3 + stdout_lines]],
+                [line.decode("utf8").strip() for line in data[3 + stdout_lines :]],
+            )
 
-    def _run_and_compare(
-            self,
-            definition_file,
-            args,
-            expected_status,
-            expected_out,
-            expected_err
-    ):
+    def _run_and_compare(self, definition_file, args, expected_status, expected_out, expected_err):
         rel_cwd = os.path.dirname(definition_file)
         cmd = BASE_CMD + self.get_extra_command_args(rel_cwd)
         cwd = os.path.join(self._root, rel_cwd)
         # command to reproduce, do not forget first two lines have special meaning
-        print("\ncd " + cwd + " && " + cmd + ' ' + args + " 2> <filename>")
+        print("\ncd " + cwd + " && " + cmd + " " + args + " 2> <filename>")
         (status, out, err) = run_shell_command(cmd, args, cwd)
-        self.assertEqual(expected_status, status, 'bad command status %s' % status)
-        prefix = 'Failed check in %s comparing to %s for command: %s' % (cwd, definition_file, cmd)
-        compare('\n'.join(expected_err), err.decode('utf8'), prefix=prefix, show_whitespace=True)
-        compare('\n'.join(expected_out), out.decode('utf8'), prefix=prefix, show_whitespace=True)
+        self.assertEqual(expected_status, status, "bad command status %s" % status)
+        prefix = "Failed check in %s comparing to %s for command: %s" % (cwd, definition_file, cmd)
+        compare("\n".join(expected_err), err.decode("utf8"), prefix=prefix, show_whitespace=True)
+        compare("\n".join(expected_out), out.decode("utf8"), prefix=prefix, show_whitespace=True)
 
 
 class NoRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
     """runs in a temporary folder (under /tmp in linux) without any .git/.hg/.svn file"""
 
     def get_extra_command_args(self, cwd):
-        return f' --repository {self._root} '
+        return f" --repository {self._root} "
 
     def _test_name_func(fun, _, x):
         del fun
-        return f'test{x.args[0].capitalize()}Sample-{x.args[1]}'
+        return f"test{x.args[0].capitalize()}Sample-{x.args[1]}"
 
-    @parameterized.expand([(folder, case[:-4])
-                           for folder in ['chromium', 'vlc', 'silly',
-                                          'boost', 'protobuf', 'codelite', 'v8']
-                           for case in os.listdir(f'./samples/{folder}-sample')
-                           if case.endswith('.def')],
-                          name_func=_test_name_func)
+    @parameterized.expand(
+        [
+            (folder, case[:-4])
+            for folder in ["chromium", "vlc", "silly", "boost", "protobuf", "codelite", "v8"]
+            for case in os.listdir(f"./samples/{folder}-sample")
+            if case.endswith(".def")
+        ],
+        name_func=_test_name_func,
+    )
     @mark.timeout(180)
     def testSamples(self, folder, case):
-        self.check_def(os.path.join(f'./samples/{folder}-sample', case + '.def'))
+        self.check_def(os.path.join(f"./samples/{folder}-sample", case + ".def"))
 
 
 class GitRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
@@ -200,11 +197,11 @@ class GitRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
 
     @classmethod
     def prepare_directory(cls, root):
-        with open(os.path.join(root, '.git'), 'a'):
+        with open(os.path.join(root, ".git"), "a"):
             pass
 
     def testCodeliteSample(self):
-        self.check_all_in_folder('./samples/codelite-sample', 1)
+        self.check_all_in_folder("./samples/codelite-sample", 1)
 
 
 class MercurialRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
@@ -212,11 +209,11 @@ class MercurialRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
 
     @classmethod
     def prepare_directory(cls, root):
-        with open(os.path.join(root, '.hg'), 'a'):
+        with open(os.path.join(root, ".hg"), "a"):
             pass
 
     def testCodeliteSample(self):
-        self.check_all_in_folder('./samples/codelite-sample', 1)
+        self.check_all_in_folder("./samples/codelite-sample", 1)
 
 
 class SvnRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
@@ -224,12 +221,12 @@ class SvnRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
 
     @classmethod
     def prepare_directory(cls, root):
-        with open(os.path.join(root, '.svn'), 'a'):
+        with open(os.path.join(root, ".svn"), "a"):
             pass
 
     def testCodeliteSample(self):
-        self.check_all_in_folder('./samples/codelite-sample', 1)
+        self.check_all_in_folder("./samples/codelite-sample", 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
