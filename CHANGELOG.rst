@@ -2,7 +2,7 @@
 Changelog
 *********
 
-2.0.1 (2025-03-09)
+2.0.1 (2025-03-10)
 ==================
 
 Yet another overdue... hotfix. Sorry this took so long.
