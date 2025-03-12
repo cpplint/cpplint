@@ -93,11 +93,12 @@ lint.select = [
   "PERF",  # Perflint
   "PGH",   # pygrep-hooks
   "PIE",   # flake8-pie
-  "PLC",   # Pylint conventions
-  "PLE",   # Pylint errors
+  "PL",    # Pylint
   "PYI",   # flake8-pyi
+  "Q",     # flake8-quotes
   "RET",   # flake8-return
   "RSE",   # flake8-raise
+  "SIM",   # flake8-simplify
   "SLOT",  # flake8-slots
   "T10",   # flake8-debugger
   "TC",    # flake8-type-checking
@@ -114,14 +115,10 @@ lint.select = [
   # "DOC", # pydoclint
   # "ERA", # eradicate
   # "N",   # pep8-naming
-  # "PLR", # Pylint refactor
-  # "PLW", # Pylint warnings
   # "PT",  # flake8-pytest-style
   # "PTH", # flake8-use-pathlib
-  # "Q",   # flake8-quotes
   # "RUF", # Ruff-specific rules
   # "S",   # flake8-bandit
-  # "SIM", # flake8-simplify
   # "SLF", # flake8-self
   # "T20", # flake8-print
   # "TD",  # flake8-todos
@@ -132,8 +129,8 @@ lint.ignore = [
   "ISC003", # flake8-implicit-str-concat
   "PIE790", # Unnecessary `pass` statement
 ]
-lint.per-file-ignores."cpplint.py" = [ "ICN001", "PERF401", "PLR5501", "PLW0603", "PLW2901" ]
-lint.per-file-ignores."cpplint_unittest.py" = [ "FLY002", "PLW0604", "UP031" ]
+lint.per-file-ignores."cpplint.py" = [ "ICN001", "PERF401", "PLR5501", "PLW0603", "PLW2901", "SIM102", "SIM108" ]
+lint.per-file-ignores."cpplint_unittest.py" = [ "FLY002", "PLW0604", "SIM115", "UP031" ]
 lint.mccabe.max-complexity = 29
 lint.pylint.allow-magic-value-types = [ "int", "str" ]
 lint.pylint.max-args = 10 # Default is 5

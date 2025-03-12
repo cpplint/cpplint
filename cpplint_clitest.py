@@ -30,6 +30,7 @@
 
 """Command Line interface integration test for cpplint.py."""
 
+import contextlib
 import glob
 import os
 import shutil
@@ -54,7 +55,7 @@ def run_shell_command(cmd: str, args: str, cwd="."):
         cwd: from which folder to run.
     """
     cmd, args = cmd.split(), args.split()
-    proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True)
+    proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True, check=False)
     out, err = proc.stdout, proc.stderr
 
     # Make output system-agnostic, aka support Windows
@@ -99,10 +100,8 @@ class TemporaryFolderClassSetup(unittest.TestCase):
             shutil.copytree("samples", os.path.join(cls._root, "samples"))
             cls.prepare_directory(cls._root)
         except Exception:
-            try:
+            with contextlib.suppress(Exception):
                 cls.tearDownClass()
-            except Exception:  # noqa: BLE001
-                pass
             raise
 
     @classmethod

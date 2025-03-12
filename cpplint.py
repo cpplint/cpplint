@@ -1326,11 +1326,10 @@ class _IncludeState:
         #
         # If previous line was a blank line, assume that the headers are
         # intentionally sorted the way they are.
-        if self._last_header > header_path and re.match(
-            r"^\s*#\s*include\b", clean_lines.elided[linenum - 1]
-        ):
-            return False
-        return True
+        return not (
+            self._last_header > header_path
+            and re.match(r"^\s*#\s*include\b", clean_lines.elided[linenum - 1])
+        )
 
     def CheckNextIncludeOrder(self, header_type):
         """Returns a non-empty error message if the next header is out of order.
@@ -1844,10 +1843,7 @@ def _ShouldPrintError(category, confidence, filename, linenum):
             # should have been checked for in SetFilter.
             msg = f"Invalid filter: {one_filter}"
             raise ValueError(msg)
-    if is_filtered:
-        return False
-
-    return True
+    return not is_filtered
 
 
 def Error(filename, linenum, category, confidence, message):
@@ -2262,11 +2258,10 @@ def FindEndOfExpressionInLine(line, startpos, stack):
 
             # Pop the stack if there is a matching '<'.  Otherwise, ignore
             # this '>' since it must be an operator.
-            if stack:
-                if stack[-1] == "<":
-                    stack.pop()
-                    if not stack:
-                        return (i + 1, None)
+            if stack and stack[-1] == "<":
+                stack.pop()
+                if not stack:
+                    return (i + 1, None)
         elif char == ";":
             # Found something that look like end of statements.  If we are currently
             # expecting a '>', the matching '<' must have been an operator, since
@@ -2963,10 +2958,7 @@ def IsMacroDefinition(clean_lines, linenum):
     if re.search(r"^#define", clean_lines[linenum]):
         return True
 
-    if linenum > 0 and re.search(r"\\$", clean_lines[linenum - 1]):
-        return True
-
-    return False
+    return bool(linenum > 0 and re.search(r"\\$", clean_lines[linenum - 1]))
 
 
 def IsForwardClassDeclaration(clean_lines, linenum):
@@ -4352,20 +4344,19 @@ def CheckParenthesisSpacing(filename, clean_lines, linenum, error):
         line,
     )
     if match:
-        if len(match.group(2)) != len(match.group(4)):
-            if not (
-                match.group(3) == ";"
-                and len(match.group(2)) == 1 + len(match.group(4))
-                or not match.group(2)
-                and re.search(r"\bfor\s*\(.*; \)", line)
-            ):
-                error(
-                    filename,
-                    linenum,
-                    "whitespace/parens",
-                    5,
-                    f"Mismatching spaces inside () in {match.group(1)}",
-                )
+        if len(match.group(2)) != len(match.group(4)) and not (
+            match.group(3) == ";"
+            and len(match.group(2)) == 1 + len(match.group(4))
+            or not match.group(2)
+            and re.search(r"\bfor\s*\(.*; \)", line)
+        ):
+            error(
+                filename,
+                linenum,
+                "whitespace/parens",
+                5,
+                f"Mismatching spaces inside () in {match.group(1)}",
+            )
         if len(match.group(2)) not in [0, 1]:
             error(
                 filename,
@@ -4586,9 +4577,7 @@ def IsDecltype(clean_lines, linenum, column):
     (text, _, start_col) = ReverseCloseExpression(clean_lines, linenum, column)
     if start_col < 0:
         return False
-    if re.search(r"\bdecltype\s*$", text[0:start_col]):
-        return True
-    return False
+    return bool(re.search(r"\bdecltype\s*$", text[0:start_col]))
 
 
 def CheckSectionSpacing(filename, clean_lines, class_info, linenum, error):
@@ -4761,23 +4750,18 @@ def CheckBraces(filename, clean_lines, linenum, error):
     # No control clauses with braces should have its contents on the same line
     # Exclude } which will be covered by empty-block detect
     # Exclude ; which may be used by while in a do-while
-    if keyword := re.search(
-        r"\b(else if|if|while|for|switch)"  # These have parens
-        r"\s*\(.*\)\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\};]",
-        line,
-    ):
-        error(
-            filename,
-            linenum,
-            "whitespace/newline",
-            5,
-            f"Controlled statements inside brackets of {keyword.group(1)} clause"
-            " should be on a separate line",
+    if (
+        keyword := re.search(
+            r"\b(else if|if|while|for|switch)"  # These have parens
+            r"\s*\(.*\)\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\};]",
+            line,
         )
-    elif keyword := re.search(
-        r"\b(else|do|try)"  # These don't have parens
-        r"\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\}]",
-        line,
+    ) or (
+        keyword := re.search(
+            r"\b(else|do|try)"  # These don't have parens
+            r"\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\}]",
+            line,
+        )
     ):
         error(
             filename,
@@ -5430,10 +5414,9 @@ def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state, er
         )
 
     # Check if the line is a header guard.
-    is_header_guard = False
-    if IsHeaderExtension(file_extension):
-        if line.startswith((f"#ifndef {cppvar}", f"#define {cppvar}", f"#endif  // {cppvar}")):
-            is_header_guard = True
+    is_header_guard = IsHeaderExtension(file_extension) and line.startswith(
+        (f"#ifndef {cppvar}", f"#define {cppvar}", f"#endif  // {cppvar}")
+    )
     # #include lines and header guards can be long, since there's no clean way to
     # split them.
     #
@@ -5648,17 +5631,18 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
     # We also make an exception for Lua headers, which follow google
     # naming convention but not the include convention.
     match = re.match(r'#include\s*"([^/]+\.(.*))"', line)
-    if match:
-        if IsHeaderExtension(match.group(2)) and not _THIRD_PARTY_HEADERS_PATTERN.match(
-            match.group(1)
-        ):
-            error(
-                filename,
-                linenum,
-                "build/include_subdir",
-                4,
-                "Include the directory when naming header files",
-            )
+    if (
+        match
+        and IsHeaderExtension(match.group(2))
+        and not _THIRD_PARTY_HEADERS_PATTERN.match(match.group(1))
+    ):
+        error(
+            filename,
+            linenum,
+            "build/include_subdir",
+            4,
+            "Include the directory when naming header files",
+        )
 
     # we shouldn't include a file more than once. actually, there are a
     # handful of instances where doing so is okay, but in general it's
@@ -6326,8 +6310,7 @@ def CheckForNonConstReference(filename, clean_lines, linenum, nesting_state, err
     # function body, including one that was just introduced by a trailing '{'.
     # TODO(unknown): Doesn't account for 'catch(Exception& e)' [rare].
     if nesting_state.previous_stack_top and not (
-        isinstance(nesting_state.previous_stack_top, _ClassInfo)
-        or isinstance(nesting_state.previous_stack_top, _NamespaceInfo)
+        isinstance(nesting_state.previous_stack_top, (_ClassInfo, _NamespaceInfo))
     ):
         # Not at toplevel, not within a class, and not within a namespace
         return
