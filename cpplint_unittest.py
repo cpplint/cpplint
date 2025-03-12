@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8; -*-
 #
 # Copyright (c) 2009 Google Inc. All rights reserved.
 #
@@ -51,15 +50,13 @@ import cpplint
 
 
 def codecs_latin_encode(x):
-    if sys.version_info < (3,):
-        return x
     return codecs.latin_1_encode(x)[0]
 
 
 # This class works as an error collector and replaces cpplint.Error
 # function for the unit tests.  We also verify each category we see
 # is in cpplint._ERROR_CATEGORIES, to help keep that list up to date.
-class ErrorCollector(object):
+class ErrorCollector:
     # These are a global list, covering all categories seen ever.
     _ERROR_CATEGORIES = cpplint._ERROR_CATEGORIES
     _SEEN_ERROR_CATEGORIES = {}
@@ -110,7 +107,7 @@ class ErrorCollector(object):
 
 # This class is a lame mock of codecs. We do not verify filename, mode, or
 # encoding, but for the current use case it is not needed.
-class MockIo(object):
+class MockIo:
     def __init__(self, mock_file):
         # wrap list to allow "with open(mock)"
         class EnterableList(list):
@@ -357,7 +354,7 @@ class CpplintTest(CpplintTestBase):
     # Test get line width.
     def testGetLineWidth(self):
         self.assertEqual(0, cpplint.GetLineWidth(""))
-        self.assertEqual(10, cpplint.GetLineWidth(str("x") * 10))
+        self.assertEqual(10, cpplint.GetLineWidth("x" * 10))
         self.assertEqual(16, cpplint.GetLineWidth("\u90fd|\u9053|\u5e9c|\u770c|\u652f\u5e81"))
         self.assertEqual(16, cpplint.GetLineWidth("都|道|府|県|支庁"))
         self.assertEqual(5 + 13 + 9, cpplint.GetLineWidth("d𝐱/dt" + "f : t ⨯ 𝐱 → ℝ" + "t ⨯ 𝐱 → ℝ"))
@@ -1056,21 +1053,17 @@ class CpplintTest(CpplintTestBase):
         self.assertEqual(
             0,
             error_collector.Results().count(
-                (
-                    "Using deprecated casting style.  "
-                    "Use static_cast<bool>(...) instead  "
-                    "[readability/casting] [4]"
-                )
+                "Using deprecated casting style.  "
+                "Use static_cast<bool>(...) instead  "
+                "[readability/casting] [4]"
             ),
         )
         self.assertEqual(
             1,
             error_collector.Results().count(
-                (
-                    "Using deprecated casting style.  "
-                    "Use static_cast<int>(...) instead  "
-                    "[readability/casting] [4]"
-                )
+                "Using deprecated casting style.  "
+                "Use static_cast<int>(...) instead  "
+                "[readability/casting] [4]"
             ),
         )
 
@@ -4842,9 +4835,7 @@ class CpplintTest(CpplintTestBase):
 
             expected = [os.path.join("src", "one.cc")]
             cpplint._excludes = None
-            actual = cpplint.ParseArguments(
-                ["--recursive", "--exclude=src{0}t*".format(os.sep), "src"]
-            )
+            actual = cpplint.ParseArguments(["--recursive", f"--exclude=src{os.sep}t*", "src"])
             self.assertEqual(set(expected), set(actual))
 
             expected = [os.path.join("src", "one.cc")]

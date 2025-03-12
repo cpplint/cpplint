@@ -103,6 +103,7 @@ lint.select = [
   "TC",    # flake8-type-checking
   "TID",   # flake8-tidy-imports
   "TRY",   # tryceratops
+  "UP",    # pyupgrade
   "W",     # pycodestyle
   "YTT",   # flake8-2020
   # "ANN", # flake8-annotations
@@ -124,7 +125,6 @@ lint.select = [
   # "SLF", # flake8-self
   # "T20", # flake8-print
   # "TD",  # flake8-todos
-  # "UP",  # pyupgrade
 ]
 lint.ignore = [
   "FBT003", # flake8-boolean-trap
@@ -133,7 +133,7 @@ lint.ignore = [
   "PIE790", # Unnecessary `pass` statement
 ]
 lint.per-file-ignores."cpplint.py" = [ "ICN001", "PERF401", "PLR5501", "PLW0603", "PLW2901" ]
-lint.per-file-ignores."cpplint_unittest.py" = [ "FLY002", "PLW0604" ]
+lint.per-file-ignores."cpplint_unittest.py" = [ "FLY002", "PLW0604", "UP031" ]
 lint.mccabe.max-complexity = 29
 lint.pylint.allow-magic-value-types = [ "int", "str" ]
 lint.pylint.max-args = 10 # Default is 5
@@ -145,13 +145,13 @@ lint.pylint.max-returns = 9 # Default is 9
 lint.pylint.max-statements = 74 # Default is 50
 
 [tool.pylint.basic]
-include-naming-hint = true
-method-rgx = "[A-Z_][A-Za-z0-9]{2,49}$|__init__|__str__|__contains__"
-function-rgx = "[A-Z_][A-Za-z0-9]{2,49}$|main"
-const-rgx = "[a-zA-Z_][A-Za-z0-9_]{2,49}$"
-variable-rgx = "[a-z_][a-z0-9_]{0,49}$"
 argument-rgx = "[a-z_][a-z0-9_]{0,49}$"
 class-rgx = "[A-Z_][a-zA-Z0-9]+$"
+const-rgx = "[a-zA-Z_][A-Za-z0-9_]{2,49}$"
+function-rgx = "[A-Z_][A-Za-z0-9]{2,49}$|main"
+include-naming-hint = true
+method-rgx = "[A-Z_][A-Za-z0-9]{2,49}$|__init__|__str__|__contains__"
+variable-rgx = "[a-z_][a-z0-9_]{0,49}$"
 
 [tool.pylint.messages-control]
 disable = [
@@ -180,25 +180,25 @@ reports = false
 score = false
 
 [tool.pylint.format]
-indent-string = '    '
 indent-after-paren = 4
+indent-string = '    '
 max-module-lines = 10000
 
 [tool.pylint.design]
-max-locals = 25
-max-line-length = 100
-max-attributes = 10
-max-branches = 30
 max-args = 20
-max-statements = 75
-max-returns = 10
-min-public-methods = 0
+max-attributes = 10
 max-bool-expr = 10
+max-branches = 30
+max-line-length = 100
+max-locals = 25
+max-returns = 10
+max-statements = 75
+min-public-methods = 0
 
 [tool.pytest.ini_options]
-python_files = [ "*test.py" ]
-testpaths = [ "." ]
-required_plugins = [ "pytest-cov", "pytest-timeout" ]
-timeout = 60
 # fail if coverage is under 90%
 addopts = "--color=yes --cov-fail-under=90 --cov=cpplint"
+python_files = [ "*test.py" ]
+required_plugins = [ "pytest-cov", "pytest-timeout" ]
+testpaths = [ "." ]
+timeout = 60

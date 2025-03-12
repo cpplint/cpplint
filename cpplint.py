@@ -1214,7 +1214,7 @@ def _IsSourceExtension(s):
     return s in GetNonHeaderExtensions()
 
 
-class _IncludeState(object):
+class _IncludeState:
     """Tracks line numbers for includes, and the order in which includes appear.
 
     include_list contains list of lists of (header, line number) pairs.
@@ -1392,7 +1392,7 @@ class _IncludeState(object):
         return ""
 
 
-class _CppLintState(object):
+class _CppLintState:
     """Maintains module-wide state.."""
 
     def __init__(self):
@@ -1637,7 +1637,7 @@ def _RestoreFilters():
     _cpplint_state.RestoreFilters()
 
 
-class _FunctionState(object):
+class _FunctionState:
     """Tracks current function name and the number of lines in its body."""
 
     _NORMAL_TRIGGER = 250  # for --v=0, 500 for --v=1, etc.
@@ -1705,7 +1705,7 @@ class _IncludeError(Exception):
     pass
 
 
-class FileInfo(object):
+class FileInfo:
     """Provides utility functions for filenames.
 
     FileInfo provides easy access to the components of a file's path
@@ -2104,7 +2104,7 @@ def ReplaceAlternateTokens(line):
     return line
 
 
-class CleansedLines(object):
+class CleansedLines:
     """Holds 4 copies of all lines with different preprocessing applied to them.
 
     1) elided member contains lines without strings and comments.
@@ -2973,7 +2973,7 @@ def IsForwardClassDeclaration(clean_lines, linenum):
     return re.match(r"^\s*(\btemplate\b)*.*class\s+\w+;\s*$", clean_lines[linenum])
 
 
-class _BlockInfo(object):
+class _BlockInfo:
     """Stores information about a generic block of code."""
 
     def __init__(self, linenum, seen_open_brace):
@@ -3188,7 +3188,7 @@ class _NamespaceInfo(_BlockInfo):
                     )
 
 
-class _PreprocessorInfo(object):
+class _PreprocessorInfo:
     """Stores checkpoints of nesting stacks when #if/#else is seen."""
 
     def __init__(self, stack_before_if):
@@ -3202,7 +3202,7 @@ class _PreprocessorInfo(object):
         self.seen_else = False
 
 
-class NestingState(object):
+class NestingState:
     """Holds states related to parsing braces."""
 
     def __init__(self):
@@ -7417,7 +7417,7 @@ def ProcessConfigOverrides(filename):
                             f"Invalid configuration option ({name}) in file {cfg_file}\n"
                         )
 
-        except IOError:
+        except OSError:
             _cpplint_state.PrintError(
                 f"Skipping config file '{cfg_file}': Can't open for reading\n"
             )
@@ -7478,7 +7478,7 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
             else:
                 lf_lines.append(linenum + 1)
 
-    except IOError:
+    except OSError:
         # TODO: Maybe make this have an exit code of 2 after all is done
         _cpplint_state.PrintError(f"Skipping input '{filename}': Can't open for reading\n")
         _RestoreFilters()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8; -*-
 #
 # Copyright (c) 2009 Google Inc. All rights reserved.
 #
@@ -162,8 +161,8 @@ class TemporaryFolderClassSetup(unittest.TestCase):
         # command to reproduce, do not forget first two lines have special meaning
         print("\ncd " + cwd + " && " + cmd + " " + args + " 2> <filename>")
         (status, out, err) = run_shell_command(cmd, args, cwd)
-        self.assertEqual(expected_status, status, "bad command status %s" % status)
-        prefix = "Failed check in %s comparing to %s for command: %s" % (cwd, definition_file, cmd)
+        self.assertEqual(expected_status, status, f"bad command status {status}")
+        prefix = f"Failed check in {cwd} comparing to {definition_file} for command: {cmd}"
         compare("\n".join(expected_err), err.decode("utf8"), prefix=prefix, show_whitespace=True)
         compare("\n".join(expected_out), out.decode("utf8"), prefix=prefix, show_whitespace=True)
 
