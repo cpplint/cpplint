@@ -94,6 +94,7 @@ lint.select = [
   "PGH",   # pygrep-hooks
   "PIE",   # flake8-pie
   "PL",    # Pylint
+  "PT",    # flake8-pytest-style
   "PYI",   # flake8-pyi
   "Q",     # flake8-quotes
   "RET",   # flake8-return
@@ -115,7 +116,6 @@ lint.select = [
   # "DOC", # pydoclint
   # "ERA", # eradicate
   # "N",   # pep8-naming
-  # "PT",  # flake8-pytest-style
   # "PTH", # flake8-use-pathlib
   # "RUF", # Ruff-specific rules
   # "S",   # flake8-bandit
@@ -132,14 +132,14 @@ lint.ignore = [
 lint.per-file-ignores."cpplint.py" = [ "ICN001", "PERF401", "PLR5501", "PLW0603", "PLW2901", "SIM102", "SIM108" ]
 lint.per-file-ignores."cpplint_unittest.py" = [ "FLY002", "PLW0604", "SIM115", "UP031" ]
 lint.mccabe.max-complexity = 29
-lint.pylint.allow-magic-value-types = [ "int", "str" ]
+lint.pylint.allow-magic-value-types = [ "bytes", "int", "str" ]
 lint.pylint.max-args = 10 # Default is 5
 lint.pylint.max-bool-expr = 8 # Default is 5
 lint.pylint.max-branches = 30 # Default is 12
 lint.pylint.max-locals = 16 # Default is 15
 lint.pylint.max-public-methods = 130 # Default is 20
 lint.pylint.max-returns = 9 # Default is 9
-lint.pylint.max-statements = 74 # Default is 50
+lint.pylint.max-statements = 79 # Default is 50
 
 [tool.pylint.basic]
 argument-rgx = "[a-z_][a-z0-9_]{0,49}$"
@@ -189,7 +189,7 @@ max-branches = 30
 max-line-length = 100
 max-locals = 25
 max-returns = 10
-max-statements = 75
+max-statements = 79
 min-public-methods = 0
 
 [tool.pytest.ini_options]
