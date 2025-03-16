@@ -176,10 +176,6 @@ class TestNoRepoSignature(TemporaryFolderClassSetup):
     def get_extra_command_args(self, cwd):
         return f" --repository {self._root} "
 
-    def _test_name_func(self, _, x):
-        del self
-        return f"test{x.args[0].capitalize()}Sample-{x.args[1]}"
-
     @parameterized.expand(
         [
             (folder, case[:-4])
@@ -187,7 +183,7 @@ class TestNoRepoSignature(TemporaryFolderClassSetup):
             for case in os.listdir(f"./samples/{folder}-sample")
             if case.endswith(".def")
         ],
-        name_func=_test_name_func,
+        name_func=lambda fun, _, x: f"test{x.args[0].capitalize()}Sample-{x.args[1]}",
     )
     @pytest.mark.timeout(180)
     def testSamples(self, folder, case):
