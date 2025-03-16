@@ -7184,7 +7184,6 @@ def run_around_tests(pytestconfig: pytest.Config):
     assert pytestconfig.getoption("-k", default=None) in [None, ""]
     if pytestconfig.getoption("-k", default=None) in [None, ""]:
         ErrorCollector(None).VerifyAllCategoriesAreSeen()
-        print("IIIIIIIIII saw the TV glow")
 
 
 if __name__ == "__main__":
