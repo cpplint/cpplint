@@ -7160,39 +7160,18 @@ def setUp():
     cpplint._cpplint_state.SetFilters("")
 
 
-# pylint: disable=C6409
-def tearDown():
-    """A global check to make sure all error-categories have been tested.
-
-    The main tearDown() routine is the only code we can guarantee will be
-    run after all other tests have been executed.
-    """
-    try:
-        if _run_verifyallcategoriesseen:
-            ErrorCollector(None).VerifyAllCategoriesAreSeen()
-    except NameError:
-        # If nobody set the global _run_verifyallcategoriesseen, then
-        # we assume we should silently not run the test
-        pass
-
-
-@pytest.fixture(autouse=True)
-def run_around_tests():
+@pytest.fixture(autouse=True, scope="session")
+def run_around_tests(pytestconfig: pytest.Config):
     setUp()
     yield
-    tearDown()
-
-
-if __name__ == "__main__":
     # We don't want to run the VerifyAllCategoriesAreSeen() test unless
     # we're running the full test suite: if we only run one test,
     # obviously we're not going to see all the error categories.  So we
-    # only run VerifyAllCategoriesAreSeen() when no commandline flags
-    # are passed in.
+    # only run VerifyAllCategoriesAreSeen() when we don't filter for
+    # specific tests.
+    if pytestconfig.getoption("-k", default=None) is None:
+        ErrorCollector(None).VerifyAllCategoriesAreSeen()
 
-    global _run_verifyallcategoriesseen
-    _run_verifyallcategoriesseen = len(sys.argv) == 1
 
-    setUp()
+if __name__ == "__main__":
     pytest.main([__file__])
-    tearDown()
