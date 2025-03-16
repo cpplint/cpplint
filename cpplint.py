@@ -323,7 +323,6 @@ _ERROR_CATEGORIES = [
     "readability/namespace",
     "readability/nolint",
     "readability/nul",
-    "readability/strings",
     "readability/todo",
     "readability/utf8",
     "runtime/arrays",

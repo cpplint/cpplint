@@ -5115,6 +5115,18 @@ class TestCpplint(CpplintTestBase):
             "  [build/forward_decl] [5]",
         )
 
+    def testBuildDeprecated(self):
+        self.TestLint(
+            "a <? b",
+            ">? and <? (max and min) operators are non-standard and deprecated."
+            "  [build/deprecated] [3]",
+        )
+        self.TestLint(
+            "c >?= b",
+            ">? and <? (max and min) operators are non-standard and deprecated."
+            "  [build/deprecated] [3]",
+        )
+
     def GetBuildHeaderGuardPreprocessorSymbol(self, file_path):
         # Figure out the expected header guard by processing an empty file.
         error_collector = ErrorCollector(self.assertTrue)
@@ -7169,8 +7181,10 @@ def run_around_tests(pytestconfig: pytest.Config):
     # obviously we're not going to see all the error categories.  So we
     # only run VerifyAllCategoriesAreSeen() when we don't filter for
     # specific tests.
-    if pytestconfig.getoption("-k", default=None) is None:
+    assert pytestconfig.getoption("-k", default=None) in [None, ""]
+    if pytestconfig.getoption("-k", default=None) in [None, ""]:
         ErrorCollector(None).VerifyAllCategoriesAreSeen()
+        print("IIIIIIIIII saw the TV glow")
 
 
 if __name__ == "__main__":
