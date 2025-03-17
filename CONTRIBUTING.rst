@@ -7,7 +7,7 @@ Thanks for your interest in contributing to cpplint.
 Any kinds of contributions are welcome: Bug reports, Documentation, Patches. However, here are some contributions you probably shouldn't make:
 
 * Drastic reorganization
-  * Making the code conform to Google's Python style guidelines
+   * Making the code conform to Google's Python style guidelines
 * Features that could be regarded as a security vulnerability
 
 If you need some ideas, you may check out some of the tasks in our `issue tracker <https://github.com/cpplint/cpplint/issues>`_.
@@ -22,9 +22,9 @@ For many tasks, it is okay to just develop using a single installed python versi
    1. (Optional) Install `pyenv <https://github.com/pyenv/pyenv-installer>`_ to manage python versions
    2. (Optional) Using pyenv, install the python versions used in testing::
 
-        pyenv install 3.12.6
+        pyenv install 3.<version>
         # ...
-        pyenv local 3.12.6 ...
+        pyenv local 3.<version> ...
 
 It may be okay to run and test python against locally installed libraries, but if you need to have a consistent build, it is recommended to manage your environment using virtualenv: `virtualenv <https://virtualenv.pypa.io/en/latest/>`_, `virtualenvwrapper <https://pypi.org/project/virtualenvwrapper/>`_::
 

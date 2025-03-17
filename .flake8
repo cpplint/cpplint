@@ -8,6 +8,8 @@ ignore =
     E302,E305,
     # closing bracket does not match indentation of opening bracket's line
     E123,
+    # whitespace before ':'
+    E203,
     # multiple spaces before operator
     E221,
     # line break before binary operator
@@ -36,4 +38,4 @@ ignore =
     E226,
     # test for membership should be 'not in'
     E713,
-max-line-length=120
+max-line-length=100

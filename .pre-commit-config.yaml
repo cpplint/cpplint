@@ -15,9 +15,10 @@ repos:
           - tomli
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.9
+    rev: v0.11.0
     hooks:
       - id: ruff
+      - id: ruff-format
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.1.2
@@ -30,6 +31,6 @@ repos:
       - id: pyproject-fmt
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.23
+    rev: v0.24
     hooks:
       - id: validate-pyproject
