@@ -56,7 +56,7 @@ def run_shell_command(cmd: str, args: str, cwd="."):
         cwd: from which folder to run.
     """
     cmd, args = cmd.split(), args.split()
-    proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True, check=False)
+    proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True, check=True)
     out, err = proc.stdout, proc.stderr
 
     # Make output system-agnostic, aka support Windows
