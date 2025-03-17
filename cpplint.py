@@ -407,9 +407,9 @@ _OTHER_NOLINT_CATEGORY_PREFIXES = [
 # off by default (i.e., categories that must be enabled by the --filter= flags).
 # All entries here should start with a '-' or '+', as in the --filter= flag.
 _DEFAULT_FILTERS = [
-    '-build/include_alpha',
-    '-readability/fn_size',
-    '-runtime/references',
+    "-build/include_alpha",
+    "-readability/fn_size",
+    "-runtime/references",
 ]
 
 # The default list of categories suppressed for C (not C++) files.
