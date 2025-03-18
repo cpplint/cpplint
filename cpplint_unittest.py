@@ -32,6 +32,8 @@
 
 # TODO(unknown): Add a good test that tests UpdateIncludeState.
 
+from __future__ import annotations
+
 import codecs
 import os
 import platform
@@ -43,7 +45,7 @@ import sys
 import tempfile
 
 import pytest
-from parameterized import parameterized
+from parameterized import parameterized  # type: ignore[import-untyped]
 
 import cpplint
 
@@ -58,7 +60,7 @@ def codecs_latin_encode(x):
 class ErrorCollector:
     # These are a global list, covering all categories seen ever.
     _ERROR_CATEGORIES = cpplint._ERROR_CATEGORIES
-    _SEEN_ERROR_CATEGORIES = {}
+    _SEEN_ERROR_CATEGORIES: dict[str, str] = {}
 
     def __init__(self, assert_fn):
         """assert_fn: a function to call when we notice a problem."""

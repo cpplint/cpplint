@@ -41,6 +41,8 @@ We do a small hack, which is to ignore //'s with "'s after them on the
 same line, but it is far from perfect (in either direction).
 """
 
+from __future__ import annotations
+
 import codecs
 import collections
 import copy
@@ -57,7 +59,7 @@ import unicodedata
 import xml.etree.ElementTree
 
 # if empty, use defaults
-_valid_extensions = set()
+_valid_extensions: set[str] = set()
 
 __VERSION__ = "2.0.1"
 
@@ -830,7 +832,7 @@ _CHECK_MACROS = [
 ]
 
 # Replacement macros for CHECK/DCHECK/EXPECT_TRUE/EXPECT_FALSE
-_CHECK_REPLACEMENT = {macro_var: {} for macro_var in _CHECK_MACROS}
+_CHECK_REPLACEMENT: dict[str, dict[str, str]] = {macro_var: {} for macro_var in _CHECK_MACROS}
 
 for op, replacement in [
     ("==", "EQ"),
@@ -934,7 +936,7 @@ _SED_FIXUPS = {
 
 # {str, set(int)}: a map from error categories to sets of linenumbers
 # on which those errors are expected and should be suppressed.
-_error_suppressions = {}
+_error_suppressions: dict[str, set[int]] = {}
 
 # The root directory used for deriving header guard CPP variable.
 # This is set by --root flag.
@@ -964,7 +966,7 @@ _config_filename = "CPPLINT.cfg"
 
 # Treat all headers starting with 'h' equally: .h, .hpp, .hxx etc.
 # This is set by --headers flag.
-_hpp_headers = set()
+_hpp_headers: set[str] = set()
 
 
 class ErrorSuppressions:
@@ -1034,7 +1036,7 @@ class ErrorSuppressions:
         self._open_block_suppression = None
 
 
-_error_suppressions = ErrorSuppressions()
+_error_suppressions = ErrorSuppressions()  # type: ignore[assignment]
 
 
 def ProcessHppHeadersOption(val):
@@ -6609,7 +6611,7 @@ def ExpectingFunctionArgs(clean_lines, linenum):
     )
 
 
-_HEADERS_CONTAINING_TEMPLATES = (
+_HEADERS_CONTAINING_TEMPLATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("<deque>", ("deque",)),
     (
         "<functional>",
@@ -6705,7 +6707,7 @@ _HEADERS_CONTAINING_TEMPLATES = (
     ("<slist>", ("slist",)),
 )
 
-_HEADERS_MAYBE_TEMPLATES = (
+_HEADERS_MAYBE_TEMPLATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "<algorithm>",
         (
@@ -6721,7 +6723,7 @@ _HEADERS_MAYBE_TEMPLATES = (
 )
 
 # Non templated types or global objects
-_HEADERS_TYPES_OR_OBJS = (
+_HEADERS_TYPES_OR_OBJS: tuple[tuple[str, tuple[str, ...]], ...] = (
     # String and others are special -- it is a non-templatized type in STL.
     ("<string>", ("string",)),
     ("<iostream>", ("cin", "cout", "cerr", "clog", "wcin", "wcout", "wcerr", "wclog")),
@@ -6729,7 +6731,7 @@ _HEADERS_TYPES_OR_OBJS = (
 )
 
 # Non templated functions
-_HEADERS_FUNCTIONS = (
+_HEADERS_FUNCTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "<cstdio>",
         (
@@ -6780,7 +6782,7 @@ _HEADERS_FUNCTIONS = (
     ),
 )
 
-_re_pattern_headers_maybe_templates = []
+_re_pattern_headers_maybe_templates: list[tuple[re.Pattern, str, str]] = []
 for _header, _templates in _HEADERS_MAYBE_TEMPLATES:
     # Match max<type>(..., ...), max(..., ...), but not foo->max, foo.max or
     # 'type::max()'.
@@ -6796,7 +6798,7 @@ _re_pattern_headers_maybe_templates.append(
 )
 
 # Other scripts may reach in and modify this pattern.
-_re_pattern_templates = []
+_re_pattern_templates: list[tuple[re.Pattern, str, str]] = []
 for _header, _templates in _HEADERS_CONTAINING_TEMPLATES:
     _re_pattern_templates.extend(
         (
@@ -6807,14 +6809,14 @@ for _header, _templates in _HEADERS_CONTAINING_TEMPLATES:
         for _template in _templates
     )
 
-_re_pattern_types_or_objs = []
+_re_pattern_types_or_objs: list[tuple[re.Pattern, object | type, str]] = []
 for _header, _types_or_objs in _HEADERS_TYPES_OR_OBJS:
     _re_pattern_types_or_objs.extend(
         (re.compile(r"\b" + _type_or_obj + r"\b"), _type_or_obj, _header)
         for _type_or_obj in _types_or_objs
     )
 
-_re_pattern_functions = []
+_re_pattern_functions: list[tuple[re.Pattern, str, str]] = []
 for _header, _functions in _HEADERS_FUNCTIONS:
     # Match printf(..., ...), but not foo->printf, foo.printf or
     # 'type::printf()'.

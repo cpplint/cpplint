@@ -30,6 +30,8 @@
 
 """Command Line interface integration test for cpplint.py."""
 
+from __future__ import annotations
+
 import contextlib
 import glob
 import os
@@ -39,15 +41,15 @@ import sys
 import tempfile
 
 import pytest
-from parameterized import parameterized
-from testfixtures import compare
+from parameterized import parameterized  # type: ignore[import-untyped]
+from testfixtures import compare  # type: ignore[import-untyped]
 
 import cpplint  # noqa: F401
 
 BASE_CMD = sys.executable + " " + os.path.abspath("./cpplint.py ")
 
 
-def run_shell_command(cmd: str, args: str, cwd="."):
+def run_shell_command(cmd: str, args: str, cwd: str = ".") -> tuple[int, bytes, bytes]:
     """Executes a command
 
     Args:
@@ -55,7 +57,7 @@ def run_shell_command(cmd: str, args: str, cwd="."):
         args: A string with arguments to the command.
         cwd: from which folder to run.
     """
-    cmd, args = cmd.split(), args.split()
+    cmd, args = cmd.split(), args.split()  # type: ignore[assignment]
     proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True, check=False)
     out, err = proc.stdout, proc.stderr
 
