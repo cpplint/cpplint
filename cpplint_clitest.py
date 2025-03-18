@@ -183,7 +183,7 @@ class TestNoRepoSignature(TemporaryFolderClassSetup):
             for case in os.listdir(f"./samples/{folder}-sample")
             if case.endswith(".def")
         ],
-        name_func=lambda fun, _, x: f"test{x.args[0].capitalize()}Sample-{x.args[1]}",
+        name_func=lambda fun, _, x: f"test_{x.args[0]}_sample-{x.args[1]}",
     )
     @pytest.mark.timeout(180)
     def test_samples(self, folder, case):
