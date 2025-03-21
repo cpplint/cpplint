@@ -36,6 +36,11 @@ Alternatively, you can locally install patches like this::
     pip install -e .[dev]
     # for usage without virtualenv, add --user
 
+Please install pre-commit locally to run the linters before committing::
+
+    pipx install pre-commit
+    pre-commit install
+
 Pull requests
 -------------
 
@@ -66,9 +71,9 @@ You can test your changes under your local python environment by running the tes
     pytest
     # lint the code
     pylint cpplint.py
-    flake8
+    pre-commit run --all-files
 
-Alternatively, you can run `tox` to automatically run all tests and lints. Use `-e ` followed by the python runner and version (which you must have installed) to automatically generate the testing environment and run the above tests and lints in it. For example, `tox -e py39` does the steps in Python 3.9, `tox -e py312` does the steps in Python 3.12, and `tox -e pypy3` does the steps using the latest version of the pypy interpreter.
+Alternatively, you can run `tox` to automatically run all tests and lints. Use `-e ` followed by the python runner and version (which you must have installed) to automatically generate the testing environment and run the above tests and lints in it. For example, `tox -e py39` does the steps in Python 3.9, `tox -e py313` does the steps in Python 3.13, and `tox -e pypy3` does the steps using the latest version of the pypy interpreter.
 
 Releasing
 =========
@@ -116,14 +121,14 @@ To incorporate google's changes:
     git fetch google gh-pages
 
     ## Merge workflow (clean, no new commits)
-    git checkout master -b updates
+    git checkout develop -b updates
     git merge google/gh-pages # this will have a lot of conflicts
     # ... solve conflicts
     git merge -- continue
 
     ## Rebase workflow (dirty, creates new commits)
     git checkout -b updates FETCH_HEAD
-    git rebase master # this will have a lot of conflicts, most of which can be solved with the next command (run repeatedly)
+    git rebase develop # this will have a lot of conflicts, most of which can be solved with the next command (run repeatedly)
     # solve conflicts with files deleted in our fork (this is idempotent and safe to be called. when cpplint.py has conflicts, it will do nothing)
     git status | grep 'new file:' | awk '{print $3}' | xargs -r git rm --cached ; git status | grep 'deleted by us' | awk '{print $4}' | xargs -r git rm
     git status --untracked-files=no | grep 'nothing to commit' && git rebase --skip
@@ -132,7 +137,7 @@ To incorporate google's changes:
     # check github action
     git push origin --delete updates
 
-    git rebase updates master
+    git rebase updates develop
     git branch -D updates
     git push
 
@@ -156,5 +161,5 @@ To compare this for with upstream (after git fetch):
 
 .. code-block:: bash
 
-    git diff google/gh-pages:cpplint/cpplint.py master:cpplint.py
-    git diff google/gh-pages:cpplint/cpplint_unittest.py master:cpplint_unittest.py
+    git diff google/gh-pages:cpplint/cpplint.py develop:cpplint.py
+    git diff google/gh-pages:cpplint/cpplint_unittest.py develop:cpplint_unittest.py
