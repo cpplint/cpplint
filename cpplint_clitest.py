@@ -95,9 +95,9 @@ class TemporaryFolderClassSetup:
     systemerr output (two blank lines at end).
     """
 
-    @pytest.fixture(autouse=True, name="setUpClass()", scope="class")
     @classmethod
-    def setUpClass(cls):
+    @pytest.fixture(autouse=True, name="set_up()", scope="class")
+    def set_up(cls):
         """setup tmp folder for testing with samples and custom additions by subclasses"""
         try:
             cls._root = os.path.realpath(tempfile.mkdtemp())
@@ -105,13 +105,13 @@ class TemporaryFolderClassSetup:
             cls.prepare_directory(cls._root)
         except Exception:
             with contextlib.suppress(Exception):
-                cls.tearDownClass()
+                cls.tear_down()
             raise
         # yield
-        # cls.tearDownClass()
+        # cls.tear_down()
 
     @classmethod
-    def tearDownClass(cls):
+    def tear_down(cls):
         if cls._root:
             # pass
             shutil.rmtree(cls._root)
