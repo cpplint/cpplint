@@ -95,8 +95,8 @@ class TemporaryFolderClassSetup:
     systemerr output (two blank lines at end).
     """
 
-    @classmethod
     @pytest.fixture(autouse=True, name="set_up()", scope="class")
+    @classmethod
     def set_up(cls):
         """setup tmp folder for testing with samples and custom additions by subclasses"""
         try:
