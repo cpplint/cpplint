@@ -5257,7 +5257,8 @@ class TestCpplint(CpplintTestBase):
             ],
             error_collector,
         )
-        assert not any("build/header_guard" in line for line in error_collector.ResultList())
+        for line in error_collector.ResultList():
+            assert "build/header_guard" not in line
 
         # No header guard errors for old-style guard
         error_collector = ErrorCollector(self.assertTrue)
@@ -5271,7 +5272,8 @@ class TestCpplint(CpplintTestBase):
             ],
             error_collector,
         )
-        assert not any("build/header_guard" in line for line in error_collector.ResultList())
+        for line in error_collector.ResultList():
+            assert "build/header_guard" not in line
 
         old_verbose_level = cpplint._cpplint_state.verbose_level
         try:
@@ -5815,13 +5817,15 @@ class TestCpplint(CpplintTestBase):
         # Test that warning isn't issued if Copyright line appears early enough.
         error_collector = ErrorCollector(self.assertTrue)
         cpplint.ProcessFileData(file_path, "cc", [copyright_line], error_collector)
-        assert not any("legal/copyright" in line for line in error_collector.ResultList())
+        for line in error_collector.ResultList():
+            assert "legal/copyright" not in line
 
         error_collector = ErrorCollector(self.assertTrue)
         cpplint.ProcessFileData(
             file_path, "cc", ["" for unused_i in range(9)] + [copyright_line], error_collector
         )
-        assert not any("legal/copyright" in line for line in error_collector.ResultList())
+        for line in error_collector.ResultList():
+            assert "legal/copyright" not in line
 
     def testInvalidIncrement(self):
         self.TestLint(
