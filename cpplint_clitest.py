@@ -77,12 +77,11 @@ def run_shell_command(cmd: str, args: str, cwd: str = ".") -> tuple[int, bytes, 
     return proc.returncode, out, err
 
 
-class TestUsage:
-    def test_help(self):
-        (status, out, err) = run_shell_command(BASE_CMD, "--help")
-        assert status == 0
-        assert out == b""
-        assert err.startswith(b"\nSyntax: cpplint")
+def test_help():
+    (status, out, err) = run_shell_command(BASE_CMD, "--help")
+    assert status == 0
+    assert out == b""
+    assert err.startswith(b"\nSyntax: cpplint")
 
 
 class TemporaryFolderClassSetup:
