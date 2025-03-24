@@ -934,10 +934,6 @@ _SED_FIXUPS = {
     "Missing space after ,": r"s/,\([^ ]\)/, \1/g",
 }
 
-# {str, set(int)}: a map from error categories to sets of linenumbers
-# on which those errors are expected and should be suppressed.
-_error_suppressions: dict[str, set[int]] = {}
-
 # The root directory used for deriving header guard CPP variable.
 # This is set by --root flag.
 _root = None
@@ -1036,7 +1032,9 @@ class ErrorSuppressions:
         self._open_block_suppression = None
 
 
-_error_suppressions = ErrorSuppressions()  # type: ignore[assignment]
+# {str, set(int)}: a map from error categories to sets of linenumbers
+# on which those errors are expected and should be suppressed.
+_error_suppressions = ErrorSuppressions()
 
 
 def ProcessHppHeadersOption(val):
@@ -1172,9 +1170,9 @@ def ProcessGlobalSuppressions(filename: str, lines: list[str]) -> None:
     Parses any lint directives in the file that have global effect.
 
     Args:
+      lines: An array of strings, each representing a line of the file, with the
+             last element being empty if the file is terminated with a newline.
       filename: str, the name of the input file.
-    lines: An array of strings, each representing a line of the file, with the
-           last element being empty if the file is terminated with a newline.
     """
     for line in lines:
         if _SEARCH_C_FILE.search(line) or filename.lower().endswith((".c", ".cu")):
