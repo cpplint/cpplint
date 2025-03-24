@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8; -*-
 #
 # Copyright (c) 2009 Google Inc. All rights reserved.
 #
@@ -31,57 +30,61 @@
 
 """Command Line interface integration test for cpplint.py."""
 
+from __future__ import annotations
+
+import contextlib
 import glob
 import os
-import sys
-import subprocess
-import unittest
 import shutil
+import subprocess
+import sys
 import tempfile
-from pytest import mark
-from testfixtures import compare
 
-BASE_CMD = sys.executable + ' ' + os.path.abspath('./cpplint.py ')
+import pytest
+from parameterized import parameterized  # type: ignore[import-untyped]
+from testfixtures import compare  # type: ignore[import-untyped]
 
-def RunShellCommand(cmd: str, args: str, cwd='.'):
+import cpplint  # noqa: F401
+
+BASE_CMD = sys.executable + " " + os.path.abspath("./cpplint.py ")
+
+
+def run_shell_command(cmd: str, args: str, cwd: str = ".") -> tuple[int, bytes, bytes]:
+    """Executes a command
+
+    Args:
+        cmd: A string to execute.
+        args: A string with arguments to the command.
+        cwd: from which folder to run.
     """
-    executes a command
-    :param cmd: A string to execute.
-    :param cwd: from which folder to run.
-    """
-
-    stdout_target = subprocess.PIPE
-    stderr_target = subprocess.PIPE
-
-    proc = subprocess.Popen(cmd + ' ' + args,
-                            shell=True,
-                            cwd=cwd,
-                            stdout=stdout_target,
-                            stderr=stderr_target)
-    out, err = proc.communicate()
+    cmd, args = cmd.split(), args.split()  # type: ignore[assignment]
+    proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True, check=False)
+    out, err = proc.stdout, proc.stderr
 
     # Make output system-agnostic, aka support Windows
-    if os.sep == '\\':
-        # TODO: Support scenario with multiple folder inputs
-        win_path = (os.path.dirname(args.split(' ')[-1]) + '\\').encode()
-        good_path = win_path.replace(b'\\', b'/')
+    if os.sep == "\\":
+        # TODO: Support scenario with multiple input names
+        # We currently only support the last arguments as the input name
+        # to prevent accidentally replacing sed tests.
+        # Fixing would likely need coding an internal "replace slashes" option for cpplint itself.
+        win_path = (os.path.dirname(args[-1]) + "\\").encode()
+        good_path = win_path.replace(b"\\", b"/")
         out, err = out.replace(win_path, good_path), err.replace(win_path, good_path)
-    if os.linesep == '\r\n':
-        out, err = out.replace(b'\r\n', b'\n'), err.replace(b'\r\n', b'\n')
+    if os.linesep == "\r\n":
+        out, err = out.replace(b"\r\n", b"\n"), err.replace(b"\r\n", b"\n")
 
     # print(err) # to get the output at time of test
-    return (proc.returncode, out, err)
+    return proc.returncode, out, err
 
 
-class UsageTest(unittest.TestCase):
+def test_help():
+    (status, out, err) = run_shell_command(BASE_CMD, "--help")
+    assert status == 0
+    assert out == b""
+    assert err.startswith(b"\nSyntax: cpplint")
 
-    def testHelp(self):
-        (status, out, err) = RunShellCommand(BASE_CMD, '--help')
-        self.assertEqual(0, status)
-        self.assertEqual(b'', out)
-        self.assertTrue(err.startswith(b'\nSyntax: cpplint'))
 
-class TemporaryFolderClassSetup(object):
+class TemporaryFolderClassSetup:
     """
     Regression tests: The test starts a filetreewalker scanning for files name *.def
     Such files are expected to have as first line the argument
@@ -91,23 +94,24 @@ class TemporaryFolderClassSetup(object):
     systemerr output (two blank lines at end).
     """
 
+    @pytest.fixture(autouse=True, name="set_up()", scope="class")
     @classmethod
-    def setUpClass(cls):
+    def set_up(cls):
         """setup tmp folder for testing with samples and custom additions by subclasses"""
         try:
             cls._root = os.path.realpath(tempfile.mkdtemp())
-            shutil.copytree('samples', os.path.join(cls._root, 'samples'))
+            shutil.copytree("samples", os.path.join(cls._root, "samples"))
             cls.prepare_directory(cls._root)
         except Exception:
-            try:
-                cls.tearDownClass()
-            except Exception:
-                pass
+            with contextlib.suppress(Exception):
+                cls.tear_down()
             raise
+        # yield
+        # cls.tear_down()
 
     @classmethod
-    def tearDownClass(cls):
-        if (cls._root):
+    def tear_down(cls):
+        if cls._root:
             # pass
             shutil.rmtree(cls._root)
 
@@ -118,120 +122,110 @@ class TemporaryFolderClassSetup(object):
 
     def get_extra_command_args(self, cwd):
         """Override in subclass to add arguments to command"""
-        return ''
+        return ""
 
-    def checkAllInFolder(self, foldername, expectedDefs):
+    def check_all_in_folder(self, folder_name, expected_defs):
         # uncomment to show complete diff
         # self.maxDiff = None
         count = 0
-        for dirpath, _, fnames in os.walk(foldername):
+        for dirpath, _, fnames in os.walk(folder_name):
             for f in fnames:
-                if f.endswith('.def'):
+                if f.endswith(".def"):
                     count += 1
-                    self._checkDef(os.path.join(dirpath, f))
-        self.assertEqual(count, expectedDefs)
+                    self.check_def(os.path.join(dirpath, f))
+        assert count == expected_defs
 
-    def _checkDef(self, path):
+    def check_def(self, path):
         """runs command and compares to expected output from def file"""
         # self.maxDiff = None # to see full diff
-        with open(path, 'rb') as filehandle:
-            datalines = filehandle.readlines()
-            stdoutLines = int(datalines[2])
-            filenames = datalines[0].decode('utf8').strip()
+        with open(path, "rb") as file_handle:
+            data = file_handle.readlines()
+            stdout_lines = int(data[2])
+            filenames = data[0].decode("utf8").strip()
             args, _, filenames = filenames.rpartition(" ")
-            if '*' in filenames:
+            if "*" in filenames:
                 rel_cwd = os.path.dirname(path)
-                filenames = ' '.join(
-                    filename[len(rel_cwd)+1:]
-                    for filename in glob.glob(rel_cwd + '/' + filenames)
+                filenames = " ".join(
+                    filename[len(rel_cwd) + 1 :]
+                    for filename in glob.glob(rel_cwd + "/" + filenames)
                 )
-            args += ' ' + filenames
-            self._runAndCheck(path,
-                              args,
-                              int(datalines[1]),
-                              [line.decode('utf8').strip() for line in datalines[3:3 + stdoutLines]],
-                              [line.decode('utf8').strip() for line in datalines[3 + stdoutLines:]])
+            args += " " + filenames
+            self._run_and_compare(
+                path,
+                args,
+                int(data[1]),
+                [line.decode("utf8").strip() for line in data[3 : 3 + stdout_lines]],
+                [line.decode("utf8").strip() for line in data[3 + stdout_lines :]],
+            )
 
-    def _runAndCheck(
-            self,
-            definition_file,
-            args,
-            expected_status,
-            expected_out,
-            expected_err
-    ):
+    def _run_and_compare(self, definition_file, args, expected_status, expected_out, expected_err):
         rel_cwd = os.path.dirname(definition_file)
         cmd = BASE_CMD + self.get_extra_command_args(rel_cwd)
         cwd = os.path.join(self._root, rel_cwd)
         # command to reproduce, do not forget first two lines have special meaning
-        print("\ncd " + cwd + " && " + cmd + ' '  + args + " 2> <filename>")
-        (status, out, err) = RunShellCommand(cmd, args, cwd)
-        self.assertEqual(expected_status, status, 'bad command status %s' % status)
-        prefix = 'Failed check in %s comparing to %s for command: %s' % (cwd, definition_file, cmd)
-        compare('\n'.join(expected_err), err.decode('utf8'), prefix=prefix, show_whitespace=True)
-        compare('\n'.join(expected_out), out.decode('utf8'), prefix=prefix, show_whitespace=True)
+        print("\ncd " + cwd + " && " + cmd + " " + args + " 2> <filename>")
+        (status, out, err) = run_shell_command(cmd, args, cwd)
+        assert expected_status == status, f"bad command status {status}"
+        prefix = f"Failed check in {cwd} comparing to {definition_file} for command: {cmd}"
+        compare("\n".join(expected_err), err.decode("utf8"), prefix=prefix, show_whitespace=True)
+        compare("\n".join(expected_out), out.decode("utf8"), prefix=prefix, show_whitespace=True)
 
 
-class NoRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
+class TestNoRepoSignature(TemporaryFolderClassSetup):
     """runs in a temporary folder (under /tmp in linux) without any .git/.hg/.svn file"""
 
     def get_extra_command_args(self, cwd):
-        return (' --repository %s ' % self._root)
+        return f" --repository {self._root} "
 
-    def testChromiumSample(self):
-        self.checkAllInFolder('./samples/chromium-sample', 1)
+    @parameterized.expand(
+        [
+            (folder, case[:-4])
+            for folder in ["chromium", "vlc", "silly", "boost", "protobuf", "codelite", "v8"]
+            for case in os.listdir(f"./samples/{folder}-sample")
+            if case.endswith(".def")
+        ],
+        name_func=lambda fun, _, x: f"test_{x.args[0]}_sample-{x.args[1]}",
+    )
+    @pytest.mark.timeout(180)
+    def test_samples(self, folder, case):
+        self.check_def(os.path.join(f"./samples/{folder}-sample", case + ".def"))
 
-    def testVlcSample(self):
-        self.checkAllInFolder('./samples/vlc-sample', 1)
 
-    def testSillySample(self):
-        self.checkAllInFolder('./samples/silly-sample', 5)
-
-    def testBoostSample(self):
-        self.checkAllInFolder('./samples/boost-sample', 4)
-
-    @mark.timeout(180)
-    def testProtobufSample(self):
-        self.checkAllInFolder('./samples/protobuf-sample', 1)
-
-    def testCodeliteSample(self):
-        self.checkAllInFolder('./samples/codelite-sample', 1)
-
-    def testV8Sample(self):
-        self.checkAllInFolder('./samples/v8-sample', 1)
-
-class GitRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
+class TestGitRepoSignature(TemporaryFolderClassSetup):
     """runs in a temporary folder with .git file"""
 
     @classmethod
     def prepare_directory(cls, root):
-        with open(os.path.join(root, '.git'), 'a'):
+        with open(os.path.join(root, ".git"), "a"):
             pass
 
-    def testCodeliteSample(self):
-        self.checkAllInFolder('./samples/codelite-sample', 1)
+    def test_codelite_sample(self):
+        self.check_all_in_folder("./samples/codelite-sample", 1)
 
-class MercurialRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
+
+class TestMercurialRepoSignature(TemporaryFolderClassSetup):
     """runs in a temporary folder with .hg file"""
 
     @classmethod
     def prepare_directory(cls, root):
-        with open(os.path.join(root, '.hg'), 'a'):
+        with open(os.path.join(root, ".hg"), "a"):
             pass
 
-    def testCodeliteSample(self):
-        self.checkAllInFolder('./samples/codelite-sample', 1)
+    def test_codelite_sample(self):
+        self.check_all_in_folder("./samples/codelite-sample", 1)
 
-class SvnRepoSignatureTests(TemporaryFolderClassSetup, unittest.TestCase):
+
+class TestSvnRepoSignature(TemporaryFolderClassSetup):
     """runs in a temporary folder with .svn file"""
 
     @classmethod
     def prepare_directory(cls, root):
-        with open(os.path.join(root, '.svn'), 'a'):
+        with open(os.path.join(root, ".svn"), "a"):
             pass
 
-    def testCodeliteSample(self):
-        self.checkAllInFolder('./samples/codelite-sample', 1)
+    def test_codelite_sample(self):
+        self.check_all_in_folder("./samples/codelite-sample", 1)
 
-if __name__ == '__main__':
-    unittest.main()
+
+if __name__ == "__main__":
+    pytest.main([__file__])
