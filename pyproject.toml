@@ -105,6 +105,7 @@ lint.select = [
   "SLOT",  # flake8-slots
   "T10",   # flake8-debugger
   "TC",    # flake8-type-checking
+  "TD",    # flake8-todos
   "TID",   # flake8-tidy-imports
   "TRY",   # tryceratops
   "UP",    # pyupgrade
@@ -122,13 +123,13 @@ lint.select = [
   # "S",   # flake8-bandit
   # "SLF", # flake8-self
   # "T20", # flake8-print
-  # "TD",  # flake8-todos
 ]
 lint.ignore = [
   "FBT003", # flake8-boolean-trap
   "FIX002", # flake8-fixme
   "ISC003", # flake8-implicit-str-concat
   "PIE790", # Unnecessary `pass` statement
+  "TD003",  # flake8-todos
 ]
 lint.per-file-ignores."cpplint.py" = [
   "ICN001",

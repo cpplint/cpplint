@@ -4245,7 +4245,7 @@ def CheckOperatorSpacing(filename, clean_lines, linenum, error):
     # many false positives due to RValue references.
     match = re.search(r"[^<>=!\s](==|!=|<=|>=|\|\|)[^<>=!\s,;\)]", line)
     if match:
-        # TODO: support alternate operators
+        # TODO(unknown): support alternate operators
         error(
             filename, linenum, "whitespace/operators", 3, f"Missing spaces around {match.group(1)}"
         )
@@ -4767,7 +4767,7 @@ def CheckBraces(filename, clean_lines, linenum, error):
             " should be on a separate line",
         )
 
-    # TODO: Err on if...else and do...while statements without braces;
+    # TODO(unknown): Err on if...else and do...while statements without braces;
     # style guide has changed since the below comment was written
 
     # Check single-line if/else bodies. The style guide says 'curly braces are not
@@ -7457,7 +7457,7 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
                 lf_lines.append(linenum + 1)
 
     except OSError:
-        # TODO: Maybe make this have an exit code of 2 after all is done
+        # TODO(unknown): Maybe make this have an exit code of 2 after all is done
         _cpplint_state.PrintError(f"Skipping input '{filename}': Can't open for reading\n")
         _RestoreFilters()
         return
