@@ -63,7 +63,7 @@ def run_shell_command(cmd: str, args: str, cwd: str = ".") -> tuple[int, bytes, 
 
     # Make output system-agnostic, aka support Windows
     if os.sep == "\\":
-        # TODO(unknown): Support scenario with multiple input names
+        # TODO(aaronliu0130): Support scenario with multiple input names
         # We currently only support the last arguments as the input name
         # to prevent accidentally replacing sed tests.
         # Fixing would likely need coding an internal "replace slashes" option for cpplint itself.
