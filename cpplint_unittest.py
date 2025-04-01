@@ -5727,8 +5727,7 @@ class TestCpplint(CpplintTestBase):
 
     def TestLintLogCodeOnError(self, code, expected_message):
         # Special TestLint which logs the input code on error.
-        result = self.PerformSingleLineLint(code)
-        assert result == expected_message, (
+        assert (result := self.PerformSingleLineLint(code)) == expected_message, (
             f'For code: "{code}"\nGot: "{result}"\nExpected: "{expected_message}"'
         )
 
