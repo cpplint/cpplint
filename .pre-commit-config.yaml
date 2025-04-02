@@ -5,6 +5,45 @@
 # Then in the project root directory run `pre-commit install`
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      # - id: end-of-file-fixer  # TODO(cclauss): Causes some tests to fail.
+      - id: file-contents-sorter
+      - id: fix-byte-order-marker
+      - id: forbid-new-submodules
+      - id: forbid-submodules
+      # - id: mixed-line-ending  # TODO(cclauss): Causes some tests to fail.
+      #  args:
+      #    - --fix=lf
+      - id: name-tests-test
+      - id: pretty-format-json
+      - id: requirements-txt-fixer
+      - id: sort-simple-yaml
+      # - id: trailing-whitespace  # TODO(cclauss): Causes some tests to fail.
+
+  - repo: https://github.com/MarcoGorelli/auto-walrus
+    rev: 0.3.4
+    hooks:
+      - id: auto-walrus
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
@@ -15,21 +54,17 @@ repos:
           - tomli
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.9
+    rev: v0.11.2
     hooks:
       - id: ruff
+      - id: ruff-format
 
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.1.2
-    hooks:
-      - id: flake8
-  
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.5.1
     hooks:
       - id: pyproject-fmt
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.23
+    rev: v0.24.1
     hooks:
       - id: validate-pyproject
