@@ -1103,8 +1103,7 @@ def ParseNolintSuppressions(filename, raw_line, linenum, error):
       linenum: int, the number of the current line.
       error: function, an error handler.
     """
-    matched = re.search(r"\bNOLINT(NEXTLINE|BEGIN|END)?\b(\([^)]+\))?", raw_line)
-    if matched:
+    if matched := re.search(r"\bNOLINT(NEXTLINE|BEGIN|END)?\b(\([^)]+\))?", raw_line):
         no_lint_type = matched.group(1)
         if no_lint_type == "NEXTLINE":
 
@@ -2460,8 +2459,7 @@ def GetIndentLevel(line):
     Returns:
       An integer count of leading spaces, possibly zero.
     """
-    indent = re.match(r"^( *)\S", line)
-    if indent:
+    if indent := re.match(r"^( *)\S", line):
         return len(indent.group(1))
     return 0
 
@@ -3935,8 +3933,7 @@ def CheckForFunctionLengths(filename, clean_lines, linenum, function_state, erro
 
     starting_func = False
     regexp = r"(\w(\w|::|\*|\&|\s)*)\("  # decls * & space::name( ...
-    match_result = re.match(regexp, line)
-    if match_result:
+    if match_result := re.match(regexp, line):
         # If the name is all caps and underscores, figure it's a macro and
         # ignore it, unless it's TEST or TEST_F.
         function_name = match_result.group(1).split()[-1]
@@ -4410,8 +4407,7 @@ def _IsType(clean_lines, nesting_state, expr):
       True, if token looks like a type.
     """
     # Keep only the last token in the expression
-    last_word = re.match(r"^.*(\b\S+)$", expr)
-    if last_word:
+    if last_word := re.match(r"^.*(\b\S+)$", expr):
         token = last_word.group(1)
     else:
         token = expr
@@ -4479,9 +4475,8 @@ def CheckBracesSpacing(filename, clean_lines, linenum, nesting_state, error):
     # And since you should never have braces at the beginning of a line,
     # this is an easy test.  Except that braces used for initialization don't
     # follow the same rule; we often don't want spaces before those.
-    match = re.match(r"^(.*[^ ({>]){", line)
 
-    if match:
+    if match := re.match(r"^(.*[^ ({>]){", line):
         # Try a bit harder to check for brace initialization.  This
         # happens in one of the following forms:
         #   Constructor() : initializer_list_{} { ... }
@@ -5017,8 +5012,7 @@ def CheckEmptyBlockBody(filename, clean_lines, linenum, error):
     # We also check "if" blocks here, since an empty conditional block
     # is likely an error.
     line = clean_lines.elided[linenum]
-    matched = re.match(r"\s*(for|while|if)\s*\(", line)
-    if matched:
+    if matched := re.match(r"\s*(for|while|if)\s*\(", line):
         # Find the end of the conditional expression.
         (end_line, end_linenum, end_pos) = CloseExpression(clean_lines, linenum, line.find("("))
 
@@ -5911,8 +5905,7 @@ def CheckLanguage(
     # convention of the whole function to process multiple line to handle it.
     #   printf(
     #       boy_this_is_a_really_long_variable_that_cannot_fit_on_the_prev_line);
-    printf_args = _GetTextInside(line, r"(?i)\b(string)?printf\s*\(")
-    if printf_args:
+    if printf_args := _GetTextInside(line, r"(?i)\b(string)?printf\s*\("):
         match = re.match(r"([\w.\->()]+)$", printf_args)
         if match and match.group(1) != "__VA_ARGS__":
             function_name = re.search(r"\b((?:string)?printf)\s*\(", line, re.IGNORECASE).group(1)
@@ -6858,8 +6851,7 @@ def FilesBelongToSameModule(filename_cc, filename_h):
         return (False, "")
 
     filename_cc = filename_cc[: -(len(fileinfo_cc.Extension()))]
-    matched_test_suffix = re.search(_TEST_FILE_SUFFIX, fileinfo_cc.BaseName())
-    if matched_test_suffix:
+    if matched_test_suffix := re.search(_TEST_FILE_SUFFIX, fileinfo_cc.BaseName()):
         filename_cc = filename_cc[: -len(matched_test_suffix.group(1))]
 
     filename_cc = filename_cc.replace("/public/", "/")
@@ -7067,8 +7059,7 @@ def CheckRedundantOverrideOrFinal(filename, clean_lines, linenum, error):
     # the declarator ends and where the virt-specifier starts to avoid
     # false positives.
     line = clean_lines.elided[linenum]
-    declarator_end = line.rfind(")")
-    if declarator_end >= 0:
+    if (declarator_end := line.rfind(")")) >= 0:
         fragment = line[declarator_end:]
     else:
         if linenum > 1 and clean_lines.elided[linenum - 1].rfind(")") >= 0:
