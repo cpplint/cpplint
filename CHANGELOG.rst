@@ -20,7 +20,7 @@ Yet another overdue... hotfix. Sorry this took so long.
 * suppress C++-only categories on C file extensions by @aaronliu0130 in https://github.com/cpplint/cpplint/pull/318
 * Add a GitHub Action to publish to PyPI by @cclauss in https://github.com/cpplint/cpplint/pull/347
 
-2.0 (2024-10-06)
+2.0.0 (2024-10-06)
 ================
 
 A large long-overdue modernization of the codebase!
