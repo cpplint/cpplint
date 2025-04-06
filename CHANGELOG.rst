@@ -5,7 +5,7 @@ Changelog
 2.0.1 (2025-04-02)
 ==================
 
-Yet another overdue... hotfix. Sorry this took so long.
+Yet another overdue hotfix. Sorry this took so long.
 
 * The false positive for indented function parameters in namespaces was eradicated by @norab0130 in https://github.com/cpplint/cpplint/pull/304
 * IWYU: treat stdio.h the same way as cstdio by @aaronliu0130 in https://github.com/cpplint/cpplint/pull/319
