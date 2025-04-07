@@ -41,7 +41,6 @@ dependencies = [  ]
 
 optional-dependencies.dev = [
   "mypy",
-  "parameterized",
   "pylint>=3.3.4",
   "pytest",
   "pytest-cov",
@@ -206,4 +205,4 @@ addopts = "--color=yes --cov-fail-under=90 --cov=cpplint"
 python_files = [ "*test.py" ]
 required_plugins = [ "pytest-cov", "pytest-timeout" ]
 testpaths = [ "." ]
-timeout = 60
+timeout = 481

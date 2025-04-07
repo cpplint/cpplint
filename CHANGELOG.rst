@@ -6,6 +6,9 @@ Changelog
 ===========
 
 * Python versions less than 3.9 are no longer supported.
+* The false positive for indented function parameters in namespaces was eradicated. (https://github.com/cpplint/cpplint/pull/304)
+* build/include-what-you-use now recognizes c-style headers, such as <stdio.h> for symbols from <cstdio>. (https://github.com/cpplint/cpplint/pull/319)
+* The warning on non-const references (runtime/references) is now disabled by default pursuant to the May 2020 Google style guide update. (https://github.com/cpplint/cpplint/pull/305)
 
 2.0.1 (2025-03-09)
 ==================
@@ -26,7 +29,7 @@ Yet another overdue... hotfix. Sorry this took so long.
 * Add a GitHub Action to publish to PyPI by @cclauss in https://github.com/cpplint/cpplint/pull/347
 
 2.0.0 (2024-10-06)
-================
+==================
 
 A large long-overdue modernization of the codebase!
 
