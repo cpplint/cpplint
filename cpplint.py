@@ -411,6 +411,7 @@ _OTHER_NOLINT_CATEGORY_PREFIXES = [
 _DEFAULT_FILTERS = [
     "-build/include_alpha",
     "-readability/fn_size",
+    "-runtime/references",
 ]
 
 # The default list of categories suppressed for C (not C++) files.

@@ -30,7 +30,7 @@
 
 """Unit test for cpplint.py."""
 
-# TODO(unknown): Add a good test that tests UpdateIncludeState.
+# TODO(google): Add a good test that tests UpdateIncludeState.
 
 import codecs
 import os
@@ -43,7 +43,6 @@ import sys
 import tempfile
 
 import pytest
-from parameterized import parameterized  # type: ignore[import-untyped]
 
 import cpplint
 
@@ -2230,7 +2229,7 @@ class TestCpplint(CpplintTestBase):
             "const string &turing",
             "const string & godel",
         ]
-        # TODO(unknown): Enable also these tests if and when we ever
+        # TODO(google): Enable also these tests if and when we ever
         # decide to check for arbitrary member references.
         #                         "const Turing & a",
         #                         "const Church& a",
@@ -4604,7 +4603,7 @@ class TestCpplint(CpplintTestBase):
             "",
         )
 
-    @parameterized.expand(["else if", "if", "while", "for", "switch"])
+    @pytest.mark.parametrize("keyword", ["else if", "if", "while", "for", "switch"])
     def testControlClauseWithParensNewline(self, keyword):
         # The % 2 part is pseudorandom whitespace-support testing
         self.TestLintContains(
@@ -4616,7 +4615,7 @@ class TestCpplint(CpplintTestBase):
             f" should be on a separate line  [whitespace/newline] [5]",
         )
 
-    @parameterized.expand(["else", "do", "try"])
+    @pytest.mark.parametrize("keyword", ["else", "do", "try"])
     def testControlClauseWithoutParensNewline(self, keyword):
         # The % 2 part is pseudorandom whitespace-support testing
         self.TestLintContains(

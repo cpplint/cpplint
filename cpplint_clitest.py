@@ -39,7 +39,6 @@ import sys
 import tempfile
 
 import pytest
-from parameterized import parameterized  # type: ignore[import-untyped]
 from testfixtures import compare  # type: ignore[import-untyped]
 
 import cpplint  # noqa: F401
@@ -55,7 +54,7 @@ def run_shell_command(cmd: str, args: str, cwd: str = ".") -> tuple[int, bytes, 
         args: A string with arguments to the command.
         cwd: from which folder to run.
     """
-    cmd, args = cmd.split(), args.split()  # type: ignore[assignment]
+    cmd, args = cmd.split(), args.replace('"', "").split()  # type: ignore[assignment]
     proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True, check=False)
     out, err = proc.stdout, proc.stderr
 
@@ -175,14 +174,14 @@ class TestNoRepoSignature(TemporaryFolderClassSetup):
     def get_extra_command_args(self, cwd):
         return f" --repository {self._root} "
 
-    @parameterized.expand(
+    @pytest.mark.parametrize(
+        ("folder", "case"),
         [
             (folder, case[:-4])
             for folder in ["chromium", "vlc", "silly", "boost", "protobuf", "codelite", "v8"]
             for case in os.listdir(f"./samples/{folder}-sample")
             if case.endswith(".def")
         ],
-        name_func=lambda fun, _, x: f"test_{x.args[0]}_sample-{x.args[1]}",
     )
     @pytest.mark.timeout(180)
     def test_samples(self, folder, case):
