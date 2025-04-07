@@ -41,6 +41,7 @@ dynamic = [ "version" ]
 dependencies = [  ]
 
 optional-dependencies.dev = [
+  "coverage",
   "mypy",
   "parameterized",
   "pylint>=2.11",
