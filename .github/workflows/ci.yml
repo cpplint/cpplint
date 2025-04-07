@@ -15,8 +15,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Python 3.8 is EOL. Also adapt tox.ini
-        python-version: ['3.8', 'pypy3.11', '3.x']
+        # Also adapt tox.ini on change
+        python-version: ['3.9', 'pypy3.11', '3.x']
         # macOS on ARM, Ubuntu on x86, Windows on X86
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
@@ -33,6 +33,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --editable .[dev]
+          pip install --editable ".[dev]"
       - name: Test with tox
         run: tox -e py

@@ -2,7 +2,12 @@
 Changelog
 *********
 
-2.0.1 (2025-04-02)
+2.1.0 (TBA)
+===========
+
+* Python versions less than 3.9 are no longer supported.
+
+2.0.1 (2025-03-09)
 ==================
 
 Yet another overdue... hotfix. Sorry this took so long.
