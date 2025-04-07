@@ -39,15 +39,14 @@ import sys
 import tempfile
 
 import pytest
-from parameterized import parameterized
-from testfixtures import compare
+from testfixtures import compare  # type: ignore[import-untyped]
 
 import cpplint  # noqa: F401
 
 BASE_CMD = sys.executable + " " + os.path.abspath("./cpplint.py ")
 
 
-def run_shell_command(cmd: str, args: str, cwd="."):
+def run_shell_command(cmd: str, args: str, cwd: str = ".") -> tuple[int, bytes, bytes]:
     """Executes a command
 
     Args:
@@ -55,13 +54,13 @@ def run_shell_command(cmd: str, args: str, cwd="."):
         args: A string with arguments to the command.
         cwd: from which folder to run.
     """
-    cmd, args = cmd.split(), args.split()
+    cmd, args = cmd.split(), args.replace('"', "").split()  # type: ignore[assignment]
     proc = subprocess.run(cmd + args, cwd=cwd, capture_output=True, check=False)
     out, err = proc.stdout, proc.stderr
 
     # Make output system-agnostic, aka support Windows
     if os.sep == "\\":
-        # TODO: Support scenario with multiple input names
+        # TODO(aaronliu0130): Support scenario with multiple input names
         # We currently only support the last arguments as the input name
         # to prevent accidentally replacing sed tests.
         # Fixing would likely need coding an internal "replace slashes" option for cpplint itself.
@@ -75,12 +74,11 @@ def run_shell_command(cmd: str, args: str, cwd="."):
     return proc.returncode, out, err
 
 
-class TestUsage:
-    def testHelp(self):
-        (status, out, err) = run_shell_command(BASE_CMD, "--help")
-        assert status == 0
-        assert out == b""
-        assert err.startswith(b"\nSyntax: cpplint")
+def test_help():
+    (status, out, err) = run_shell_command(BASE_CMD, "--help")
+    assert status == 0
+    assert out == b""
+    assert err.startswith(b"\nSyntax: cpplint")
 
 
 class TemporaryFolderClassSetup:
@@ -93,9 +91,9 @@ class TemporaryFolderClassSetup:
     systemerr output (two blank lines at end).
     """
 
-    @pytest.fixture(autouse=True, name="setUpClass()", scope="class")
+    @pytest.fixture(autouse=True, name="set_up()", scope="class")
     @classmethod
-    def setUpClass(cls):
+    def set_up(cls):
         """setup tmp folder for testing with samples and custom additions by subclasses"""
         try:
             cls._root = os.path.realpath(tempfile.mkdtemp())
@@ -103,13 +101,13 @@ class TemporaryFolderClassSetup:
             cls.prepare_directory(cls._root)
         except Exception:
             with contextlib.suppress(Exception):
-                cls.tearDownClass()
+                cls.tear_down()
             raise
         # yield
-        # cls.tearDownClass()
+        # cls.tear_down()
 
     @classmethod
-    def tearDownClass(cls):
+    def tear_down(cls):
         if cls._root:
             # pass
             shutil.rmtree(cls._root)
@@ -176,17 +174,17 @@ class TestNoRepoSignature(TemporaryFolderClassSetup):
     def get_extra_command_args(self, cwd):
         return f" --repository {self._root} "
 
-    @parameterized.expand(
+    @pytest.mark.parametrize(
+        ("folder", "case"),
         [
             (folder, case[:-4])
             for folder in ["chromium", "vlc", "silly", "boost", "protobuf", "codelite", "v8"]
             for case in os.listdir(f"./samples/{folder}-sample")
             if case.endswith(".def")
         ],
-        name_func=lambda fun, _, x: f"test{x.args[0].capitalize()}Sample-{x.args[1]}",
     )
     @pytest.mark.timeout(180)
-    def testSamples(self, folder, case):
+    def test_samples(self, folder, case):
         self.check_def(os.path.join(f"./samples/{folder}-sample", case + ".def"))
 
 
@@ -198,7 +196,7 @@ class TestGitRepoSignature(TemporaryFolderClassSetup):
         with open(os.path.join(root, ".git"), "a"):
             pass
 
-    def testCodeliteSample(self):
+    def test_codelite_sample(self):
         self.check_all_in_folder("./samples/codelite-sample", 1)
 
 
@@ -210,7 +208,7 @@ class TestMercurialRepoSignature(TemporaryFolderClassSetup):
         with open(os.path.join(root, ".hg"), "a"):
             pass
 
-    def testCodeliteSample(self):
+    def test_codelite_sample(self):
         self.check_all_in_folder("./samples/codelite-sample", 1)
 
 
@@ -222,7 +220,7 @@ class TestSvnRepoSignature(TemporaryFolderClassSetup):
         with open(os.path.join(root, ".svn"), "a"):
             pass
 
-    def testCodeliteSample(self):
+    def test_codelite_sample(self):
         self.check_all_in_folder("./samples/codelite-sample", 1)
 
 
