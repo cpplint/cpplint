@@ -30,8 +30,6 @@
 
 """Command Line interface integration test for cpplint.py."""
 
-from __future__ import annotations
-
 import contextlib
 import glob
 import os

@@ -41,12 +41,12 @@ We do a small hack, which is to ignore //'s with "'s after them on the
 same line, but it is far from perfect (in either direction).
 """
 
-from __future__ import annotations
+from __future__ import annotations  # PEP 604 not in 3.9
 
 import codecs
 import collections
 import copy
-import getopt  # pylint: disable=deprecated-module
+import getopt
 import glob
 import itertools
 import math  # for log
@@ -6858,8 +6858,7 @@ def FilesBelongToSameModule(filename_cc, filename_h):
     filename_cc = filename_cc.replace("/internal/", "/")
 
     filename_h = filename_h[: -(len(fileinfo_h.Extension()))]
-    if filename_h.endswith("-inl"):
-        filename_h = filename_h[: -len("-inl")]
+    filename_h = filename_h.removesuffix("-inl")
     filename_h = filename_h.replace("/public/", "/")
     filename_h = filename_h.replace("/internal/", "/")
 
@@ -7701,8 +7700,7 @@ def _ExpandDirectories(filenames):
         for root, _, files in os.walk(filename):
             for loopfile in files:
                 fullname = os.path.join(root, loopfile)
-                if fullname.startswith("." + os.path.sep):
-                    fullname = fullname[len("." + os.path.sep) :]
+                fullname = fullname.removeprefix("." + os.path.sep)
                 expanded.add(fullname)
 
     return [
