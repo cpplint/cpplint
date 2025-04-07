@@ -32,8 +32,6 @@
 
 # TODO(unknown): Add a good test that tests UpdateIncludeState.
 
-from __future__ import annotations
-
 import codecs
 import os
 import platform
