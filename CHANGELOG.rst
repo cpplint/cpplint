@@ -2,10 +2,10 @@
 Changelog
 *********
 
-2.1.0 (2025-04-08)
+2.0.2 (2025-04-08)
 ===========
 
-* Python versions less than 3.9 are no longer supported.
+* Python versions less than 3.9 are no longer supported. (https://github.com/cpplint/cpplint/pull/334)
 * The false positive for indented member initializer lists in namespaces were eradicated. (https://github.com/cpplint/cpplint/pull/353)
 * The warning on non-const references (runtime/references) is now disabled by default pursuant to the May 2020 Google style guide update. (https://github.com/cpplint/cpplint/pull/305)
 
