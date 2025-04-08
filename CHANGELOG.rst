@@ -2,7 +2,7 @@
 Changelog
 *********
 
-2.1.0 (TBA)
+2.1.0 (2025-04-08)
 ===========
 
 * Python versions less than 3.9 are no longer supported.
