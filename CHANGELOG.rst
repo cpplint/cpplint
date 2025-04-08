@@ -9,23 +9,18 @@ Changelog
 * The false positive for indented member initializer lists in namespaces were eradicated. (https://github.com/cpplint/cpplint/pull/353)
 * The warning on non-const references (runtime/references) is now disabled by default pursuant to the May 2020 Google style guide update. (https://github.com/cpplint/cpplint/pull/305)
 
-2.0.1 (2025-03-09)
+2.0.1 (2025-04-02)
 ==================
 
 Yet another overdue... hotfix. Sorry this took so long.
 
-* The false positive for indented function parameters in namespaces was eradicated by @norab0130 in https://github.com/cpplint/cpplint/pull/304
-* IWYU: treat stdio.h the same way as cstdio by @aaronliu0130 in https://github.com/cpplint/cpplint/pull/319
-* README.rst: Add instructions for pre-commit by @cclauss in https://github.com/cpplint/cpplint/pull/320
-* PEP 621: Migrate from setup.{py, cfg} to pyproject.toml by @cclauss in https://github.com/cpplint/cpplint/pull/315
-* Prepare for release 2.0.1 and update changelog by @aaronliu0130 in https://github.com/cpplint/cpplint/pull/322
-* Refactor tests and metadata by @aaronliu0130 in https://github.com/cpplint/cpplint/pull/317
-* misc git cleanup by @aaronliu0130 in https://github.com/cpplint/cpplint/pull/340
-* Mypy: static type checker for Python by @cclauss in https://github.com/cpplint/cpplint/pull/345
-* CONTRIBUTING.rst: Default branch is develop, add pre-commit by @cclauss in https://github.com/cpplint/cpplint/pull/349
-* Fix test refactoring by @aaronliu0130 in https://github.com/cpplint/cpplint/pull/350
-* suppress C++-only categories on C file extensions by @aaronliu0130 in https://github.com/cpplint/cpplint/pull/318
-* Add a GitHub Action to publish to PyPI by @cclauss in https://github.com/cpplint/cpplint/pull/347
+* The false positive for indented function parameters in namespaces was eradicated. (https://github.com/cpplint/cpplint/pull/304)
+* Files that end in ".c", ".C", or ".cu" will now also automatically suppress C++-only categories. Previously, `// NO_LINT_C` was required. (https://github.com/cpplint/cpplint/pull/318)
+* build/include-what-you-use now recognizes c-style headers such as <stdio.h> for symbols from <cstdio>. (https://github.com/cpplint/cpplint/pull/319)
+* Ruff, mypy, and codespell were ran on the project to improve performance and reader comprehension thanks to @cclauss.
+    * Tests were refactored away from unittest to improve display with pytest by @cclauss. (https://github.com/cpplint/cpplint/pull/332)
+* @Hs293Go fixed an embarrassing typo; the "latch" and "numbers" headers are now recognized correctly instead of "latchnumbers". (https://github.com/cpplint/cpplint/pull/300)
+* CLI tests were refactored through, among other things, making adding new .def's easier by migrating to a parameterized setup. (https://github.com/cpplint/cpplint/pull/317)
 
 2.0.0 (2024-10-06)
 ==================
