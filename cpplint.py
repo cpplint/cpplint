@@ -3195,7 +3195,17 @@ class _WrappedInfo(_BlockInfo):
 class _MemInitListInfo(_WrappedInfo):
     """Stores information about member initializer lists."""
 
-    pass
+    def __init__(self, linenum):
+        _WrappedInfo.__init__(self, linenum, False)
+        # For `: a(b)`, a is the identifier
+        self.expecting_identifier = True
+        # Whether we are expecting the value that follows the identifier
+        self.expecting_braces = False
+        # Whether we are currently within braces
+        self.in_braces = False
+        # Only used when within braces
+        self.is_curly = False
+        self.open_brace_count = 0
 
 
 class _PreprocessorInfo:
@@ -3341,6 +3351,20 @@ class NestingState:
             pos = end_pos
         return False
 
+    def _BequeathParensAndAppend(self, appendee: _BlockInfo, parens_changed: int):
+        """Pass down number of open parentheses and append to the stack.
+
+        Args:
+          appendee: The object to append to the stack.
+          parens_changed: The number of parentheses opened, as computed by _ChangeParentheses().
+        """
+        # Compensate for adding parentheses to the previous top block before this update
+        if self.stack:
+            self.stack[-1].open_parentheses -= parens_changed
+        appendee.open_parentheses += parens_changed
+
+        self.stack.append(appendee)
+
     def UpdatePreprocessor(self, line):
         """Update preprocessor stack.
 
@@ -3401,9 +3425,15 @@ class NestingState:
         """Pop the innermost state (top of the stack) and remember the popped item."""
         self.popped_top = self.stack.pop()
 
-    def _CountOpenParentheses(self, line: str):
-        # Count parentheses.  This is to avoid adding struct arguments to
-        # the nesting stack.
+    def _ChangeParentheses(self, line: str) -> int:
+        """
+        Count parentheses.  This is to avoid adding struct arguments to the nesting stack.
+        Args:
+            line: The line to count parentheses on.
+
+        Returns:
+        The number of parentheses opened on this line.
+        """
         if self.stack:
             inner_block = self.stack[-1]
             depth_change = line.count("(") - line.count(")")
@@ -3426,7 +3456,10 @@ class NestingState:
                 # Exit assembly block
                 inner_block.inline_asm = _END_ASM
 
-    def _UpdateNamesapce(self, line: str, linenum: int) -> str | None:
+            return depth_change
+        return 0
+
+    def _ConsumeNamespace(self, line: str, linenum: int) -> str | None:
         """
         Match start of namespace, append to stack, and consume line
         Args:
@@ -3453,21 +3486,29 @@ class NestingState:
             line = line[line.find("{") + 1 :]
         return line
 
-    def _UpdateConstructor(self, line: str, linenum: int, class_name: str | None = None):
+    def _UpdateConstructor(
+        self, line: str, linenum: int, parens_changed: int, class_name: str | None = None
+    ) -> bool:
         """
         Check if the given line is a constructor.
         Args:
             line: Line to check.
             class_name: If line checked is inside of a class block, a str of the class's name;
                 otherwise, None.
-        """
-        if not class_name:
-            if not re.match(r"\s*(\w*)\s*::\s*\1\s*\(", line):
-                return
-        elif not re.match(rf"\s*{re.escape(class_name)}\s*\(", line):
-            return
+            parens_changed: The number of parentheses opened on this line.
 
-        self.stack.append(_ConstructorInfo(linenum))
+        Returns:
+        Whether the given line was a constructor.
+        """
+        prefix = r"(?:^|public|private|protected|friend|inline|explicit|constexpr)\s*"
+        if not class_name:
+            if not re.search(prefix + r"(\w*)\s*::\s*\1\s*\(", line):
+                return False
+        elif not re.search(prefix + rf"{re.escape(class_name)}\s*\(", line):
+            return False
+
+        self._BequeathParensAndAppend(_ConstructorInfo(linenum))
+        return True
 
     # TODO(google): Update() is too long, but we will refactor later.
     def Update(self, filename: str, clean_lines: CleansedLines, linenum: int, error):
@@ -3495,12 +3536,12 @@ class NestingState:
         # Update pp_stack
         self.UpdatePreprocessor(line)
 
-        self._CountOpenParentheses(line)
+        parens_changed = self._ChangeParentheses(line)
 
         # Consume namespace declaration at the beginning of the line.  Do
         # this in a loop so that we catch same line declarations like this:
         #   namespace proto2 { namespace bridge { class MessageSet; } }
-        while (new_line := self._UpdateNamesapce(line, linenum)) is not None:  # could be empty str
+        while (new_line := self._ConsumeNamespace(line, linenum)) is not None:  # could be empty str
             line = new_line
 
         # Look for a class declaration in whatever is left of the line
@@ -3573,8 +3614,11 @@ class NestingState:
                     line = access_match.group(4)
                 else:
                     self._UpdateConstructor(line, linenum, class_name=classinfo.name)
+                    self._UpdateConstructor(
+                        line, linenum, parens_changed, class_name=classinfo.name
+                    )
         else:  # Not in class
-            self._UpdateConstructor(line, linenum)
+            self._UpdateConstructor(line, linenum, parens_changed)
 
         # If brace not open and we just finished a parenthetical definition,
         # check if we're in a member initializer list following a constructor.
@@ -3587,16 +3631,16 @@ class NestingState:
             and not self.stack[-1].seen_open_brace
             and re.search(r"[^:]:[^:]", line)
         ):
-            self.stack.append(_MemInitListInfo(linenum, seen_open_brace=False))
+            self._BequeathParensAndAppend(_MemInitListInfo(linenum), parens_changed)
 
         # Consume braces or semicolons from what's left of the line
         while True:
             # Match first brace, semicolon, or closed parenthesis.
-            matched = re.match(r"^[^{;)}]*([{;)}])(.*)$", line)
-            if not matched:
+            searched = re.search(r"([{;)}])", line)
+            if not searched:
                 break
 
-            token = matched.group(1)
+            token = searched.group(1)
             if token == "{":
                 # If namespace or class hasn't seen an opening brace yet, mark
                 # namespace/class head as complete.  Push a new block onto the
@@ -3634,7 +3678,7 @@ class NestingState:
                 if self.stack:
                     self.stack[-1].CheckEnd(filename, clean_lines, linenum, error)
                     self._Pop()
-            line = matched.group(2)
+            line = line[searched.end(0) :]
 
     def InnermostClass(self):
         """Get class info on the top of the stack.
@@ -7240,15 +7284,22 @@ def ShouldCheckNamespaceIndentation(
 
     # Skip if we are extra-indenting a member initializer list.
     if (
-        isinstance(nesting_state.previous_stack_top, _ConstructorInfo)  # F/N (A::A() : _a(0) {/{})
-        and (
-            isinstance(nesting_state.stack[-1], _MemInitListInfo)
-            or isinstance(nesting_state.popped_top, _MemInitListInfo)
+        (
+            isinstance(nesting_state.previous_stack_top, _ConstructorInfo)  # F/N (A::A() : _a(0){)
+            and (
+                isinstance(nesting_state.stack[-1], _MemInitListInfo)
+                or isinstance(nesting_state.popped_top, _MemInitListInfo)
+            )
         )
-    ) or (  # popping constructor after MemInitList on the same line (: _a(a) {})
-        isinstance(nesting_state.previous_stack_top, _ConstructorInfo)
-        and isinstance(nesting_state.popped_top, _ConstructorInfo)
-        and re.search(r"[^:]:[^:]", raw_lines_no_comments[linenum])
+        or (  # empty constructor in multiline list
+            isinstance(nesting_state.previous_stack_top, _MemInitListInfo)
+            and isinstance(nesting_state.popped_top, _ConstructorInfo)
+        )
+        or (  # popping constructor after MemInitList on the same line (: _a(a) {})
+            isinstance(nesting_state.previous_stack_top, _ConstructorInfo)
+            and isinstance(nesting_state.popped_top, _ConstructorInfo)
+            and re.search(r"[^:]:[^:]", raw_lines_no_comments[linenum])
+        )
     ):
         return False
 

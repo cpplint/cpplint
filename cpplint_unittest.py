@@ -327,24 +327,36 @@ class TestCpplint(CpplintTestBase):
         lines = [
             "namespace Opossum {",
             "",
-            "Acme::Acme(const std::shared_ptr<const AbstractOperator> left,",
-            "           const std::shared_ptr<const AbstractOperator> nigh)",
+            "protected Acme::Acme(const std::shared_ptr<const AbstractOperator> left,",
+            "                     const std::shared_ptr<const AbstractOperator> nigh)",
             "    : _left(left), _behind(nigh) {}",
             "",
             "}  // namespace Opossum",
         ]
         assert self.GetNamespaceResults(lines) == ""
 
-        # Multiline member initializer List
+        # Multiline member initializer list; constructor on different line from list
         lines = [
             "namespace Rosenfield {",
             "class Crush : public Habitual {",
             " public:",
-            "  Crush() : _a(1),",
+            "  explicit Crush() : _a(1),",
             "            _b(2)",
             "       {}",
             "};",
             "}  // namespace Rosenfield",
+        ]
+        assert self.GetNamespaceResults(lines) == ""
+
+        # Inline + multiline, ends on the same line as a list's end
+        lines = [
+            "namespace Humpety {",
+            "Dumpety::Dumpety(const int a)",
+            "    : number(a),",
+            "      looooooong_attr1(0),",
+            "      looooooong_attr2(0),",
+            "      looooooong_attr3(0),",
+            "      looooooong_attr4(0) {}",
         ]
         assert self.GetNamespaceResults(lines) == ""
 
@@ -363,7 +375,7 @@ class TestCpplint(CpplintTestBase):
         lines = [
             "namespace Store {",
             "",
-            "   Color::Color() : my_name_is('b')",
+            "   Color::Color() : my_name_is('b'),",
             "       this_is_true(true) {",
         ]
         assert (
