@@ -6820,7 +6820,7 @@ def CheckCStyleCast(filename, clean_lines, linenum, cast_type, pattern, error):
     if context.endswith((" operator++", " operator--", "::operator++", "::operator--")):
         return False
 
-    # A single unnamed argument for a function tend to look like old style cast;
+    # A single unnamed argument for a function tends to look like old style cast;
     # so do function pointers. If we see those, don't issue warnings for deprecated casts.
     remainder = line[match.end(0) :]
     if re.match(r"^\s*(?:;|(?:const|throw|final|override|noexcept)\b|[=>{),]|->)", remainder):
