@@ -3182,21 +3182,24 @@ class _NamespaceInfo(_BlockInfo):
                     )
 
 
-class _WrappedInfo(_BlockInfo):
+class _WrapInfo(_BlockInfo):
     """Stores information about parentheses, initializer lists, etc.
     Not exactly a block but we do need the same signature.
     Needed to avoid namespace indentation false positives,
     though parentheses tracking would slow us down a lot
     and is effectively already done by open_parentheses."""
 
-    pass
+    def __init__(self, linenum: int, index: int):
+        _BlockInfo.__init__(self, linenum, seen_open_brace=False)
+        # The index on lines[starting_linenum] where the wrap started
+        self.starting_index = index
 
 
-class _MemInitListInfo(_WrappedInfo):
+class _MemInitListInfo(_WrapInfo):
     """Stores information about member initializer lists."""
 
-    def __init__(self, linenum):
-        _WrappedInfo.__init__(self, linenum, False)
+    def __init__(self, linenum: int, index: int):
+        _WrapInfo.__init__(self, linenum, index)
         # For `: a(b)`, a is the identifier
         self.expecting_identifier = True
         # Whether we are expecting the value that follows the identifier
@@ -3507,8 +3510,116 @@ class NestingState:
         elif not re.search(prefix + rf"{re.escape(class_name)}\s*\(", line):
             return False
 
-        self._BequeathParensAndAppend(_ConstructorInfo(linenum))
+        self._BequeathParensAndAppend(_ConstructorInfo(linenum), parens_changed)
         return True
+
+    def _ConsumeMemInitList(self, line: str, item: _MemInitListInfo) -> str | None:
+        """
+        Consume a line with a member initializer list and update its state.
+        Args:
+            line: Line to check and consume
+            item: Stack item for the checked line to read from and update
+
+        Returns:
+        The consumed line if we may continue consuming; None otherwise.
+        """
+        if line == "":
+            return None  # see last line of `if item.in_braces`
+        if item.expecting_identifier:
+            if searched := re.search(r"(\w+)", line):
+                item.expecting_identifier = False
+                line = line[searched.end(0) :]
+                item.expecting_braces = True
+            else:
+                return None
+        if item.expecting_braces:
+            if searched := re.match(r"\s*([({])", line):
+                item.in_braces = True
+                item.open_brace_count = 1
+                item.is_curly = searched.group(1) == "{"
+                line = line[searched.end(0) :]
+                item.expecting_braces = False
+            else:
+                return None
+        if item.in_braces:
+            lbrace, rbrace = ("{", "}") if item.is_curly else ("(", ")")
+            if found := line.rfind(rbrace) + 1:  # the index after that of the rbrace
+                item.open_brace_count -= line[:found].count(rbrace) - line[:found].count(lbrace)
+                line = line[found:]
+                if item.open_brace_count == 0:
+                    item.in_braces = False
+            if item.in_braces:
+                # Nothing meaningful for _ConsumeEnd() if we're still within the MemInitList
+                # Plus the mentioned function would pick up the {}
+                return ""
+        if not (item.expecting_identifier or item.expecting_braces or item.in_braces):
+            if found := line.find(",") + 1:
+                item.expecting_identifier = True
+                line = line[found:]
+            else:
+                return None
+        return line
+
+    def _ConsumeEnd(
+        self, line: str, filename: str, clean_lines: CleansedLines, linenum: int, error
+    ) -> str | None:
+        """
+        Consume braces or semicolons from what's left of the line.
+        Checks that should only be run after all other Update checks have been.
+        Args:
+            line: Line to check and consume
+            filename: Name of the current file
+            clean_lines: CleansedLines instance containing the file
+            linenum: Number of the line to check
+            error: Function to call with any errors found
+
+        Returns:
+        The consumed line if any checks were successful; None otherwise.
+        """
+        # Match first brace, semicolon, or closed parenthesis.
+        searched = re.search(r"([{;)}])", line)
+        if not searched:
+            return None
+
+        token = searched.group(1)
+        if token == "{":
+            # If namespace or class hasn't seen an opening brace yet, mark
+            # namespace/class head as complete.  Push a new block onto the
+            # stack otherwise.
+            if not self.SeenOpenBrace():
+                # End of initializer list wrap if present
+                if isinstance(self.stack[-1], _MemInitListInfo):
+                    self._Pop()
+                self.stack[-1].seen_open_brace = True
+            elif re.match(r'^extern\s*"[^"]*"\s*\{', line):
+                self.stack.append(_ExternCInfo(linenum))
+            else:
+                self.stack.append(_BlockInfo(linenum, True))
+                if _MATCH_ASM.match(line):
+                    self.stack[-1].inline_asm = _BLOCK_ASM
+        elif token == ";":
+            # If we haven't seen an opening brace yet, but we already saw
+            # a semicolon, this is probably a forward declaration.  Pop
+            # the stack for these.
+            if not self.SeenOpenBrace():
+                self._Pop()
+        elif token == ")":
+            # Similarly, if we haven't seen an opening brace yet, but we
+            # already saw a closing parenthesis, then these are probably
+            # function arguments with extra "class" or "struct" keywords.
+            # Also pop these stack for these.
+            if (
+                self.stack
+                and not self.stack[-1].seen_open_brace
+                and isinstance(self.stack[-1], _ClassInfo)
+            ):
+                self._Pop()
+        else:  # token == '}'
+            # Perform end of block checks and pop the stack.
+            if self.stack:
+                self.stack[-1].CheckEnd(filename, clean_lines, linenum, error)
+                self._Pop()
+        return line[searched.end(0) :]
 
     # TODO(google): Update() is too long, but we will refactor later.
     def Update(self, filename: str, clean_lines: CleansedLines, linenum: int, error):
@@ -3541,7 +3652,7 @@ class NestingState:
         # Consume namespace declaration at the beginning of the line.  Do
         # this in a loop so that we catch same line declarations like this:
         #   namespace proto2 { namespace bridge { class MessageSet; } }
-        while (new_line := self._ConsumeNamespace(line, linenum)) is not None:  # could be empty str
+        while (new_line := self._ConsumeNamespace(line, linenum)) is not None:
             line = new_line
 
         # Look for a class declaration in whatever is left of the line
@@ -3613,7 +3724,6 @@ class NestingState:
 
                     line = access_match.group(4)
                 else:
-                    self._UpdateConstructor(line, linenum, class_name=classinfo.name)
                     self._UpdateConstructor(
                         line, linenum, parens_changed, class_name=classinfo.name
                     )
@@ -3629,56 +3739,23 @@ class NestingState:
                 or isinstance(self.previous_stack_top, _ConstructorInfo)
             )
             and not self.stack[-1].seen_open_brace
-            and re.search(r"[^:]:[^:]", line)
+            and (searched := re.search(r"[^:]:[^:]", line))
         ):
-            self._BequeathParensAndAppend(_MemInitListInfo(linenum), parens_changed)
+            self._BequeathParensAndAppend(
+                _MemInitListInfo(linenum, index=searched.start(0) + 1), parens_changed
+            )
+            line = line[searched.end(0) :]  # Consume everything b4 the MemInitList, incl. the ':'
+
+        # Consume contents of MemInitList if we're in one
+        if self.stack and isinstance(self.stack[-1], _MemInitListInfo):
+            while (new_line := self._ConsumeMemInitList(line, self.stack[-1])) is not None:
+                line = new_line
 
         # Consume braces or semicolons from what's left of the line
-        while True:
-            # Match first brace, semicolon, or closed parenthesis.
-            searched = re.search(r"([{;)}])", line)
-            if not searched:
-                break
-
-            token = searched.group(1)
-            if token == "{":
-                # If namespace or class hasn't seen an opening brace yet, mark
-                # namespace/class head as complete.  Push a new block onto the
-                # stack otherwise.
-                if not self.SeenOpenBrace():
-                    # End of initializer list wrap if present
-                    if isinstance(self.stack[-1], _MemInitListInfo):
-                        self._Pop()
-                    self.stack[-1].seen_open_brace = True
-                elif re.match(r'^extern\s*"[^"]*"\s*\{', line):
-                    self.stack.append(_ExternCInfo(linenum))
-                else:
-                    self.stack.append(_BlockInfo(linenum, True))
-                    if _MATCH_ASM.match(line):
-                        self.stack[-1].inline_asm = _BLOCK_ASM
-            elif token == ";":
-                # If we haven't seen an opening brace yet, but we already saw
-                # a semicolon, this is probably a forward declaration.  Pop
-                # the stack for these.
-                if not self.SeenOpenBrace():
-                    self._Pop()
-            elif token == ")":
-                # Similarly, if we haven't seen an opening brace yet, but we
-                # already saw a closing parenthesis, then these are probably
-                # function arguments with extra "class" or "struct" keywords.
-                # Also pop these stack for these.
-                if (
-                    self.stack
-                    and not self.stack[-1].seen_open_brace
-                    and isinstance(self.stack[-1], _ClassInfo)
-                ):
-                    self._Pop()
-            else:  # token == '}'
-                # Perform end of block checks and pop the stack.
-                if self.stack:
-                    self.stack[-1].CheckEnd(filename, clean_lines, linenum, error)
-                    self._Pop()
-            line = line[searched.end(0) :]
+        while (
+            new_line := self._ConsumeEnd(line, filename, clean_lines, linenum, error)
+        ) is not None:
+            line = new_line
 
     def InnermostClass(self):
         """Get class info on the top of the stack.
@@ -7238,7 +7315,7 @@ def IsBlockInNameSpace(nesting_state: NestingState, is_forward_declaration: bool
             and (
                 isinstance(nesting_state.stack[-2], _NamespaceInfo)
                 or len(nesting_state.stack) > 2  # Accommodate for WrappedInfo
-                and issubclass(type(nesting_state.stack[-1]), _WrappedInfo)
+                and issubclass(type(nesting_state.stack[-1]), _WrapInfo)
                 and not nesting_state.stack[-2].seen_open_brace
                 and isinstance(nesting_state.stack[-3], _NamespaceInfo)
             )

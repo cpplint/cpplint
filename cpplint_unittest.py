@@ -360,6 +360,17 @@ class TestCpplint(CpplintTestBase):
         ]
         assert self.GetNamespaceResults(lines) == ""
 
+        # Uniform initialization
+        lines = [
+            "namespace Unifor {",
+            "class MIA {",
+            '	private MIA() : cali({"nia"}),',
+            "		parme({3}),",
+            '		carne{"val", ipsmo}',
+            "		gat(o) {}",
+        ]
+        assert self.GetNamespaceResults(lines) == ""
+
         # Same line as constructor declaration
         lines = [
             "namespace Boucher {",
