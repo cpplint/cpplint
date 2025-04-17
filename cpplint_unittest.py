@@ -1107,6 +1107,7 @@ class TestCpplint(CpplintTestBase):
         self.TestLint("void Function(bool(FunctionPointerArg)()) {}", "")
         self.TestLint("typedef set<int64_t, bool(*)(int64_t, int64_t)> SortedIdSet", "")
         self.TestLint("bool TraverseNode(T *Node, bool(VisitorBase:: *traverse) (T *t)) {}", "")
+        self.TestLint("void (*execute_)(operation_base*) noexcept(may_throw());", "")
 
     # The second parameter to a gMock method definition is a function signature
     # that often looks like a bad cast but should not picked up by lint.
