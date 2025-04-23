@@ -329,7 +329,7 @@ class TestCpplint(CpplintTestBase):
             "",
             "protected Acme::Acme(const std::shared_ptr<const AbstractOperator> left,",
             "                     const std::shared_ptr<const AbstractOperator> nigh)",
-            "    : _left(left), _behind(nigh) {}",
+            "    : _left(left), _behind{nigh} {}",
             "",
             "}  // namespace Opossum",
         ]

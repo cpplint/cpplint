@@ -3462,7 +3462,7 @@ class NestingState:
             return depth_change
         return 0
 
-    def _ConsumeNamespace(self, line: str, linenum: int) -> str | None:
+    def _ConsumeNamespace(self, line: str, linenum: int) -> str:
         """
         Match start of namespace, append to stack, and consume line
         Args:
@@ -3470,23 +3470,24 @@ class NestingState:
             linenum: Line number of the line to check
 
         Returns:
-        The consumed line if namespace matched; None otherwise
+        Consumed line
         """
-        # Match start of namespace.  The "\b\s*" below catches namespace
-        # declarations even if it weren't followed by a whitespace, this
-        # is so that we don't confuse our namespace checker.  The
-        # missing spaces will be flagged by CheckSpacing.
-        namespace_decl_match = re.match(r"^\s*namespace\b\s*([:\w]+)?(.*)$", line)
-        if not namespace_decl_match:
-            return None
+        while True:
+            # Match start of namespace.  The "\b\s*" below catches namespace
+            # declarations even if it weren't followed by a whitespace, this
+            # is so that we don't confuse our namespace checker.  The
+            # missing spaces will be flagged by CheckSpacing.
+            namespace_decl_match = re.match(r"^\s*namespace\b\s*([:\w]+)?(.*)$", line)
+            if not namespace_decl_match:
+                break
 
-        new_namespace = _NamespaceInfo(namespace_decl_match.group(1), linenum)
-        self.stack.append(new_namespace)
+            new_namespace = _NamespaceInfo(namespace_decl_match.group(1), linenum)
+            self.stack.append(new_namespace)
 
-        line = namespace_decl_match.group(2)
-        if line.find("{") != -1:
-            new_namespace.seen_open_brace = True
-            line = line[line.find("{") + 1 :]
+            line = namespace_decl_match.group(2)
+            if line.find("{") != -1:
+                new_namespace.seen_open_brace = True
+                line = line[line.find("{") + 1 :]
         return line
 
     def _UpdateConstructor(
@@ -3513,7 +3514,7 @@ class NestingState:
         self._BequeathParensAndAppend(_ConstructorInfo(linenum), parens_changed)
         return True
 
-    def _ConsumeMemInitList(self, line: str, item: _MemInitListInfo) -> str | None:
+    def _ConsumeMemInitList(self, line: str, item: _MemInitListInfo) -> str:
         """
         Consume a line with a member initializer list and update its state.
         Args:
@@ -3521,43 +3522,46 @@ class NestingState:
             item: Stack item for the checked line to read from and update
 
         Returns:
-        The consumed line if we may continue consuming; None otherwise.
+        Processed line
         """
-        if line == "":
-            return None  # see last line of `if item.in_braces`
-        if item.expecting_identifier:
-            if searched := re.search(r"(\w+)", line):
-                item.expecting_identifier = False
-                line = line[searched.end(0) :]
-                item.expecting_braces = True
-            else:
-                return None
-        if item.expecting_braces:
-            if searched := re.match(r"\s*([({])", line):
-                item.in_braces = True
-                item.open_brace_count = 1
-                item.is_curly = searched.group(1) == "{"
-                line = line[searched.end(0) :]
-                item.expecting_braces = False
-            else:
-                return None
-        if item.in_braces:
-            lbrace, rbrace = ("{", "}") if item.is_curly else ("(", ")")
-            if found := line.rfind(rbrace) + 1:  # the index after that of the rbrace
-                item.open_brace_count -= line[:found].count(rbrace) - line[:found].count(lbrace)
-                line = line[found:]
-                if item.open_brace_count == 0:
-                    item.in_braces = False
+        while True:
+            if line == "":
+                break  # see last line of `if item.in_braces`
+            if item.expecting_identifier:
+                if searched := re.search(r"(\w+)", line):
+                    item.expecting_identifier = False
+                    line = line[searched.end(0) :]
+                    item.expecting_braces = True
+                else:
+                    break
+            if item.expecting_braces:
+                if searched := re.match(r"\s*([({])", line):
+                    item.in_braces = True
+                    item.open_brace_count = 1
+                    item.is_curly = searched.group(1) == "{"
+                    line = line[searched.end(0) :]
+                    item.expecting_braces = False
+                else:
+                    break
             if item.in_braces:
-                # Nothing meaningful for _ConsumeEnd() if we're still within the MemInitList
-                # Plus the mentioned function would pick up the {}
-                return ""
-        if not (item.expecting_identifier or item.expecting_braces or item.in_braces):
-            if found := line.find(",") + 1:
-                item.expecting_identifier = True
-                line = line[found:]
-            else:
-                return None
+                lbrace, rbrace = ("{", "}") if item.is_curly else ("(", ")")
+                # Matching braces
+                while found := line.find(rbrace) + 1:  # the index after that of the rbrace
+                    item.open_brace_count -= line[:found].count(rbrace) - line[:found].count(lbrace)
+                    line = line[found:]
+                    if item.open_brace_count == 0:
+                        item.in_braces = False
+                        break
+                if item.in_braces:
+                    # Nothing meaningful for _ConsumeEnd() if we're still within the MemInitList
+                    # Plus the mentioned function would pick up the }{
+                    return ""
+            if not (item.expecting_identifier or item.expecting_braces or item.in_braces):
+                if found := line.find(",") + 1:
+                    item.expecting_identifier = True
+                    line = line[found:]
+                else:
+                    break
         return line
 
     def _ConsumeEnd(
@@ -3652,8 +3656,7 @@ class NestingState:
         # Consume namespace declaration at the beginning of the line.  Do
         # this in a loop so that we catch same line declarations like this:
         #   namespace proto2 { namespace bridge { class MessageSet; } }
-        while (new_line := self._ConsumeNamespace(line, linenum)) is not None:
-            line = new_line
+        line = self._ConsumeNamespace(line, linenum)
 
         # Look for a class declaration in whatever is left of the line
         # after parsing namespaces.  The regexp accounts for decorated classes
@@ -3748,8 +3751,7 @@ class NestingState:
 
         # Consume contents of MemInitList if we're in one
         if self.stack and isinstance(self.stack[-1], _MemInitListInfo):
-            while (new_line := self._ConsumeMemInitList(line, self.stack[-1])) is not None:
-                line = new_line
+            line = self._ConsumeMemInitList(line, self.stack[-1])
 
         # Consume braces or semicolons from what's left of the line
         while (
