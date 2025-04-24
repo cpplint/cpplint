@@ -3,7 +3,7 @@
 4
 Done processing src/sillycode.cpp
 Done processing src/sillycode.w
-Total errors found: 21
+Total errors found: 20
 
 src/sillycode.cpp:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
 src/sillycode.cpp:2:  <ratio> is an unapproved C++11 header.  [build/c++11] [5]
@@ -24,6 +24,5 @@ src/sillycode.cpp:243:  Lines should be <= 80 characters long  [whitespace/line_
 src/sillycode.cpp:243:  Using C-style cast.  Use reinterpret_cast<derived2*>(...) instead  [readability/casting] [4]
 src/sillycode.cpp:244:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
 src/sillycode.cpp:249:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
-src/sillycode.w:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
 src/sillycode.w:0:  No #ifndef header guard found, suggested CPP variable is: SAMPLES_SILLY_SAMPLE_SRC_SILLYCODE_W_  [build/header_guard] [5]
 

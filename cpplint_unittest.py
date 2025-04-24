@@ -5864,9 +5864,7 @@ class TestCpplint(CpplintTestBase):
         assert error_collector.ResultList().count(legal_copyright_message) == 1
 
         error_collector = ErrorCollector(self.assertTrue)
-        cpplint.ProcessFileData(
-            file_path, "cc", ["" for unused_i in range(10)] + [copyright_line], error_collector
-        )
+        cpplint.ProcessFileData(file_path, "cc", [""] * 10 + [copyright_line], error_collector)
         assert error_collector.ResultList().count(legal_copyright_message) == 1
 
         # Test that warning isn't issued if Copyright line appears early enough.
@@ -5876,9 +5874,12 @@ class TestCpplint(CpplintTestBase):
             assert "legal/copyright" not in line
 
         error_collector = ErrorCollector(self.assertTrue)
-        cpplint.ProcessFileData(
-            file_path, "cc", ["" for unused_i in range(9)] + [copyright_line], error_collector
-        )
+        cpplint.ProcessFileData(file_path, "cc", ["//#copyleft4prez2025"], error_collector)
+        for line in error_collector.ResultList():
+            assert "legal/copyright" not in line
+
+        error_collector = ErrorCollector(self.assertTrue)
+        cpplint.ProcessFileData(file_path, "cc", [""] * 9 + [copyright_line], error_collector)
         for line in error_collector.ResultList():
             assert "legal/copyright" not in line
 

@@ -3,7 +3,7 @@ src/*
 4
 Done processing src/sillycode.cpp
 Done processing src/sillycode.w
-Total errors found: 121
+Total errors found: 120
 
 src/sillycode.cpp:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
 src/sillycode.cpp:1:  Include the directory when naming header files  [build/include_subdir] [4]
@@ -123,7 +123,6 @@ src/sillycode.cpp:179:  Add #include <iostream> for cin  [build/include_what_you
 src/sillycode.cpp:224:  Add #include <limits> for numeric_limits<>  [build/include_what_you_use] [4]
 src/sillycode.cpp:237:  Add #include <string> for string  [build/include_what_you_use] [4]
 src/sillycode.cpp:264:  Could not find a newline character at the end of the file.  [whitespace/ending_newline] [5]
-src/sillycode.w:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
 src/sillycode.w:0:  No #ifndef header guard found, suggested CPP variable is: SAMPLES_SILLY_SAMPLE_SRC_SILLYCODE_W_  [build/header_guard] [5]
 src/sillycode.w:3:  Should have a space between // and comment  [whitespace/comments] [4]
 
