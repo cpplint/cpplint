@@ -25,19 +25,21 @@ repos:
       - id: debug-statements
       - id: destroyed-symlinks
       - id: detect-private-key
-      # - id: end-of-file-fixer  # TODO(cclauss): Causes some tests to fail.
       - id: file-contents-sorter
       - id: fix-byte-order-marker
       - id: forbid-new-submodules
       - id: forbid-submodules
-      # - id: mixed-line-ending  # TODO(cclauss): Causes some tests to fail.
-      #  args:
-      #    - --fix=lf
+      - id: mixed-line-ending
+        args:
+          - --fix=lf
       - id: name-tests-test
       - id: pretty-format-json
       - id: requirements-txt-fixer
       - id: sort-simple-yaml
-      # - id: trailing-whitespace  # TODO(cclauss): Causes some tests to fail.
+      - id: end-of-file-fixer
+        exclude: samples
+      - id: trailing-whitespace
+        exclude: samples
 
   - repo: https://github.com/MarcoGorelli/auto-walrus
     rev: 0.3.4
@@ -56,7 +58,7 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.12.3
     hooks:
-      - id: ruff
+      - id: ruff-check
       - id: ruff-format
 
   - repo: https://github.com/tox-dev/pyproject-fmt
