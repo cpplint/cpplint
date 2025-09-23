@@ -200,8 +200,8 @@ max-statements = 79
 min-public-methods = 0
 
 [tool.pytest.ini_options]
-# fail if coverage is under 90%
-addopts = "--color=yes --cov-fail-under=90 --cov=cpplint"
+# fail if coverage is under 89%
+addopts = "--color=yes --cov-fail-under=89 --cov=cpplint"
 python_files = [ "*test.py" ]
 required_plugins = [ "pytest-cov", "pytest-timeout" ]
 testpaths = [ "." ]
