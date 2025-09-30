@@ -4,6 +4,9 @@
 # `pipx install pre-commit` or `brew install pre-commit`
 # Then in the project root directory run `pre-commit install`
 
+ci:
+  autoupdate_schedule: monthly
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
