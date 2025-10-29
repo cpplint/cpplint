@@ -7292,10 +7292,11 @@ def ShouldCheckNamespaceIndentation(
             isinstance(nesting_state.stack[-1], _MemInitListInfo)
             or isinstance(nesting_state.popped_top, _MemInitListInfo)
         )
-    ) or (  # popping constructor after MemInitList on the same line (: _a(a) {})
+    ) or (  # popping constructor after MemInitList on the same line (: _a(a) {}) or (_a(a) {})
         isinstance(nesting_state.previous_stack_top, _ConstructorInfo)
         and isinstance(nesting_state.popped_top, _ConstructorInfo)
         and re.search(r"[^:]:[^:]", raw_lines_no_comments[linenum])
+        or re.search(r"^(?!.*:).*\)\s*\{?\s*\}$", raw_lines_no_comments[linenum])
     ):
         return False
 
