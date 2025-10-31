@@ -7495,7 +7495,7 @@ def ProcessConfigOverrides(filename):
             continue
 
         try:
-            with codecs.open(cfg_file, "r", "utf8", "replace") as file_handle:
+            with open(cfg_file, encoding="utf8", errors="replace") as file_handle:
                 for line in file_handle:
                     line, _, _ = line.partition("#")  # Remove comments.
                     if not line.strip():
@@ -7590,16 +7590,15 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
     crlf_lines = []
     try:
         # Support the UNIX convention of using "-" for stdin.  Note that
-        # we are not opening the file with universal newline support
-        # (which codecs doesn't support anyway), so the resulting lines do
-        # contain trailing '\r' characters if we are reading a file that
-        # has CRLF endings.
+        # we are not opening the file with universal newline support,
+        # so the resulting lines do # contain trailing '\r' characters
+        # if we are reading a file that # has CRLF endings.
         # If after the split a trailing '\r' is present, it is removed
         # below.
         if filename == "-":
             lines = sys.stdin.read().split("\n")
         else:
-            with codecs.open(filename, "r", "utf8", "replace") as target_file:
+            with open(filename, encoding="utf8", errors="replace") as target_file:
                 lines = target_file.read().split("\n")
 
         # Remove trailing '\r'.
