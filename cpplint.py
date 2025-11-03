@@ -7586,29 +7586,13 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
         _RestoreFilters()
         return
 
-    lf_lines = []
-    crlf_lines = []
     try:
-        # Support the UNIX convention of using "-" for stdin.  Note that
-        # we are not opening the file with universal newline support,
-        # so the resulting lines do # contain trailing '\r' characters
-        # if we are reading a file that # has CRLF endings.
-        # If after the split a trailing '\r' is present, it is removed
-        # below.
+        # Support the UNIX convention of using "-" for stdin.
         if filename == "-":
             lines = sys.stdin.read().split("\n")
         else:
-            with open(filename, encoding="utf8", errors="replace") as target_file:
+            with open(filename, encoding="utf8", errors="replace", newline=None) as target_file:
                 lines = target_file.read().split("\n")
-
-        # Remove trailing '\r'.
-        # The -1 accounts for the extra trailing blank line we get from split()
-        for linenum in range(len(lines) - 1):
-            if lines[linenum].endswith("\r"):
-                lines[linenum] = lines[linenum].rstrip("\r")
-                crlf_lines.append(linenum + 1)
-            else:
-                lf_lines.append(linenum + 1)
 
     except OSError:
         # TODO(aaronliu0130): Maybe make this have an exit code of 2 after all is done
@@ -7627,29 +7611,6 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
         )
     else:
         ProcessFileData(filename, file_extension, lines, Error, extra_check_functions)
-
-        # If end-of-line sequences are a mix of LF and CR-LF, issue
-        # warnings on the lines with CR.
-        #
-        # Don't issue any warnings if all lines are uniformly LF or CR-LF,
-        # since critique can handle these just fine, and the style guide
-        # doesn't dictate a particular end of line sequence.
-        #
-        # We can't depend on os.linesep to determine what the desired
-        # end-of-line sequence should be, since that will return the
-        # server-side end-of-line sequence.
-        if lf_lines and crlf_lines:
-            # Warn on every line with CR.  An alternative approach might be to
-            # check whether the file is mostly CRLF or just LF, and warn on the
-            # minority, we bias toward LF here since most tools prefer LF.
-            for linenum in crlf_lines:
-                Error(
-                    filename,
-                    linenum,
-                    "whitespace/newline",
-                    1,
-                    "Unexpected \\r (^M) found; better to use only \\n",
-                )
 
     # Suppress printing anything if --quiet was passed unless the error
     # count has increased after processing this file.
