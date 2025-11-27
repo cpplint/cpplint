@@ -6837,9 +6837,6 @@ _HEADERS_MAYBE_TEMPLATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "<algorithm>",
         (
-            "copy",
-            "max",
-            "min",
             "min_element",
             "sort",
             "transform",
@@ -6917,10 +6914,19 @@ for _header, _templates in _HEADERS_MAYBE_TEMPLATES:
         for _template in _templates
     )
 
-# Map is often overloaded. Only check, if it is fully qualified.
+# Often overloaded, only check if fully qualified.
 # Match 'std::map<type>(...)', but not 'map<type>(...)''
 _re_pattern_headers_maybe_templates.append(
     (re.compile(r"(std\b::\bmap\s*\<)|(^(std\b::\b)map\b\(\s*\<)"), "map<>", "<map>")
+)
+# Otherwise, causes false positives with direct initialization. ('int max(0);')
+_re_pattern_headers_maybe_templates.extend(
+    (
+        re.compile(rf"std\b::\b{_template}\s*\([^\)]|\b{_template}\s*<.*?>\([^\)]"),
+        _template,
+        "<algorithm>",
+    )
+    for _template in ("copy", "max", "min")
 )
 
 # Other scripts may reach in and modify this pattern.

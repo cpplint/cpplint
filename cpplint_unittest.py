@@ -1227,6 +1227,7 @@ class TestCpplint(CpplintTestBase):
         """,
             "Add #include <algorithm> for min  [build/include_what_you_use] [4]",
         )
+        self.TestIncludeWhatYouUse("int max(0), copy(max), min();", "")
         self.TestIncludeWhatYouUse(
             'cout << "hello world" << endl;',
             "Add #include <iostream> for cout  [build/include_what_you_use] [4]",
