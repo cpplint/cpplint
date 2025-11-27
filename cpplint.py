@@ -4932,9 +4932,10 @@ def CheckBraces(filename, clean_lines, linenum, error):
             if endlinenum < len(clean_lines.elided):
                 endline = clean_lines.elided[endlinenum]
                 # We allow a mix of whitespace and closing braces (e.g. for one-liner
-                # methods) and a single \ after the semicolon (for macros)
+                # methods) and a single \ after the semicolon
+                # or a blank line with a single \ at the end (for macros)
                 endpos = endline.find(";")
-                if not re.match(r";[\s}]*(\\?)$", endline[endpos:]):
+                if not re.match(r"[;\s][\s}]*(\\?)$", endline[endpos:]):
                     # Semicolon isn't the last character, there's something trailing.
                     # Output a warning if the semicolon is not contained inside
                     # a lambda expression.
@@ -4962,7 +4963,7 @@ def CheckBraces(filename, clean_lines, linenum, error):
                             "Else clause should be indented at the same level as if. "
                             "Ambiguous nested if/else chains require braces.",
                         )
-                    elif next_indent > if_indent:
+                    elif next_indent > if_indent and not re.search(r"\s*\\", next_line):
                         error(
                             filename,
                             linenum,
