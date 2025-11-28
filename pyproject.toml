@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = [ "setuptools>=61.2" ]
+requires = [ "setuptools>=77" ]
 
 [project]
 name = "cpplint"
@@ -19,15 +19,15 @@ authors = [
   { name = "Andrew Davis", email = "theandrewdavis@gmail.com" },
   { name = "cpplint developers" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
   "Intended Audience :: End Users/Desktop",
-  "License :: Freely Distributable",
   "Natural Language :: English",
   "Programming Language :: C++",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
