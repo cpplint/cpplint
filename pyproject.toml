@@ -7,7 +7,7 @@ name = "cpplint"
 description = "Check C++ files configurably against Google's style guide"
 readme = "README.rst"
 keywords = [ "c++", "cpp", "google style", "lint" ]
-license = { text = "BSD-3-Clause" }
+license = "BSD-3-Clause"
 maintainers = [
   { name = "Aaron Liu", email = "aaronliu0130@gmail.com" },
   { name = "Christian Clauss", email = "cclauss@me.com" },
@@ -25,7 +25,6 @@ classifiers = [
   "Environment :: Console",
   "Intended Audience :: End Users/Desktop",
   "License :: Freely Distributable",
-  "License :: OSI Approved :: BSD License",
   "Natural Language :: English",
   "Programming Language :: C++",
   "Programming Language :: Python :: 3 :: Only",
