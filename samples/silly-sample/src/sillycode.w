@@ -1,4 +1,4 @@
-// Copyleft 1984 super copy paste go
+//#copyleft4prez2025 super copy paste go
 #include <print>
 //forward declarations
 class B;
