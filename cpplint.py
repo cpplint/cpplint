@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2009 Google Inc. All rights reserved.
 #
@@ -61,14 +61,14 @@ import xml.etree.ElementTree
 # if empty, use defaults
 _valid_extensions: set[str] = set()
 
-__VERSION__ = "2.0.2"
+__VERSION__ = "2.0.3-dev0"
 
 _USAGE = """
 Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
                    [--filter=-x,+y,...]
                    [--counting=total|toplevel|detailed] [--root=subdir]
                    [--repository=path]
-                   [--linelength=digits] [--headers=x,y,...]
+                   [--linelength=digits] [--headers=x,y,...] [--third_party_headers=pattern]
                    [--recursive]
                    [--exclude=path]
                    [--extensions=hpp,cpp,...]
@@ -240,6 +240,8 @@ Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
       The header extensions that cpplint will treat as .h in checks. Values are
       automatically added to --extensions list.
      (by default, only files with extensions %s will be assumed to be headers)
+    third_party_headers=pattern
+      Regex for identifying third-party headers to exclude from include checks.
 
       Examples:
         --headers=%s
@@ -256,6 +258,7 @@ Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
       linelength=80
       root=subdir
       headers=x,y,...
+      third_party_headers=pattern
 
     "set noparent" option prevents cpplint from traversing directory tree
     upwards looking for more .cfg files in parent directories. This option
@@ -308,8 +311,14 @@ _ERROR_CATEGORIES = [
     "build/include_order",
     "build/include_what_you_use",
     "build/namespaces_headers",
-    "build/namespaces_literals",
-    "build/namespaces",
+    "build/namespaces/header/block/literals",
+    "build/namespaces/header/block/nonliterals",
+    "build/namespaces/header/namespace/literals",
+    "build/namespaces/header/namespace/nonliterals",
+    "build/namespaces/source/block/literals",
+    "build/namespaces/source/block/nonliterals",
+    "build/namespaces/source/namespace/literals",
+    "build/namespaces/source/namespace/nonliterals",
     "build/printf_format",
     "build/storage_class",
     "legal/copyright",
@@ -806,14 +815,6 @@ _TYPES = re.compile(
     r")$"
 )
 
-
-# These headers are excluded from [build/include] and [build/include_order]
-# checks:
-# - Anything not following google file name conventions (containing an
-#   uppercase character, such as Python.h or nsStringAPI.h, for example).
-# - Lua headers.
-_THIRD_PARTY_HEADERS_PATTERN = re.compile(r"^(?:[^/]*[A-Z][^/]*\.h|lua\.h|lauxlib\.h|lualib\.h)$")
-
 # Pattern for matching FileInfo.BaseName() against test file name
 _test_suffixes = ["_test", "_regtest", "_unittest"]
 _TEST_FILE_SUFFIX = "(" + "|".join(_test_suffixes) + r")$"
@@ -935,6 +936,16 @@ _SED_FIXUPS = {
     "Missing space after ,": r"s/,\([^ ]\)/, \1/g",
 }
 
+# Used for backwards compatibility and ease of use
+_FILTER_SHORTCUTS = {
+    "build/namespaces_literals": [
+        "build/namespaces/header/block/literals",
+        "build/namespaces/header/namespace/literals",
+        "build/namespaces/source/block/literals",
+        "build/namespaces/source/namespace/literals",
+    ]
+}
+
 # The root directory used for deriving header guard CPP variable.
 # This is set by --root flag.
 _root = None
@@ -964,6 +975,16 @@ _config_filename = "CPPLINT.cfg"
 # Treat all headers starting with 'h' equally: .h, .hpp, .hxx etc.
 # This is set by --headers flag.
 _hpp_headers: set[str] = set()
+
+# These headers are excluded from [build/include_subdir], [build/include_order], and
+# [build/include_alpha]
+# The default checks are following
+# - Anything not following google file name conventions (containing an
+#   uppercase character, such as Python.h or nsStringAPI.h, for example).
+# - Lua headers.
+# Default pattern for third-party headers (uppercase .h or Lua headers).
+_THIRD_PARTY_HEADERS_DEFAULT = r"^(?:[^/]*[A-Z][^/]*\.h|lua\.h|lauxlib\.h|lualib\.h)$"
+_third_party_headers_pattern = re.compile(_THIRD_PARTY_HEADERS_DEFAULT)
 
 
 class ErrorSuppressions:
@@ -1054,6 +1075,15 @@ def ProcessIncludeOrderOption(val):
         _include_order = val
     else:
         PrintUsage("Invalid includeorder value %s. Expected default|standardcfirst")
+
+
+def ProcessThirdPartyHeadersOption(val):
+    """Sets the regex pattern for third-party headers."""
+    global _third_party_headers_pattern
+    try:
+        _third_party_headers_pattern = re.compile(val)
+    except re.error:
+        PrintUsage(f"Invalid third_party_headers pattern: {val}")
 
 
 def IsHeaderExtension(file_extension):
@@ -1457,7 +1487,12 @@ class _CppLintState:
         for filt in filters.split(","):
             clean_filt = filt.strip()
             if clean_filt:
-                self.filters.append(clean_filt)
+                if len(clean_filt) > 1 and clean_filt[1:] in _FILTER_SHORTCUTS:
+                    starting_char = clean_filt[0]
+                    new_filters = [starting_char + x for x in _FILTER_SHORTCUTS[clean_filt[1:]]]
+                    self.filters.extend(new_filters)
+                else:
+                    self.filters.append(clean_filt)
         for filt in self.filters:
             if not filt.startswith(("+", "-")):
                 msg = f"Every filter in --filters must start with + or - ({filt} does not)"
@@ -3300,6 +3335,14 @@ class NestingState:
         """
         return self.stack and self.stack[-1].inline_asm != _NO_ASM
 
+    def InBlockScope(self):
+        """Check if we are currently one level inside a block scope.
+
+        Returns:
+          True if top of the stack is a block scope, False otherwise.
+        """
+        return len(self.stack) > 0 and not isinstance(self.stack[-1], _NamespaceInfo)
+
     def InTemplateArgumentList(self, clean_lines, linenum, pos):
         """Check if current position is inside template argument list.
 
@@ -5042,7 +5085,8 @@ def CheckBraces(filename, clean_lines, linenum, error):
                             "Else clause should be indented at the same level as if. "
                             "Ambiguous nested if/else chains require braces.",
                         )
-                    elif next_indent > if_indent:
+                    # assume blank line with \ at the end (for macros) = de-indent
+                    elif next_indent > if_indent and not re.match(r"\s*\\", next_line):
                         error(
                             filename,
                             linenum,
@@ -5838,7 +5882,7 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
     if (
         match
         and IsHeaderExtension(match.group(2))
-        and not _THIRD_PARTY_HEADERS_PATTERN.match(match.group(1))
+        and not _third_party_headers_pattern.match(match.group(1))
     ):
         error(
             filename,
@@ -5891,7 +5935,7 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
                 third_src_header = True
                 break
 
-        if third_src_header or not _THIRD_PARTY_HEADERS_PATTERN.match(include):
+        if third_src_header or not _third_party_headers_pattern.match(include):
             include_state.include_list[-1].append((include, linenum))
 
             # We want to ensure that headers appear in the right order:
@@ -6144,22 +6188,26 @@ def CheckLanguage(
         )
 
     if re.search(r"\busing namespace\b", line):
-        if re.search(r"\bliterals\b", line):
-            error(
-                filename,
-                linenum,
-                "build/namespaces_literals",
-                5,
-                "Do not use namespace using-directives.  Use using-declarations instead.",
-            )
-        else:
-            error(
-                filename,
-                linenum,
-                "build/namespaces",
-                5,
-                "Do not use namespace using-directives.  Use using-declarations instead.",
-            )
+        is_literals = re.search(r"\bliterals\b", line) is not None
+        is_header = not _IsSourceExtension(file_extension)
+        file_type = "header" if is_header else "source"
+
+        # Check for the block scope for multiline blocks.
+        # Check if the line starts with the using directive as a heuristic in case it's all one line
+        is_block_scope = nesting_state.InBlockScope() or not line.startswith("using namespace")
+
+        scope_type = "block" if is_block_scope else "namespace"
+        literal_type = "literals" if is_literals else "nonliterals"
+
+        specific_category = f"build/namespaces/{file_type}/{scope_type}/{literal_type}"
+
+        error(
+            filename,
+            linenum,
+            specific_category,
+            5,
+            "Do not use namespace using-directives.  Use using-declarations instead.",
+        )
 
     # Detect variable-length arrays.
     match = re.match(r"\s*(.+::)?(\w+) [a-z]\w*\[(.+)];", line)
@@ -6913,9 +6961,6 @@ _HEADERS_MAYBE_TEMPLATES: tuple[tuple[str, tuple[str, ...]], ...] = (
     (
         "<algorithm>",
         (
-            "copy",
-            "max",
-            "min",
             "min_element",
             "sort",
             "transform",
@@ -6993,10 +7038,19 @@ for _header, _templates in _HEADERS_MAYBE_TEMPLATES:
         for _template in _templates
     )
 
-# Map is often overloaded. Only check, if it is fully qualified.
+# Often overloaded, only check if fully qualified.
 # Match 'std::map<type>(...)', but not 'map<type>(...)''
 _re_pattern_headers_maybe_templates.append(
     (re.compile(r"(std\b::\bmap\s*\<)|(^(std\b::\b)map\b\(\s*\<)"), "map<>", "<map>")
+)
+# Otherwise, causes false positives with direct initialization. ('int max(0);')
+_re_pattern_headers_maybe_templates.extend(
+    (
+        re.compile(rf"std\b::\b{_template}\s*\([^\)]|\b{_template}\s*<.*?>\([^\)]"),
+        _template,
+        "<algorithm>",
+    )
+    for _template in ("copy", "max", "min")
 )
 
 # Other scripts may reach in and modify this pattern.
@@ -7578,7 +7632,7 @@ def ProcessConfigOverrides(filename):
             continue
 
         try:
-            with codecs.open(cfg_file, "r", "utf8", "replace") as file_handle:
+            with open(cfg_file, encoding="utf8", errors="replace") as file_handle:
                 for line in file_handle:
                     line, _, _ = line.partition("#")  # Remove comments.
                     if not line.strip():
@@ -7624,6 +7678,8 @@ def ProcessConfigOverrides(filename):
                         _root = os.path.join(os.path.dirname(cfg_file), val)
                     elif name == "headers":
                         ProcessHppHeadersOption(val)
+                    elif name == "third_party_headers":
+                        ProcessThirdPartyHeadersOption(val)
                     elif name == "includeorder":
                         ProcessIncludeOrderOption(val)
                     else:
@@ -7667,30 +7723,13 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
         _RestoreFilters()
         return
 
-    lf_lines = []
-    crlf_lines = []
     try:
-        # Support the UNIX convention of using "-" for stdin.  Note that
-        # we are not opening the file with universal newline support
-        # (which codecs doesn't support anyway), so the resulting lines do
-        # contain trailing '\r' characters if we are reading a file that
-        # has CRLF endings.
-        # If after the split a trailing '\r' is present, it is removed
-        # below.
+        # Support the UNIX convention of using "-" for stdin.
         if filename == "-":
             lines = sys.stdin.read().split("\n")
         else:
-            with codecs.open(filename, "r", "utf8", "replace") as target_file:
+            with open(filename, encoding="utf8", errors="replace", newline=None) as target_file:
                 lines = target_file.read().split("\n")
-
-        # Remove trailing '\r'.
-        # The -1 accounts for the extra trailing blank line we get from split()
-        for linenum in range(len(lines) - 1):
-            if lines[linenum].endswith("\r"):
-                lines[linenum] = lines[linenum].rstrip("\r")
-                crlf_lines.append(linenum + 1)
-            else:
-                lf_lines.append(linenum + 1)
 
     except OSError:
         # TODO(aaronliu0130): Maybe make this have an exit code of 2 after all is done
@@ -7709,29 +7748,6 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
         )
     else:
         ProcessFileData(filename, file_extension, lines, Error, extra_check_functions)
-
-        # If end-of-line sequences are a mix of LF and CR-LF, issue
-        # warnings on the lines with CR.
-        #
-        # Don't issue any warnings if all lines are uniformly LF or CR-LF,
-        # since critique can handle these just fine, and the style guide
-        # doesn't dictate a particular end of line sequence.
-        #
-        # We can't depend on os.linesep to determine what the desired
-        # end-of-line sequence should be, since that will return the
-        # server-side end-of-line sequence.
-        if lf_lines and crlf_lines:
-            # Warn on every line with CR.  An alternative approach might be to
-            # check whether the file is mostly CRLF or just LF, and warn on the
-            # minority, we bias toward LF here since most tools prefer LF.
-            for linenum in crlf_lines:
-                Error(
-                    filename,
-                    linenum,
-                    "whitespace/newline",
-                    1,
-                    "Unexpected \\r (^M) found; better to use only \\n",
-                )
 
     # Suppress printing anything if --quiet was passed unless the error
     # count has increased after processing this file.
@@ -7808,6 +7824,7 @@ def ParseArguments(args):
                 "exclude=",
                 "recursive",
                 "headers=",
+                "third_party_headers=",
                 "includeorder=",
                 "config=",
                 "quiet",
@@ -7867,6 +7884,8 @@ def ParseArguments(args):
             ProcessExtensionsOption(val)
         elif opt == "--headers":
             ProcessHppHeadersOption(val)
+        elif opt == "--third_party_headers":
+            ProcessThirdPartyHeadersOption(val)
         elif opt == "--recursive":
             recursive = True
         elif opt == "--includeorder":

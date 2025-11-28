@@ -4,9 +4,12 @@
 # `pipx install pre-commit` or `brew install pre-commit`
 # Then in the project root directory run `pre-commit install`
 
+ci:
+  autoupdate_schedule: monthly
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -25,19 +28,21 @@ repos:
       - id: debug-statements
       - id: destroyed-symlinks
       - id: detect-private-key
-      # - id: end-of-file-fixer  # TODO(cclauss): Causes some tests to fail.
       - id: file-contents-sorter
       - id: fix-byte-order-marker
       - id: forbid-new-submodules
       - id: forbid-submodules
-      # - id: mixed-line-ending  # TODO(cclauss): Causes some tests to fail.
-      #  args:
-      #    - --fix=lf
+      - id: mixed-line-ending
+        args:
+          - --fix=lf
       - id: name-tests-test
       - id: pretty-format-json
       - id: requirements-txt-fixer
       - id: sort-simple-yaml
-      # - id: trailing-whitespace  # TODO(cclauss): Causes some tests to fail.
+      - id: end-of-file-fixer
+        exclude: samples
+      - id: trailing-whitespace
+        exclude: samples
 
   - repo: https://github.com/MarcoGorelli/auto-walrus
     rev: 0.3.4
@@ -54,13 +59,13 @@ repos:
           - tomli
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.5
+    rev: v0.14.6
     hooks:
-      - id: ruff
+      - id: ruff-check
       - id: ruff-format
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.5.1
+    rev: v2.11.1
     hooks:
       - id: pyproject-fmt
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2009 Google Inc. All rights reserved.
 #
@@ -1250,6 +1250,7 @@ class TestCpplint(CpplintTestBase):
         """,
             "Add #include <algorithm> for min  [build/include_what_you_use] [4]",
         )
+        self.TestIncludeWhatYouUse("int max(0), copy(max), min();", "")
         self.TestIncludeWhatYouUse(
             'cout << "hello world" << endl;',
             "Add #include <iostream> for cout  [build/include_what_you_use] [4]",
@@ -3663,7 +3664,7 @@ class TestCpplint(CpplintTestBase):
             assert (
                 error_collector.Results().count(
                     "Do not use namespace using-directives.  Use using-declarations instead.  "
-                    "[build/namespaces] [5]"
+                    "[build/namespaces/source/namespace/nonliterals] [5]"
                 )
                 == 1
             )
@@ -3671,20 +3672,6 @@ class TestCpplint(CpplintTestBase):
         DoTest(self, ["using namespace foo;"])
         DoTest(self, ["", "", "", "using namespace foo;"])
         DoTest(self, ["// hello", "using namespace foo;"])
-
-    def testUsingLiteralsNamespaces(self):
-        self.TestLint(
-            "using namespace std::literals;",
-            "Do not use namespace"
-            " using-directives.  Use using-declarations instead."
-            "  [build/namespaces_literals] [5]",
-        )
-        self.TestLint(
-            "using namespace std::literals::chrono_literals;",
-            "Do"
-            " not use namespace using-directives.  Use using-declarations instead."
-            "  [build/namespaces_literals] [5]",
-        )
 
     def testNewlineAtEOF(self):
         def DoTest(self, data, is_missing_eof):
@@ -4226,6 +4213,73 @@ class TestCpplint(CpplintTestBase):
             == 0
         )
 
+    def testUsingNamespacesGranular(self):
+        """Test granular using namespace checks for different contexts."""
+
+        self.TestLanguageRulesCheck(
+            "foo.h",
+            "using namespace std;",
+            "Do not use namespace using-directives.  "
+            "Use using-declarations instead."
+            "  [build/namespaces/header/namespace/nonliterals] [5]",
+        )
+
+        self.TestLanguageRulesCheck(
+            "foo.h",
+            "using namespace std::chrono::literals;",
+            "Do not use namespace using-directives.  "
+            "Use using-declarations instead."
+            "  [build/namespaces/header/namespace/literals] [5]",
+        )
+
+        self.TestLanguageRulesCheck(
+            "foo.cc",
+            "using namespace std;",
+            "Do not use namespace using-directives.  "
+            "Use using-declarations instead."
+            "  [build/namespaces/source/namespace/nonliterals] [5]",
+        )
+
+        self.TestLanguageRulesCheck(
+            "foo.cc",
+            "using namespace std::chrono::literals;",
+            "Do not use namespace using-directives.  "
+            "Use using-declarations instead."
+            "  [build/namespaces/source/namespace/literals] [5]",
+        )
+
+        self.TestLanguageRulesCheck(
+            "foo.h",
+            "{ using namespace std; }",
+            "Do not use namespace using-directives.  "
+            "Use using-declarations instead."
+            "  [build/namespaces/header/block/nonliterals] [5]",
+        )
+
+        self.TestLanguageRulesCheck(
+            "foo.h",
+            "{ using namespace std::chrono::literals; }",
+            "Do not use namespace using-directives.  "
+            "Use using-declarations instead."
+            "  [build/namespaces/header/block/literals] [5]",
+        )
+
+        self.TestLanguageRulesCheck(
+            "foo.cc",
+            "{ using namespace std; }",
+            "Do not use namespace using-directives.  "
+            "Use using-declarations instead."
+            "  [build/namespaces/source/block/nonliterals] [5]",
+        )
+
+        self.TestLanguageRulesCheck(
+            "foo.cc",
+            "{ using namespace std::chrono::literals; }",
+            "Do not use namespace using-directives.  "
+            "Use using-declarations instead."
+            "  [build/namespaces/source/block/literals] [5]",
+        )
+
     def testComma(self):
         self.TestLint("a = f(1,2);", "Missing space after ,  [whitespace/comma] [3]")
         self.TestLint(
@@ -4472,6 +4526,15 @@ class TestCpplint(CpplintTestBase):
         if (foo) goto fail;
           goto fail;""",
             "If/else bodies with multiple statements require braces  [readability/braces] [4]",
+        )
+        self.TestMultiLineLint(
+            """
+#define MACRO \
+if (func1())  \
+return false; \
+              \
+func2();""",
+            "",
         )
         self.TestMultiLineLint(
             """
