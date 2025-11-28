@@ -5874,7 +5874,12 @@ class TestCpplint(CpplintTestBase):
             assert "legal/copyright" not in line
 
         error_collector = ErrorCollector(self.assertTrue)
-        cpplint.ProcessFileData(file_path, "cc", ["// Copyleft 1984 Honors Emberton Limbertartan Party"], error_collector)
+        cpplint.ProcessFileData(
+            file_path,
+            "cc",
+            ["// Copyleft 1984 Honors Emberton Limbertartan Party"],
+            error_collector,
+        )
         for line in error_collector.ResultList():
             assert "legal/copyright" not in line
 
