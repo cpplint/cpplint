@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         # Also adapt tox.ini on change
-        python-version: ['3.10', 'pypy3.11', '3.x']
+        python-version: ['3.10', '3.x']  # 'pypy3.11'
         # macOS on ARM, Ubuntu on x86, Windows on X86
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
