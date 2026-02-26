@@ -1808,12 +1808,29 @@ class TestCpplint(CpplintTestBase):
           };""",
                 "",
             )
-            # No crash or warning for constructors with << (bitwise shift) in
-            # default parameter values (regression test for issue #223)
+            # No crash or warning for constructors with '<'-containing operators
+            # in default parameter values (regression test for issue #223).
+            # left shift <<
             self.TestMultiLineLint(
                 """
           class A {
             A(int b, int c, int a = 1 << 1) {}
+          };""",
+                "",
+            )
+            # compound left-shift-assign <<=
+            self.TestMultiLineLint(
+                """
+          class A {
+            A(int b, int c, int a = (x <<= 1)) {}
+          };""",
+                "",
+            )
+            # less-or-equal <=
+            self.TestMultiLineLint(
+                """
+          class A {
+            A(int b, int c, int a = b <= c ? 1 : 0) {}
           };""",
                 "",
             )

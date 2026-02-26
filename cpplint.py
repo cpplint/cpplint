@@ -3968,13 +3968,20 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
             constructor_args = explicit_constructor_match.group(2).split(",")
 
         # collapse arguments so that commas in template parameter lists and function
-        # argument parameter lists don't split arguments in two
+        # argument parameter lists don't split arguments in two.
+        # Strip operator sequences that begin with '<' before counting angle
+        # brackets, to avoid confusing operators with unmatched template
+        # brackets.  Longer sequences must come first so that '<<=' is not
+        # partially matched as '<<' leaving a stray '='.
+        # Note: '>>' and '>=' are intentionally left alone because extra '>'
+        # characters do not trigger the joining loop (condition is
+        # count('<') > count('>')), and stripping '>>' would break nested
+        # template types such as vector<vector<int>>.
+        _LANGLE_OPS_RE = re.compile(r"<<=|<=|<<")
         i = 0
         while i < len(constructor_args):
             constructor_arg = constructor_args[i]
-            # Strip << (bitwise left-shift) before counting angle brackets, to
-            # avoid confusing shift operators with unmatched template brackets.
-            cleaned_arg = re.sub(r"<<", "", constructor_arg)
+            cleaned_arg = _LANGLE_OPS_RE.sub("", constructor_arg)
             while cleaned_arg.count("<") > cleaned_arg.count(">") or cleaned_arg.count(
                 "("
             ) > cleaned_arg.count(")"):
@@ -3982,7 +3989,7 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
                     break
                 constructor_arg += "," + constructor_args[i + 1]
                 del constructor_args[i + 1]
-                cleaned_arg = re.sub(r"<<", "", constructor_arg)
+                cleaned_arg = _LANGLE_OPS_RE.sub("", constructor_arg)
             constructor_args[i] = constructor_arg
             i += 1
 
