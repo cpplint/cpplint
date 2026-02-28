@@ -1157,7 +1157,11 @@ def ParseNolintSuppressions(filename, raw_line, linenum, error):
                 _error_suppressions.StartBlockSuppression(category, linenum)
         elif no_lint_type == "END":
             if not _error_suppressions.HasOpenBlock():
-                error(filename, linenum, "readability/nolint", 5, "Not in a NOLINT block")
+                if matched.group(2) not in (None, "(*)"):
+                    # Has category; probably a clang-tidy rule. Safer to ignore.
+                    pass
+                else:
+                    error(filename, linenum, "readability/nolint", 5, "Not in a NOLINT block")
 
             def ProcessCategory(category):
                 if category is not None:
