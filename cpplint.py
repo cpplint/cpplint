@@ -920,6 +920,10 @@ _SEARCH_C_FILE = re.compile(
 # Match string that indicates we're working on a Linux Kernel file.
 _SEARCH_KERNEL_FILE = re.compile(r"\b(?:LINT_KERNEL_FILE)")
 
+# Operator sequences beginning with '<' (used to strip before counting angle brackets).
+# Longer sequences must come first so '<<=' is not partially matched as '<<'.
+_LANGLE_OPS_RE = re.compile(r"<<=|<=|<<")
+
 # Commands for sed to fix the problem
 _SED_FIXUPS = {
     "Remove spaces around =": r"s/ = /=/",
@@ -3981,7 +3985,6 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
         # characters do not trigger the joining loop (condition is
         # count('<') > count('>')), and stripping '>>' would break nested
         # template types such as vector<vector<int>>.
-        _LANGLE_OPS_RE = re.compile(r"<<=|<=|<<")
         i = 0
         while i < len(constructor_args):
             constructor_arg = constructor_args[i]
