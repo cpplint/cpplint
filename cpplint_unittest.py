@@ -773,6 +773,24 @@ class TestCpplint(CpplintTestBase):
             == "NOLINT categories not supported in block END: readability/casting  "
             "[readability/nolint] [5]"
         )
+        # categories for external tools like clang-tidy should be ignored
+        error_collector = ErrorCollector(self.assertTrue)
+        cpplint.ProcessFileData(
+            "test.cc",
+            "cc",
+            [
+                "// Copyright 2026 Space Dot",
+                "// NOLINTBEGIN(clang-analyzer-core.uninitialized.UndefReturn)",
+                "long c = 418;",
+                "// NOLINTEND(clang-analyzer-core.uninitialized.UndefReturn)",
+                "",
+            ],
+            error_collector,
+        )
+        assert (
+            error_collector.Results()
+            == "Use int16_t/int64_t/etc, rather than the C type long  [runtime/int] [4]"
+        )
         # nested NOLINTBEGIN is not allowed
         error_collector = ErrorCollector(self.assertTrue)
         cpplint.ProcessFileData(
