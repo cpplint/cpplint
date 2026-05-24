@@ -87,6 +87,7 @@ Maintainers
 -----------
 
 * `@aaronliu0130 <https://github.com/aaronliu0130>`_
+* `@cclauss <https://github.com/cclauss>`_
 * `@jayvdb <https://github.com/jayvdb>`_
 
 Former
