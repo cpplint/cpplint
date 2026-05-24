@@ -72,7 +72,7 @@ Changes
 * Customizable file extensions via ``--extensions``
 * Recursive file discovery via ``--recursive``
 * Skip entire blocks of code via ``// NOLINTBEGIN`` and ``// NOLINTEND``
-* Support for more modern C++ features 
+* Support for more modern C++ features
 * Support ``#pragma once`` as an alternative to header include guards
 * ... and `quite a bit <https://github.com/cpplint/cpplint/blob/develop/CHANGELOG.rst>`_ more
 
