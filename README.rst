@@ -33,11 +33,22 @@ This fork aims to update cpplint to modern specifications, and be (somewhat) mor
 Installation
 ============
 
-Use [`pipx`](https://pipx.pypa.io) to install cpplint from PyPI, run:
+Use your preferred tool to install the ``cpplint`` package from PyPI. To install cpplint as a `uv <https://docs.astral.sh/uv>`_ tool, run:
 
 .. code-block:: bash
 
-    $ pipx install cpplint
+    $ uv tool install cpplint
+
+cpplint can also be run as a pre-commit hook by adding this to `.pre-commit-config.yaml`:
+
+.. code-block:: yaml
+
+  - repo: https://github.com/cpplint/cpplint
+    rev:  # cpplint version number or git tag
+    hooks:
+      - id: cpplint
+        args:
+          - --filter=-whitespace/line_length,-whitespace/parens
 
 Usage
 -----
@@ -51,28 +62,17 @@ For full usage instructions, run:
 
     $ cpplint --help
 
-cpplint can also be run as a pre-commit hook by adding to `.pre-commit-config.yaml`:
-
-.. code-block:: yaml
-
-  - repo: https://github.com/cpplint/cpplint
-    rev: 2.0.0
-    hooks:
-      - id: cpplint
-        args:
-          - --filter=-whitespace/line_length,-whitespace/parens
-
 Changes
 =======
 
-* python 3 compatibility
-* more default file extensions
-* customizable file extensions with the --extensions argument
-* continuous integration on github
-* support for recursive file discovery via the --recursive argument
-* support for excluding files via --exclude
-* JUnit XML output format
-* Overriding repository root auto-detection via --repository
+* Python 3 compatibility
+* More default file extensions
+* Continuous integration on GitHub
+* Excluding files via ``--exclude``
+* Customizable file extensions via ``--extensions``
+* Recursive file discovery via ``--recursive``
+* Skip entire blocks of code via ``// NOLINTBEGIN`` and ``// NOLINTEND``
+* Support for more modern C++ features 
 * Support ``#pragma once`` as an alternative to header include guards
 * ... and `quite a bit <https://github.com/cpplint/cpplint/blob/develop/CHANGELOG.rst>`_ more
 
