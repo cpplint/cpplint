@@ -2957,6 +2957,14 @@ class TestCpplint(CpplintTestBase):
             "",
         )
 
+    def testInlineControlBodyWithLambda(self):
+        self.TestLint("if (all_of(v, [](auto b) { return b == 0; })) {", "")
+        self.TestLint(
+            "if (condition) { return true; }",
+            "Controlled statements inside brackets of if clause should be on a separate line"
+            "  [whitespace/newline] [5]",
+        )
+
     def testMismatchingSpacesInParens(self):
         self.TestLint("if (foo ) {", "Mismatching spaces inside () in if  [whitespace/parens] [5]")
         self.TestLint(

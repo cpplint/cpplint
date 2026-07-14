@@ -5002,13 +5002,20 @@ def CheckBraces(filename, clean_lines, linenum, error):
     # No control clauses with braces should have its contents on the same line
     # Exclude } which will be covered by empty-block detect
     # Exclude ; which may be used by while in a do-while
-    if (
-        keyword := re.search(
-            r"\b(else if|if|while|for|switch)"  # These have parens
-            r"\s*\(.*\)\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\};]",
-            line,
+    keyword = re.search(
+        r"\b(else if|if|while|for|switch)\s*\(",
+        line,
+    )
+    if keyword:
+        (endline, endlinenum, endpos) = CloseExpression(
+            clean_lines, linenum, keyword.end() - 1
         )
-    ) or (
+        if endlinenum != linenum or not re.match(
+            r"\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\};]",
+            endline[endpos:],
+        ):
+            keyword = None
+    if keyword or (
         keyword := re.search(
             r"\b(else|do|try)"  # These don't have parens
             r"\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\}]",
