@@ -5007,9 +5007,7 @@ def CheckBraces(filename, clean_lines, linenum, error):
         line,
     )
     if keyword:
-        (endline, endlinenum, endpos) = CloseExpression(
-            clean_lines, linenum, keyword.end() - 1
-        )
+        (endline, endlinenum, endpos) = CloseExpression(clean_lines, linenum, keyword.end() - 1)
         if endlinenum != linenum or not re.match(
             r"\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\};]",
             endline[endpos:],
