@@ -4161,6 +4161,9 @@ def CheckForNamespaceIndentation(filename, nesting_state, clean_lines, line, err
         or (isinstance(nesting_state.previous_stack_top, _NamespaceInfo))
     )
 
+    if IsMultilineFunctionTemplateDeclaration(clean_lines, line):
+        return
+
     if ShouldCheckNamespaceIndentation(
         nesting_state, is_namespace_indent_item, clean_lines.elided, line
     ):
@@ -7381,6 +7384,36 @@ def IsBlockInNameSpace(nesting_state: NestingState, is_forward_declaration: bool
             )
         ):
             return True
+    return False
+
+
+def IsMultilineFunctionTemplateDeclaration(clean_lines, linenum):
+    """Checks whether a line continues a function template declaration."""
+    for start_line in range(linenum - 1, -1, -1):
+        line = clean_lines.elided[start_line]
+        if re.search(r"[;{}]", line):
+            return False
+
+        if template := re.search(r"\btemplate\s*<", line):
+            _, end_line, end_pos = CloseExpression(clean_lines, start_line, template.end() - 1)
+            if not start_line < linenum <= end_line or end_pos < 0:
+                return False
+
+            declaration = clean_lines.elided[end_line][end_pos:]
+            for next_line in range(end_line + 1, clean_lines.NumLines()):
+                declaration += " " + clean_lines.elided[next_line].strip()
+                if re.search(r"[;{}]", declaration):
+                    break
+
+            declaration = declaration.strip()
+            if not declaration or "{" in declaration.split(";", 1)[0]:
+                return False
+            if re.match(r"(?:class|enum|struct|using)\b", declaration):
+                return False
+
+            function = re.search(r"\b(?:operator\s*\S+|~?[A-Za-z_]\w*)\s*\(", declaration)
+            return function is not None and "=" not in declaration[: function.start()]
+
     return False
 
 

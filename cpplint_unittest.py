@@ -323,6 +323,38 @@ class TestCpplint(CpplintTestBase):
         results = self.GetNamespaceResults(lines)
         assert results == ""
 
+    def testNamespaceIndentationMultilineFunctionTemplateDeclaration(self):
+        lines = [
+            "namespace Test {",
+            "template <typename Type1,",
+            "          typename Type2>",
+            "void TestFunc(const Type1 &var1, Type2 &var2);",
+            "}  // namespace Test",
+        ]
+        assert self.GetNamespaceResults(lines) == ""
+
+        lines = [
+            "namespace Test {",
+            "template <typename T,",
+            "          typename Callback = void (*)(T)>",
+            "void Register(Callback callback);",
+            "}  // namespace Test",
+        ]
+        assert self.GetNamespaceResults(lines) == ""
+
+    def testNamespaceIndentationIndentedMultilineFunctionTemplateDeclaration(self):
+        lines = [
+            "namespace Test {",
+            "  template <typename Type1,",
+            "            typename Type2>",
+            "  void TestFunc(const Type1 &var1, Type2 &var2);",
+            "}  // namespace Test",
+        ]
+        assert self.GetNamespaceResults(lines) == [
+            "Do not indent within a namespace.  [whitespace/indent_namespace] [4]",
+            "Do not indent within a namespace.  [whitespace/indent_namespace] [4]",
+        ]
+
     def testNamespaceIndentationMemberInitializerList(self):
         lines = [
             "namespace Opossum {",

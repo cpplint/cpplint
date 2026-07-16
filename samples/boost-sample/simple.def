@@ -2,7 +2,7 @@ include/boost/math/*
 1
 3
 Done processing include/boost/math/octonion.hpp
-Total errors found: 2900
+Total errors found: 2898
 
 include/boost/math/octonion.hpp:11:  #ifndef header guard has wrong style, please use: SAMPLES_BOOST_SAMPLE_INCLUDE_BOOST_MATH_OCTONION_HPP_  [build/header_guard] [5]
 include/boost/math/octonion.hpp:4250:  #endif line should be "#endif  // SAMPLES_BOOST_SAMPLE_INCLUDE_BOOST_MATH_OCTONION_HPP_"  [build/header_guard] [5]
@@ -290,8 +290,6 @@ include/boost/math/octonion.hpp:672:  { should almost always be at the end of th
 include/boost/math/octonion.hpp:673:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 include/boost/math/octonion.hpp:673:  Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
 include/boost/math/octonion.hpp:674:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-include/boost/math/octonion.hpp:675:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
-include/boost/math/octonion.hpp:676:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 include/boost/math/octonion.hpp:677:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 include/boost/math/octonion.hpp:678:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
 include/boost/math/octonion.hpp:679:  Do not indent within a namespace.  [whitespace/indent_namespace] [4]
