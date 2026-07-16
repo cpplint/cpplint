@@ -5,6 +5,8 @@ Changelog
 TBA
 ===
 
+* Function template declarations with multiline template parameters no longer trigger ``whitespace/indent_namespace`` on their continuation lines.
+
 2.0.2 (2025-04-08)
 ===========
 
