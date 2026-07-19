@@ -5,6 +5,10 @@ Changelog
 TBA
 ===
 
+* Fixed false positives in readability/casting for function-pointer typedefs and alias
+  declarations that use a calling-convention macro before ``*``
+  (e.g. ``typedef int32_t(CALLCONV* Func)(void);``). (https://github.com/cpplint/cpplint/issues/409)
+
 2.0.2 (2025-04-08)
 ===========
 

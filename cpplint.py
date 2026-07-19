@@ -6674,7 +6674,8 @@ def CheckCasts(filename, clean_lines, linenum, error):
             return
 
         # Other things to ignore:
-        # - Function pointers
+        # - Function pointers (including calling-convention forms like
+        #   (CALLCONV* name)(args) and (CALLCONV *)(args))
         # - Casts to pointer types
         # - Placement new
         # - Alias declarations
@@ -6685,6 +6686,7 @@ def CheckCasts(filename, clean_lines, linenum, error):
                 matched_funcptr
                 and (
                     re.match(r"\((?:[^() ]+::\s*\*\s*)?[^() ]+\)\s*\(", matched_funcptr)
+                    or re.match(r"\((?:\w+\s*)?\*\s*\w*\)\s*\(", matched_funcptr)
                     or matched_funcptr.startswith("(*)")
                 )
             )
@@ -6824,6 +6826,12 @@ def CheckCStyleCast(filename, clean_lines, linenum, cast_type, pattern, error):
     # If we see those, don't issue warnings for deprecated casts.
     remainder = line[match.end(0) :]
     if re.match(r"^\s*(?:;|const\b|throw\b|final\b|override\b|[=>{),]|->)", remainder):
+        return False
+
+    # Function-pointer types in typedef/alias declarations can look like
+    # pointer casts followed by a parameter list, e.g.
+    #   using Func = int32_t(CALLCONV *)(void);
+    if re.search(r"\b(?:typedef|using)\b", line) and re.match(r"^\s*\(", remainder):
         return False
 
     # At this point, all that should be left is actual casts.
