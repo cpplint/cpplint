@@ -26,6 +26,7 @@ for folder in $folders; do
     # Cleanup on interruption
     cleanup() {
       rm "$stdout_file" "$stderr_file"
+      exit $((128 + $1))
     }
     trap cleanup INT TERM
 
