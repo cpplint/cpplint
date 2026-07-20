@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # Input the path of cpplint here
-cpplint="$HOME/Documents/cpplint/cpplint.py"
+cpplint="$HOME/Projects/cpplint/cpplint.py"
 
 cd samples/ || exit 74  # EX_IOERROR
 
