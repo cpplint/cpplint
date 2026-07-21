@@ -1050,17 +1050,20 @@ class TestCpplint(CpplintTestBase):
             "Use static_cast<int>(...) instead"
             "  [readability/casting] [4]",
         )
-
         self.TestLint(
             '(char *) "foo"',
             "Using C-style cast.  Use const_cast<char *>(...) instead  [readability/casting] [4]",
         )
-
         self.TestLint(
             "(int*)foo",
             "Using C-style cast.  "
             "Use reinterpret_cast<int*>(...) instead"
             "  [readability/casting] [4]",
+        )
+        self.TestLint(
+            "(Type**) noexcept(f())",
+            "Using C-style cast.  "
+            "Use reinterpret_cast<Type**>(...) instead  [readability/casting] [4]",
         )
 
         # Checks for false positives...

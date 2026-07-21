@@ -6720,7 +6720,7 @@ def CheckCasts(filename, clean_lines, linenum, error):
     else:
         # Check pointer casts for other than string constants
         CheckCStyleCast(
-            filename, clean_lines, linenum, "reinterpret_cast", r"\((\w+\s?\*+\s?)\)", error
+            filename, clean_lines, linenum, "reinterpret_cast", r"(?<!\))\((\w+\s?\*+\s?)\)", error
         )
 
     # In addition, we look for people taking the address of a cast.  This
@@ -6782,6 +6782,7 @@ def CheckCasts(filename, clean_lines, linenum, error):
             )
 
 
+# TODO(aaronliu0130): refactor to avoid running checks already run through previous call of this
 def CheckCStyleCast(filename, clean_lines, linenum, cast_type, pattern, error):
     """Checks for a C-style cast by looking for the pattern.
 
@@ -6820,10 +6821,10 @@ def CheckCStyleCast(filename, clean_lines, linenum, cast_type, pattern, error):
     if context.endswith((" operator++", " operator--", "::operator++", "::operator--")):
         return False
 
-    # A single unnamed argument for a function tends to look like old style cast;
-    # so do function pointers. If we see those, don't issue warnings for deprecated casts.
+    # A single unnamed argument for a function tends to look like old style cast.
+    # If we see those, don't issue warnings for deprecated casts.
     remainder = line[match.end(0) :]
-    if re.match(r"^\s*(?:;|(?:const|throw|final|override|noexcept)\b|[=>{),]|->)", remainder):
+    if re.match(r"^\s*(?:;|(?:const|throw|final|override)\b|[=>{),]|->)", remainder):
         return False
 
     # At this point, all that should be left is actual casts.
