@@ -3943,14 +3943,15 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
         else:
             constructor_args = explicit_constructor_match.group(2).split(",")
 
-        # collapse arguments so that commas in template parameter lists and function
-        # argument parameter lists don't split arguments in two
+        # Collapse commas inside template and function parameter lists.
         i = 0
         while i < len(constructor_args):
             constructor_arg = constructor_args[i]
-            while constructor_arg.count("<") > constructor_arg.count(">") or constructor_arg.count(
-                "("
-            ) > constructor_arg.count(")"):
+            # Ignore `<`-prefixed operators when balancing template brackets.
+            while i + 1 < len(constructor_args) and (
+                re.sub(r"<<=?|<=", "", constructor_arg).count("<") > constructor_arg.count(">")
+                or constructor_arg.count("(") > constructor_arg.count(")")
+            ):
                 constructor_arg += "," + constructor_args[i + 1]
                 del constructor_args[i + 1]
             constructor_args[i] = constructor_arg

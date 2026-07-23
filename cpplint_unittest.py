@@ -1810,6 +1810,37 @@ class TestCpplint(CpplintTestBase):
                 "Constructors callable with one argument should be marked explicit."
                 "  [runtime/explicit] [4]",
             )
+            # `<`-containing operators are not confused with template brackets.
+            self.TestMultiLineLint(
+                """
+          class A {
+            A(int a, int b, int c = 1 << 1);
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class A {
+            A(int a = (value <<= 1), int b = 0, int c = 0);
+          };""",
+                "Constructors callable with one argument should be marked explicit."
+                "  [runtime/explicit] [4]",
+            )
+            self.TestMultiLineLint(
+                """
+          class A {
+            A(int a, bool b = 1 <= 1, int c = 0);
+          };""",
+                "Constructors callable with one argument should be marked explicit."
+                "  [runtime/explicit] [4]",
+            )
+            self.TestMultiLineLint(
+                """
+          class A {
+            A(int a, int b, bool c = 1 < 2);
+          };""",
+                "",
+            )
             # explicit no-argument constructors are just fine
             self.TestMultiLineLint(
                 """
