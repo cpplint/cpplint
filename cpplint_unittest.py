@@ -1659,6 +1659,13 @@ class TestCpplint(CpplintTestBase):
             self.TestMultiLineLint(
                 """
           class Foo {
+            Foo(int f) noexcept(noexcept(T{})) = delete;
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
             Foo(int f)
                 = delete;
           };""",

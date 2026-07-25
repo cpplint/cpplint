@@ -3786,6 +3786,43 @@ class NestingState:
         return None
 
 
+def _GetConstructorSuffix(clean_lines, linenum, match_end):
+    """Returns the constructor declaration suffix up to its top-level terminator."""
+    constructor_suffix = []
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    suffix_line = clean_lines.elided[linenum][match_end:]
+    next_line = linenum + 1
+
+    while True:
+        for char in suffix_line:
+            if char == ";" and not paren_depth and not bracket_depth and not brace_depth:
+                constructor_suffix.append(char)
+                return "".join(constructor_suffix)
+            if char == "{" and not paren_depth and not bracket_depth and not brace_depth:
+                return "".join(constructor_suffix)
+
+            constructor_suffix.append(char)
+            if char == "(":
+                paren_depth += 1
+            elif char == ")":
+                paren_depth -= 1
+            elif char == "[":
+                bracket_depth += 1
+            elif char == "]":
+                bracket_depth -= 1
+            elif char == "{":
+                brace_depth += 1
+            elif char == "}":
+                brace_depth -= 1
+
+        if next_line >= clean_lines.NumLines():
+            return "".join(constructor_suffix)
+        suffix_line = "\n" + clean_lines.elided[next_line]
+        next_line += 1
+
+
 def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state, error):
     r"""Logs an error if we see certain non-ANSI constructs ignored by gcc-2.
 
@@ -3932,19 +3969,14 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
 
     if explicit_constructor_match:
         is_marked_explicit = explicit_constructor_match.group(1)
-        constructor_suffix = line[explicit_constructor_match.end() :]
-        next_line = linenum + 1
-        while (
-            ";" not in constructor_suffix
-            and "{" not in constructor_suffix
-            and next_line < clean_lines.NumLines()
-        ):
-            constructor_suffix += clean_lines.lines[next_line]
-            next_line += 1
+        constructor_suffix = _GetConstructorSuffix(
+            clean_lines, linenum, explicit_constructor_match.end()
+        )
         is_deleted = bool(
             re.match(
-                r"\s*(?:noexcept(?:\s*\([^;{}]*\))?\s*)?=\s*delete\s*;",
+                r"\s*(?:noexcept(?:\s*\(.*\))?\s*)?=\s*delete\s*;",
                 constructor_suffix,
+                re.DOTALL,
             )
         )
 
