@@ -6655,7 +6655,7 @@ def CheckCasts(filename, clean_lines, linenum, error):
                 matched_funcptr
                 and (
                     re.match(r"\((?:[^() ]+::\s*\*\s*)?[^() ]+\)\s*\(", matched_funcptr)
-                    or re.match(r"\((?:\w+\s*)?\*\s*\w*\)\s*\(", matched_funcptr)
+                    or re.match(r"\((?:\w+\s*)?\*\s*[^() ]*\)\s*\(", matched_funcptr)
                     or matched_funcptr.startswith("(*)")
                 )
             )

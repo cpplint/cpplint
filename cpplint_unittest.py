@@ -1128,6 +1128,8 @@ class TestCpplint(CpplintTestBase):
         )
         self.TestLint("typedef int32_t(CALLCONV* Func)(int);", "")
         self.TestLint("using Func = int32_t(CALLCONV *)(int, int);", "")
+        self.TestLint("typedef int32_t(CALLCONV* FuncArray[3])(void);", "")
+        self.TestLint("typedef int32_t(*FuncArray[3])(void);", "")
 
     # The second parameter to a gMock method definition is a function signature
     # that often looks like a bad cast but should not picked up by lint.
