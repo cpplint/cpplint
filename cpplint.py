@@ -3926,13 +3926,27 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
     explicit_constructor_match = re.match(
         r"\s+(?:(?:inline|constexpr)\s+)*(explicit\s+)?"
         rf"(?:(?:inline|constexpr)\s+)*{re.escape(base_classname)}\s*"
-        r"\(((?:[^()]|\([^()]*\))*)\)\s*(=\s*delete\s*;)?",
+        r"\(((?:[^()]|\([^()]*\))*)\)",
         line,
     )
 
     if explicit_constructor_match:
         is_marked_explicit = explicit_constructor_match.group(1)
-        is_deleted = bool(explicit_constructor_match.group(3))
+        constructor_suffix = line[explicit_constructor_match.end() :]
+        next_line = linenum + 1
+        while (
+            ";" not in constructor_suffix
+            and "{" not in constructor_suffix
+            and next_line < clean_lines.NumLines()
+        ):
+            constructor_suffix += clean_lines.lines[next_line]
+            next_line += 1
+        is_deleted = bool(
+            re.match(
+                r"\s*(?:noexcept(?:\s*\([^;{}]*\))?\s*)?=\s*delete\s*;",
+                constructor_suffix,
+            )
+        )
 
         if not explicit_constructor_match.group(2):
             constructor_args = []

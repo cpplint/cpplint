@@ -1647,6 +1647,23 @@ class TestCpplint(CpplintTestBase):
           };""",
                 "",
             )
+            # Deleted constructors may include a noexcept suffix or split the
+            # deleted marker across lines.
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) noexcept = delete;
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f)
+                = delete;
+          };""",
+                "",
+            )
             # missing explicit is bad, even with whitespace
             self.TestMultiLineLint(
                 """
