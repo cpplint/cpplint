@@ -3973,8 +3973,8 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
             clean_lines, linenum, explicit_constructor_match.end()
         )
         is_deleted = bool(
-            re.match(
-                r"\s*(?:noexcept(?:\s*\(.*\))?\s*)?=\s*delete\s*;",
+            re.search(
+                r"=\s*delete\s*(?:\(.*\))?\s*;\s*$",
                 constructor_suffix,
                 re.DOTALL,
             )

@@ -1666,6 +1666,28 @@ class TestCpplint(CpplintTestBase):
             self.TestMultiLineLint(
                 """
           class Foo {
+            template <class T>
+            Foo(T value) requires Integral<T> = delete;
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) throw() = delete;
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) = delete("use Bar instead");
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
             Foo(int f)
                 = delete;
           };""",
