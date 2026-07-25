@@ -1,0 +1,15 @@
+--extensions=w --root=samples --verbose=0 src/*
+1
+4
+Done processing src/sillycode.cpp
+Done processing src/sillycode.w
+Total errors found: 6
+
+Ignoring src/sillycode.cpp; not a valid file name (c++, omg, w)
+src/sillycode.w:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
+src/sillycode.w:2:  #ifndef header guard has wrong style, please use: SILLY_SAMPLE_SRC_SILLYCODE_W_  [build/header_guard] [5]
+src/sillycode.w:12:  #endif line should be "#endif  // SILLY_SAMPLE_SRC_SILLYCODE_W_"  [build/header_guard] [5]
+src/sillycode.w:5:  Complex multi-line /*...*/-style comment found. Lint may give bogus warnings.  Consider replacing these with //-style comments, with #if 0...#endif, or with more clearly structured multi-line comments.  [readability/multiline_comment] [5]
+src/sillycode.w:8:  Should have a space between // and comment  [whitespace/comments] [4]
+src/sillycode.w:12:  Could not find a newline character at the end of the file.  [whitespace/ending_newline] [5]
+

@@ -19,7 +19,7 @@ authors = [
   { name = "Google Inc." },
   { name = "Thibault Kruse" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
@@ -27,7 +27,6 @@ classifiers = [
   "Natural Language :: English",
   "Programming Language :: C++",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -40,7 +39,7 @@ dependencies = []
 optional-dependencies.dev = [
   "mypy",
   "pylint>=3.3.4",
-  "pytest",
+  "pytest>=9",
   "pytest-cov",
   "pytest-timeout",
   "testfixtures",
@@ -199,11 +198,15 @@ reports = false
 score = false
 
 [tool.pyproject-fmt]
-expand_tables = [ "tool.pylint", "tool.pytest.ini_options" ]
+expand_tables = [ "tool.pylint" ]
 
-[tool.pytest.ini_options]
-addopts = "--color=yes --cov-fail-under=89 --cov=cpplint"
+[tool.pytest]
+addopts = [ "--color=yes", "--cov-fail-under=95", "--cov=cpplint" ]
 python_files = [ "*test.py" ]
 required_plugins = [ "pytest-cov", "pytest-timeout" ]
 testpaths = [ "." ]
-timeout = 481
+timeout = "481"
+tmp_path_retention_policy = "all"
+
+[tool.coverage]
+run.patch = [ "subprocess" ]

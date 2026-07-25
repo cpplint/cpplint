@@ -30,13 +30,11 @@
 
 """Command Line interface integration test for cpplint.py."""
 
-import contextlib
 import glob
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
 import textwrap
 
 import pytest
@@ -83,6 +81,15 @@ def test_help():
 
 
 class TemporaryFolderClassSetup:
+    @pytest.fixture(autouse=True, scope="class")
+    @classmethod
+    def set_up_temp_root(cls, request, tmp_path_factory) -> str:
+        root = os.fspath(tmp_path_factory.mktemp(request.cls.__name__))
+        request.cls._root = root
+        return root
+
+
+class DefCheckBase(TemporaryFolderClassSetup):
     """
     Regression tests: The test starts a filetreewalker scanning for files name *.def
     Such files are expected to have as first line the argument
@@ -92,26 +99,13 @@ class TemporaryFolderClassSetup:
     systemerr output (two blank lines at end).
     """
 
-    @pytest.fixture(autouse=True, name="set_up()", scope="class")
+    @pytest.fixture(autouse=True, scope="class")
     @classmethod
-    def set_up(cls):
+    def set_up(cls, request, set_up_temp_root):
         """setup tmp folder for testing with samples and custom additions by subclasses"""
-        try:
-            cls._root = os.path.realpath(tempfile.mkdtemp())
-            shutil.copytree("samples", os.path.join(cls._root, "samples"))
-            cls.prepare_directory(cls._root)
-        except Exception:
-            with contextlib.suppress(Exception):
-                cls.tear_down()
-            raise
-        # yield
-        # cls.tear_down()
-
-    @classmethod
-    def tear_down(cls):
-        if cls._root:
-            # pass
-            shutil.rmtree(cls._root)
+        root = request.cls._root
+        shutil.copytree("samples", os.path.join(root, "samples"))
+        request.cls.prepare_directory(root)
 
     @classmethod
     def prepare_directory(cls, root):
@@ -169,7 +163,7 @@ class TemporaryFolderClassSetup:
         compare("\n".join(expected_out), out.decode("utf8"), prefix=prefix, show_whitespace=True)
 
 
-class TestNoRepoSignature(TemporaryFolderClassSetup):
+class TestNoRepoSignature(DefCheckBase):
     """runs in a temporary folder (under /tmp in linux) without any .git/.hg/.svn file"""
 
     def get_extra_command_args(self, cwd):
@@ -189,7 +183,7 @@ class TestNoRepoSignature(TemporaryFolderClassSetup):
         self.check_def(os.path.join(f"./samples/{folder}-sample", case + ".def"))
 
 
-class TestGitRepoSignature(TemporaryFolderClassSetup):
+class TestGitRepoSignature(DefCheckBase):
     """runs in a temporary folder with .git file"""
 
     @classmethod
@@ -201,7 +195,7 @@ class TestGitRepoSignature(TemporaryFolderClassSetup):
         self.check_all_in_folder("./samples/codelite-sample", 1)
 
 
-class TestMercurialRepoSignature(TemporaryFolderClassSetup):
+class TestMercurialRepoSignature(DefCheckBase):
     """runs in a temporary folder with .hg file"""
 
     @classmethod
@@ -213,7 +207,7 @@ class TestMercurialRepoSignature(TemporaryFolderClassSetup):
         self.check_all_in_folder("./samples/codelite-sample", 1)
 
 
-class TestSvnRepoSignature(TemporaryFolderClassSetup):
+class TestSvnRepoSignature(DefCheckBase):
     """runs in a temporary folder with .svn file"""
 
     @classmethod

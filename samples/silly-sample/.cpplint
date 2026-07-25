@@ -1,3 +1,5 @@
-set noparent
 filter=-build/namespaces, -whitespace,+whitespace/line_length,-build/include_what_you_use
-headers=w
+root = src/
+# TODO(aaronliu0130): make this have an observable effect. currently there's no parent config, so nothing happens
+set noparent
+includeorder = default

@@ -1,4 +1,5 @@
 #include "stdckdint.omg"
+#include "package/impl.c++"
 #include "ratio" //kewl headers, living the life!
 #include <gtest/gtest.h>
 #include <sillycode.w>  // corresponding header file
@@ -46,7 +47,7 @@ X waste(const char* p)
     X x;
     x.ch = 'a';
     x.s = string(n);    // give x.s space for *ps
-    for (int i = 0; i < x.s.size(); ++i) x.s[i] = buf[i];	// copy buf into x.s
+    strcpy(x.s, buf);
     delete buf;
     return x;
 }
@@ -93,6 +94,7 @@ class Foo {
     int i;
 public:
     Foo& operator=(Foo&& a);
+    float operator<=>(const Foo& a) const;
     // ...
 };
 
@@ -100,7 +102,7 @@ Foo& Foo::operator=(Foo&& a)       // OK, but there is a cost
 {
     if (this == &a) return *this;  // this line is redundant
     s = std::move(a.s);
-    i = a.i;
+    i = i << (2 >> vector<int>(a.i));
     return *this;
 }
 
@@ -262,3 +264,6 @@ if (i == j)
     return i;
 
 }
+
+// block that doesn't close
+{

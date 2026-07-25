@@ -5,6 +5,7 @@ Changelog
 TBA
 ===
 
+* Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
 * Fixed false positives in readability/casting for function-pointer typedefs and alias
   declarations that use a calling-convention macro before ``*``
   (e.g. ``typedef int32_t(CALLCONV* Func)(void);``). (https://github.com/cpplint/cpplint/issues/409)

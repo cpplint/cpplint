@@ -54,7 +54,6 @@ import os
 import re
 import string
 import sys
-import sysconfig
 import unicodedata
 import xml.etree.ElementTree
 
@@ -949,7 +948,6 @@ _FILTER_SHORTCUTS = {
 # The root directory used for deriving header guard CPP variable.
 # This is set by --root flag.
 _root = None
-_root_debug = False
 
 # The top level repository directory. If set, _root is calculated relative to
 # this directory instead of the directory containing version control artifacts.
@@ -2553,16 +2551,8 @@ def GetHeaderGuardCPPVariable(filename):
     file_path_from_root = fileinfo.RepositoryName()
 
     def FixupPathFromRoot():
-        if _root_debug:
-            sys.stderr.write(
-                f"\n_root fixup, _root = '{_root}',"
-                f" repository name = '{fileinfo.RepositoryName()}'\n"
-            )
-
         # Process the file path with the --root flag if it was set.
         if not _root:
-            if _root_debug:
-                sys.stderr.write("_root unspecified\n")
             return file_path_from_root
 
         def StripListPrefix(lst, prefix):
@@ -2575,13 +2565,6 @@ def GetHeaderGuardCPPVariable(filename):
         # root behavior:
         #   --root=subdir , lstrips subdir from the header guard
         maybe_path = StripListPrefix(PathSplitToList(file_path_from_root), PathSplitToList(_root))
-
-        if _root_debug:
-            sys.stderr.write(
-                ("_root lstrip (maybe_path=%s, file_path_from_root=%s," + " _root=%s)\n")
-                % (maybe_path, file_path_from_root, _root)
-            )
-
         if maybe_path:
             return os.path.join(*maybe_path)
 
@@ -2589,20 +2572,9 @@ def GetHeaderGuardCPPVariable(filename):
         full_path = fileinfo.FullName()
         # adapt slashes for windows
         root_abspath = os.path.abspath(_root).replace("\\", "/")
-
         maybe_path = StripListPrefix(PathSplitToList(full_path), PathSplitToList(root_abspath))
-
-        if _root_debug:
-            sys.stderr.write(
-                ("_root prepend (maybe_path=%s, full_path=%s, " + "root_abspath=%s)\n")
-                % (maybe_path, full_path, root_abspath)
-            )
-
         if maybe_path:
             return os.path.join(*maybe_path)
-
-        if _root_debug:
-            sys.stderr.write(f"_root ignore, returning {file_path_from_root}\n")
 
         #   --root=FAKE_DIR is ignored
         return file_path_from_root
@@ -4360,6 +4332,7 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
         #                This ignores whitespace at the start of a namespace block
         #                because those are not usually indented.
         if prevbrace != -1 and prev_line[prevbrace:].find("}") == -1:
+            # TODO(aaronliu0130): where is this exception in the style guide?
             # OK, we have a blank line at the start of a code block.  Before we
             # complain, we check if it is an exception to the rule: The previous
             # non-empty line has the parameters of a function header that are indented
@@ -5002,13 +4975,18 @@ def CheckBraces(filename, clean_lines, linenum, error):
     # No control clauses with braces should have its contents on the same line
     # Exclude } which will be covered by empty-block detect
     # Exclude ; which may be used by while in a do-while
-    if (
-        keyword := re.search(
-            r"\b(else if|if|while|for|switch)"  # These have parens
-            r"\s*\(.*\)\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\};]",
-            line,
-        )
-    ) or (
+    keyword = re.search(
+        r"\b(else if|if|while|for|switch)\s*\(",
+        line,
+    )
+    if keyword:
+        (endline, endlinenum, endpos) = CloseExpression(clean_lines, linenum, keyword.end() - 1)
+        if endlinenum != linenum or not re.match(
+            r"\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\};]",
+            endline[endpos:],
+        ):
+            keyword = None
+    if keyword or (
         keyword := re.search(
             r"\b(else|do|try)"  # These don't have parens
             r"\s*(?:\[\[(?:un)?likely\]\]\s*)?{\s*[^\s\\}]",
@@ -5576,16 +5554,6 @@ def GetLineWidth(line):
             if unicodedata.east_asian_width(uc) in ("W", "F"):
                 width += 2
             elif not unicodedata.combining(uc):
-                # Issue 337
-                # https://mail.python.org/pipermail/python-list/2012-August/628809.html
-                if (sys.version_info.major, sys.version_info.minor) <= (3, 2):
-                    # https://github.com/python/cpython/blob/2.7/Include/unicodeobject.h#L81
-                    is_wide_build = sysconfig.get_config_var("Py_UNICODE_SIZE") >= 4
-                    # https://github.com/python/cpython/blob/2.7/Objects/unicodeobject.c#L564
-                    is_low_surrogate = 0xDC00 <= ord(uc) <= 0xDFFF
-                    if not is_wide_build and is_low_surrogate:
-                        width -= 1
-
                 width += 1
         return width
     return len(line)
@@ -5923,7 +5891,7 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
                     linenum,
                     "build/include",
                     4,
-                    "Do not include ." + extension + " files from other packages",
+                    f"Do not include .{extension} files from other packages",
                 )
                 return
 
@@ -6242,8 +6210,8 @@ def CheckLanguage(
             if not tok:
                 continue
             if re.match(r"\d+", tok):
-                continue
-            if re.match(r"0[xX][0-9a-fA-F]+", tok):
+                # Matches both decimals and other integer literals
+                # since the latter have to be prefixed by 0-something
                 continue
             if re.match(r"k[A-Z0-9]\w*", tok):
                 continue
@@ -6442,6 +6410,7 @@ def IsOutOfLineMethodDefinition(clean_lines, linenum):
     return False
 
 
+# TODO(aaronliu0130): unify this with MemInitList logic ending ShouldCheckNamespaceIndentation()
 def IsInitializerList(clean_lines, linenum):
     """Check if current line is inside constructor initializer list.
 
@@ -7382,10 +7351,12 @@ def IsBlockInNameSpace(nesting_state: NestingState, is_forward_declaration: bool
             and isinstance(nesting_state.previous_stack_top, _NamespaceInfo)
             and (
                 isinstance(nesting_state.stack[-2], _NamespaceInfo)
-                or len(nesting_state.stack) > 2  # Accommodate for WrappedInfo
-                and issubclass(type(nesting_state.stack[-1]), _WrapInfo)
-                and not nesting_state.stack[-2].seen_open_brace
-                and isinstance(nesting_state.stack[-3], _NamespaceInfo)
+                or (
+                    len(nesting_state.stack) > 2  # Accommodate for WrappedInfo
+                    and issubclass(type(nesting_state.stack[-1]), _WrapInfo)
+                    and not nesting_state.stack[-2].seen_open_brace
+                    and isinstance(nesting_state.stack[-3], _NamespaceInfo)
+                )
             )
         ):
             return True
@@ -7736,6 +7707,7 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
         return
 
     try:
+        # TODO(aaronliu0130): Add a clitest for this
         # Support the UNIX convention of using "-" for stdin.
         if filename == "-":
             lines = sys.stdin.read().split("\n")
@@ -7756,7 +7728,8 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
     # should rely on the extension.
     if filename != "-" and file_extension not in GetAllExtensions():
         _cpplint_state.PrintError(
-            f"Ignoring {filename}; not a valid file name ({(', '.join(GetAllExtensions()))})\n"
+            f"Ignoring {filename}; not a valid file name "
+            f"({(', '.join(sorted(GetAllExtensions())))})\n"
         )
     else:
         ProcessFileData(filename, file_extension, lines, Error, extra_check_functions)

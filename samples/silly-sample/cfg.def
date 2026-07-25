@@ -1,29 +1,31 @@
---config=.cpplint src/*
+--headers=w --verbose=0 --config=.cpplint src/*
 1
 4
 Done processing src/sillycode.cpp
 Done processing src/sillycode.w
-Total errors found: 21
+Total errors found: 23
 
 src/sillycode.cpp:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
-src/sillycode.cpp:2:  <ratio> is an unapproved C++11 header.  [build/c++11] [5]
-src/sillycode.cpp:3:  Found C system header after other header. Should be: sillycode.h, c system, c++ system, other.  [build/include_order] [4]
+src/sillycode.cpp:2:  Do not include .c++ files from other packages  [build/include] [4]
+src/sillycode.cpp:3:  <ratio> is an unapproved C++11 header.  [build/c++11] [5]
 src/sillycode.cpp:4:  Found C system header after other header. Should be: sillycode.h, c system, c++ system, other.  [build/include_order] [4]
-src/sillycode.cpp:40:  If/else bodies with multiple statements require braces  [readability/braces] [4]
-src/sillycode.cpp:66:  Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]
-src/sillycode.cpp:76:  Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]
-src/sillycode.cpp:85:  Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]
-src/sillycode.cpp:86:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
-src/sillycode.cpp:171:  Do not use variable-length arrays.  Use an appropriately named ('k' followed by CamelCase) compile-time constant for the size.  [runtime/arrays] [1]
-src/sillycode.cpp:178:  Static/global string variables are not permitted.  [runtime/string] [4]
-src/sillycode.cpp:199:  If an else has a brace on one side, it should have it on both  [readability/braces] [5]
-src/sillycode.cpp:208:  Static/global string variables are not permitted.  [runtime/string] [4]
-src/sillycode.cpp:227:  Static/global string variables are not permitted.  [runtime/string] [4]
-src/sillycode.cpp:228:  Using C-style cast.  Use reinterpret_cast<double*>(...) instead  [readability/casting] [4]
-src/sillycode.cpp:243:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
-src/sillycode.cpp:243:  Using C-style cast.  Use reinterpret_cast<derived2*>(...) instead  [readability/casting] [4]
-src/sillycode.cpp:244:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
-src/sillycode.cpp:249:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
+src/sillycode.cpp:5:  Found C system header after other header. Should be: sillycode.h, c system, c++ system, other.  [build/include_order] [4]
+src/sillycode.cpp:41:  If/else bodies with multiple statements require braces  [readability/braces] [4]
+src/sillycode.cpp:50:  Almost always, snprintf is better than strcpy  [runtime/printf] [4]
+src/sillycode.cpp:67:  Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]
+src/sillycode.cpp:77:  Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]
+src/sillycode.cpp:86:  Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]
+src/sillycode.cpp:87:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
+src/sillycode.cpp:173:  Do not use variable-length arrays.  Use an appropriately named ('k' followed by CamelCase) compile-time constant for the size.  [runtime/arrays] [1]
+src/sillycode.cpp:180:  Static/global string variables are not permitted.  [runtime/string] [4]
+src/sillycode.cpp:201:  If an else has a brace on one side, it should have it on both  [readability/braces] [5]
+src/sillycode.cpp:210:  Static/global string variables are not permitted.  [runtime/string] [4]
+src/sillycode.cpp:229:  Static/global string variables are not permitted.  [runtime/string] [4]
+src/sillycode.cpp:230:  Using C-style cast.  Use reinterpret_cast<double*>(...) instead  [readability/casting] [4]
+src/sillycode.cpp:245:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
+src/sillycode.cpp:245:  Using C-style cast.  Use reinterpret_cast<derived2*>(...) instead  [readability/casting] [4]
+src/sillycode.cpp:246:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
+src/sillycode.cpp:251:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
 src/sillycode.w:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
-src/sillycode.w:0:  No #ifndef header guard found, suggested CPP variable is: SAMPLES_SILLY_SAMPLE_SRC_SILLYCODE_W_  [build/header_guard] [5]
+src/sillycode.w:5:  Complex multi-line /*...*/-style comment found. Lint may give bogus warnings.  Consider replacing these with //-style comments, with #if 0...#endif, or with more clearly structured multi-line comments.  [readability/multiline_comment] [5]
 

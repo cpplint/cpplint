@@ -1,13 +1,14 @@
---output=sed src/*.cpp
+--output=gsed src/*
 1
-8
-sed -i '3s/\/\//\/\/ /' src/sillycode.cpp # Should have a space between // and comment  [whitespace/comments] [4]
-sed -i '122s/,\([^ ]\)/, \1/g' src/sillycode.cpp # Missing space after ,  [whitespace/comma] [3]
-sed -i '124s/\s*$//' src/sillycode.cpp # Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
-sed -i '128s/,\([^ ]\)/, \1/g' src/sillycode.cpp # Missing space after ,  [whitespace/comma] [3]
-sed -i '210s/\([^ ]\){/\1 {/' src/sillycode.cpp # Missing space before {  [whitespace/braces] [5]
-sed -i '251s/\s*$//' src/sillycode.cpp # Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
-sed -i '251s/\([^ ]\){/\1 {/' src/sillycode.cpp # Missing space before {  [whitespace/braces] [5]
+9
+gsed -i '3s/\/\//\/\/ /' src/sillycode.cpp # Should have a space between // and comment  [whitespace/comments] [4]
+gsed -i '122s/,\([^ ]\)/, \1/g' src/sillycode.cpp # Missing space after ,  [whitespace/comma] [3]
+gsed -i '124s/\s*$//' src/sillycode.cpp # Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
+gsed -i '128s/,\([^ ]\)/, \1/g' src/sillycode.cpp # Missing space after ,  [whitespace/comma] [3]
+gsed -i '210s/\([^ ]\){/\1 {/' src/sillycode.cpp # Missing space before {  [whitespace/braces] [5]
+gsed -i '251s/\s*$//' src/sillycode.cpp # Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
+gsed -i '251s/\([^ ]\){/\1 {/' src/sillycode.cpp # Missing space before {  [whitespace/braces] [5]
+gsed -i '8s/\/\//\/\/ /' src/sillycode.w # Should have a space between // and comment  [whitespace/comments] [4]
 
 # src/sillycode.cpp:0:  "No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>""  [legal/copyright] [5]
 # src/sillycode.cpp:1:  "Include the directory when naming header files"  [build/include_subdir] [4]
@@ -119,4 +120,9 @@ sed -i '251s/\([^ ]\){/\1 {/' src/sillycode.cpp # Missing space before {  [white
 # src/sillycode.cpp:226:  "Add #include <limits> for numeric_limits<>"  [build/include_what_you_use] [4]
 # src/sillycode.cpp:239:  "Add #include <string> for string"  [build/include_what_you_use] [4]
 # src/sillycode.cpp:269:  "Could not find a newline character at the end of the file."  [whitespace/ending_newline] [5]
+# src/sillycode.w:0:  "No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>""  [legal/copyright] [5]
+# src/sillycode.w:2:  "#ifndef header guard has wrong style, please use: SAMPLES_SILLY_SAMPLE_SRC_SILLYCODE_W_"  [build/header_guard] [5]
+# src/sillycode.w:12:  "#endif line should be "#endif  // SAMPLES_SILLY_SAMPLE_SRC_SILLYCODE_W_""  [build/header_guard] [5]
+# src/sillycode.w:5:  "Complex multi-line /*...*/-style comment found. Lint may give bogus warnings.  Consider replacing these with //-style comments, with #if 0...#endif, or with more clearly structured multi-line comments."  [readability/multiline_comment] [5]
+# src/sillycode.w:12:  "Could not find a newline character at the end of the file."  [whitespace/ending_newline] [5]
 
