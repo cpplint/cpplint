@@ -1639,6 +1639,14 @@ class TestCpplint(CpplintTestBase):
           };""",
                 "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
             )
+            # Deleted constructors cannot be called implicitly.
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) = delete;
+          };""",
+                "",
+            )
             # missing explicit is bad, even with whitespace
             self.TestMultiLineLint(
                 """
