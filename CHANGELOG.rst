@@ -6,6 +6,7 @@ TBA
 ===
 
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
+* Fixed a false positive where C++20 templated lambdas (``[]<T>(...)``) triggered the redundant trailing semicolon warning. (#385)
 
 2.0.2 (2025-04-08)
 ===========
