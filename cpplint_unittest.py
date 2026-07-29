@@ -5721,6 +5721,19 @@ func2();""",
             )
             assert error_collector.Results().count(expected) == 1
 
+            # A directory name ending in dots is not a Unix directory alias.
+            error_collector = ErrorCollector(self.assertTrue)
+            cpplint.ProcessFileData(
+                "test/foo.cc",
+                "cc",
+                [r'#include "test/foo../bar.h"', ""],
+                error_collector,
+            )
+            assert not any(
+                "Relative paths like . and .. are not allowed." in error
+                for error in error_collector.Results()
+            )
+
             # This should continue to work
             error_collector = ErrorCollector(self.assertTrue)
             cpplint.ProcessFileData(
