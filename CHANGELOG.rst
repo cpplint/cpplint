@@ -6,6 +6,7 @@ TBA
 ===
 
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
+* Disallowed current- and parent-directory aliases in include paths. (#432)
 
 2.0.2 (2025-04-08)
 ===========

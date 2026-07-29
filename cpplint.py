@@ -5871,6 +5871,14 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
     if match:
         include = match.group(2)
         used_angle_brackets = match.group(1) == "<"
+        if re.search(r"(?:^|/)\.{1,2}(?:/|$)", include):
+            error(
+                filename,
+                linenum,
+                "build/include",
+                4,
+                "Include path contains a directory alias",
+            )
         duplicate_line = include_state.FindHeader(include)
         if duplicate_line >= 0:
             error(

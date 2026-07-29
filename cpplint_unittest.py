@@ -5832,6 +5832,15 @@ func2();""",
         )
         self.TestLint('#include "baz.aa"', "")
         self.TestLint('#include "dir/foo.h"', "")
+        self.TestLint(
+            '#include "../foo/bar.h"',
+            "Include path contains a directory alias  [build/include] [4]",
+        )
+        self.TestLint(
+            '#include "private/./test.h"',
+            "Include path contains a directory alias  [build/include] [4]",
+        )
+        self.TestLint('#include "dir/foo..h"', "")
         self.TestLint('#include "Python.h"', "")
         self.TestLint('#include "lua.h"', "")
 
