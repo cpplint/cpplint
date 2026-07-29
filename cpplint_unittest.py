@@ -3166,8 +3166,49 @@ class TestCpplint(CpplintTestBase):
         self.TestLint("auto x = []() {};", "")
         self.TestLint("return []() {};", "")
         self.TestMultiLineLint("auto x = []() {\n};\n", "")
+        self.TestMultiLineLint(
+            "int main() {\n  auto identity = []<typename T>(T&& t) {\n    return t;\n  };\n}\n",
+            "",
+        )
+        self.TestMultiLineLint(
+            "auto identity = []<\n    typename T\n>(T&& t) {\n  return t;\n};\n",
+            "",
+        )
+        self.TestMultiLineLint(
+            "auto identity = []<typename T>\n(T&& t) {\n  return t;\n};\n",
+            "",
+        )
+        self.TestMultiLineLint(
+            "auto identity = []\n<typename T>\n(T&& t) {\n  return t;\n};\n",
+            "",
+        )
+        self.TestMultiLineLint(
+            "auto identity = []<typename T>\n"
+            "    requires std::integral<T>\n"
+            "(T&& t) {\n"
+            "  return t;\n"
+            "};\n",
+            "",
+        )
+        self.TestMultiLineLint(
+            "auto identity = []<typename T>\n"
+            "    requires std::integral<T> &&\n"
+            "             std::copyable<T>\n"
+            "(T&& t) {\n"
+            "  return t;\n"
+            "};\n",
+            "",
+        )
         self.TestLint(
             "int operator[](int x) {};", "You don't need a ; after a }  [readability/braces] [4]"
+        )
+        self.TestMultiLineLint(
+            "int operator[]\n(int x) {};",
+            "You don't need a ; after a }  [readability/braces] [4]",
+        )
+        self.TestMultiLineLint(
+            "template <typename T>\n  requires C<T>\nvoid Function(T value) {};",
+            "You don't need a ; after a }  [readability/braces] [4]",
         )
 
         self.TestMultiLineLint("auto x = [&a,\nb]() {};", "")
