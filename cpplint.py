@@ -2706,11 +2706,6 @@ def CheckForHeaderGuard(filename, clean_lines, error, cppvar):
     )
 
 
-def _IncludePathUsesDirectoryAlias(include):
-    """Returns whether an include path contains a . or .. component."""
-    return any(component in (".", "..") for component in include.split("/"))
-
-
 def CheckHeaderFileIncluded(filename, include_state, error):
     """Logs an error if a source file does not include its header."""
 
@@ -2726,20 +2721,15 @@ def CheckHeaderFileIncluded(filename, include_state, error):
         if not os.path.exists(headerfile):
             continue
         headername = FileInfo(headerfile).RepositoryName()
-        include_uses_unix_dir_aliases = False
         for section_list in include_state.include_list:
             for f in section_list:
                 include_text = f[0]
-                if _IncludePathUsesDirectoryAlias(include_text):
-                    include_uses_unix_dir_aliases = True
                 if headername in include_text or include_text in headername:
                     return
                 if not first_include:
                     first_include = f[1]
 
         message = f"{fileinfo.RepositoryName()} should include its header file {headername}"
-        if include_uses_unix_dir_aliases:
-            message += ". Relative paths like . and .. are not allowed."
 
     if message:
         error(filename, first_include, "build/include", 5, message)
@@ -5831,6 +5821,11 @@ def _ClassifyInclude(fileinfo, include, used_angle_brackets, include_order="defa
     return _OTHER_HEADER
 
 
+def IncludePathUsesDirectoryAlias(include):
+    """Returns whether an include path contains a . or .. component."""
+    return include.startswith(("../", "./")) or "/../" in include or "/./" in include
+
+
 def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
     """Check rules that are applicable to #include lines.
 
@@ -5876,13 +5871,13 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
     if match:
         include = match.group(2)
         used_angle_brackets = match.group(1) == "<"
-        if _IncludePathUsesDirectoryAlias(include):
+        if IncludePathUsesDirectoryAlias(include):
             error(
                 filename,
                 linenum,
                 "build/include",
                 4,
-                "Include path contains a directory alias",
+                "Relative paths like . and .. are not allowed.",
             )
         duplicate_line = include_state.FindHeader(include)
         if duplicate_line >= 0:

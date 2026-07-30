@@ -5704,21 +5704,14 @@ func2();""",
             )
             assert error_collector.Results().count(expected) == 0
 
-            # Unix directory aliases are not allowed, and should trigger the
-            # "include itse header file" error
+            # Unix directory aliases should be reported separately from a
+            # missing related-header error.
             error_collector = ErrorCollector(self.assertTrue)
             cpplint.ProcessFileData(
                 "test/foo.cc", "cc", [r'#include "./test/foo.h"', ""], error_collector
             )
-            fmt = "{dir}/{fn}.cc should include its header file {dir}/{fn}.h{unix_text}"
-            expected = (
-                fmt.format(
-                    fn="foo",
-                    dir=test_directory,
-                    unix_text=". Relative paths like . and .. are not allowed.",
-                )
-                + "  [build/include] [5]"
-            )
+            alias_error = "Relative paths like . and .. are not allowed.  [build/include] [4]"
+            assert error_collector.Results().count(alias_error) == 1
             assert error_collector.Results().count(expected) == 1
 
             # A directory name ending in dots is not a Unix directory alias.
@@ -5847,11 +5840,11 @@ func2();""",
         self.TestLint('#include "dir/foo.h"', "")
         self.TestLint(
             '#include "../foo/bar.h"',
-            "Include path contains a directory alias  [build/include] [4]",
+            "Relative paths like . and .. are not allowed.  [build/include] [4]",
         )
         self.TestLint(
             '#include "private/./test.h"',
-            "Include path contains a directory alias  [build/include] [4]",
+            "Relative paths like . and .. are not allowed.  [build/include] [4]",
         )
         self.TestLint('#include "dir/foo..h"', "")
         self.TestLint('#include "Python.h"', "")
