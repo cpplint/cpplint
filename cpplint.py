@@ -1546,8 +1546,8 @@ class _CppLintState:
         self._junit_failures.append((filename, linenum, message, category, confidence))
 
     def FormatJUnitXML(self):
-        num_errors = len(self._junit_errors)
-        num_failures = len(self._junit_failures)
+        num_errors = int(bool(self._junit_errors))
+        num_failures = len({failure[0] for failure in self._junit_failures})
 
         testsuite = xml.etree.ElementTree.Element("testsuite")
         testsuite.attrib["errors"] = str(num_errors)

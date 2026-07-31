@@ -5044,7 +5044,7 @@ func2();""",
             cpplint._cpplint_state._junit_failures = []
             expected = (
                 '<?xml version="1.0" encoding="UTF-8" ?>\n'
-                '<testsuite errors="2" failures="0" name="cpplint" tests="2">'
+                '<testsuite errors="1" failures="0" name="cpplint" tests="1">'
                 '<testcase name="errors"><error>ErrMsg1\nErrMsg2</error></testcase>'
                 "</testsuite>"
             )
@@ -5071,7 +5071,7 @@ func2();""",
             ]
             expected = (
                 '<?xml version="1.0" encoding="UTF-8" ?>\n'
-                '<testsuite errors="0" failures="3" name="cpplint" tests="3">'
+                '<testsuite errors="0" failures="2" name="cpplint" tests="2">'
                 '<testcase name="File1"><failure>5: FailMsg1 [category/subcategory]'
                 " [3]\n19: FailMsg3 [category/subcategory] [3]</failure></testcase>"
                 '<testcase name="File2"><failure>99: FailMsg2 '
