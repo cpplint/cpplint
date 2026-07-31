@@ -3191,9 +3191,7 @@ class TestCpplint(CpplintTestBase):
         self.TestLint("auto x = []<typename T>(T) {};", "")
         self.TestLint("auto x = [&]<typename T, int N>(T (&a)[N]) {};", "")
         self.TestMultiLineLint(
-            "auto x = []<typename T>(T t) {\n"
-            "  return t;\n"
-            "};\n",
+            "auto x = []<typename T>(T t) {\n  return t;\n};\n",
             "",
         )
         # A templated *function* (not a lambda) with a redundant trailing
