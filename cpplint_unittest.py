@@ -3186,6 +3186,21 @@ class TestCpplint(CpplintTestBase):
         # Avoid false positives with operator[]
         self.TestLint("table_to_children[&*table].push_back(dependent);", "")
 
+        # C++20 templated lambdas: []<T>(...) must not trigger the redundant
+        # trailing semicolon check. Regression test for #385.
+        self.TestLint("auto x = []<typename T>(T) {};", "")
+        self.TestLint("auto x = [&]<typename T, int N>(T (&a)[N]) {};", "")
+        self.TestMultiLineLint(
+            "auto x = []<typename T>(T t) {\n  return t;\n};\n",
+            "",
+        )
+        # A templated *function* (not a lambda) with a redundant trailing
+        # semicolon must still be flagged.
+        self.TestLint(
+            "template <typename T> void f() {};",
+            "You don't need a ; after a }  [readability/braces] [4]",
+        )
+
     def testBraceInitializerList(self):
         self.TestLint("MyStruct p = {1, 2};", "")
         self.TestLint("MyStruct p{1, 2};", "")
