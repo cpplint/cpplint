@@ -5044,7 +5044,7 @@ func2();""",
             cpplint._cpplint_state._junit_failures = []
             expected = (
                 '<?xml version="1.0" encoding="UTF-8" ?>\n'
-                '<testsuite errors="1" failures="0" name="cpplint" tests="1">'
+                '<testsuite errors="2" failures="0" name="cpplint" tests="2">'
                 '<testcase name="errors"><error>ErrMsg1\nErrMsg2</error></testcase>'
                 "</testsuite>"
             )
