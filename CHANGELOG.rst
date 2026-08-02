@@ -6,7 +6,8 @@ TBA
 ===
 
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
-* Disallowed current- and parent-directory aliases in include paths. (#432)
+* We now error on relative include paths (``./``, ``../``). (#432)
+   * This makes ``#include "./foo.h"`` produce two separate errors: that foo.cpp should include foo.h and that relative paths are not allowed.
 
 2.0.2 (2025-04-08)
 ===========
