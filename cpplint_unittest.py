@@ -5695,14 +5695,14 @@ func2();""",
             if platform.system() == "Windows":
                 test_directory = test_directory.replace("\\", "/")
             fmt = "{dir}/{fn}.cc should include its header file {dir}/{fn}.h  [build/include] [5]"
-            expected = fmt.format(fn="foo", dir=test_directory)
-            assert error_collector.Results().count(expected) == 1
+            foo_header_error = fmt.format(fn="foo", dir=test_directory)
+            assert error_collector.Results().count(foo_header_error) == 1
 
             error_collector = ErrorCollector(self.assertTrue)
             cpplint.ProcessFileData(
                 "test/foo.cc", "cc", [r'#include "test/foo.h"', ""], error_collector
             )
-            assert error_collector.Results().count(expected) == 0
+            assert error_collector.Results().count(foo_header_error) == 0
 
             # Unix directory aliases should be reported separately from a
             # missing related-header error.
@@ -5710,9 +5710,11 @@ func2();""",
             cpplint.ProcessFileData(
                 "test/foo.cc", "cc", [r'#include "./test/foo.h"', ""], error_collector
             )
-            alias_error = "Relative paths like . and .. are not allowed.  [build/include] [4]"
-            assert error_collector.Results().count(alias_error) == 1
-            assert error_collector.Results().count(expected) == 1
+            relative_path_error = (
+                "Relative paths like . and .. are not allowed.  [build/include] [4]"
+            )
+            assert error_collector.Results().count(relative_path_error) == 1
+            assert error_collector.Results().count(foo_header_error) == 1
 
             # A directory name ending in dots is not a Unix directory alias.
             error_collector = ErrorCollector(self.assertTrue)
@@ -5733,20 +5735,20 @@ func2();""",
                 "test/Bar.cc", "cc", [r'#include "test/Bar.h"', ""], error_collector
             )
             fmt = "{dir}/{fn}.cc should include its header file {dir}/{fn}.h  [build/include] [5]"
-            expected = fmt.format(fn="Bar", dir=test_directory)
-            assert error_collector.Results().count(expected) == 0
+            bar_header_error = fmt.format(fn="Bar", dir=test_directory)
+            assert error_collector.Results().count(bar_header_error) == 0
 
             # Since Bar.cc & Bar.h look 3rd party-ish, it should be ok without the include dir
             error_collector = ErrorCollector(self.assertTrue)
             cpplint.ProcessFileData("test/Bar.cc", "cc", [r'#include "Bar.h"', ""], error_collector)
-            assert error_collector.Results().count(expected) == 0
+            assert error_collector.Results().count(bar_header_error) == 0
 
             # Test edge case in which multiple files have the same base name
             open(os.path.join(test_directory, "foo.hpp"), "a").close()
             cpplint.ProcessFileData(
                 "test/foo.cc", "cc", [r'#include "foo.hpp"', ""], error_collector
             )
-            assert error_collector.Results().count(expected) == 0
+            assert error_collector.Results().count(bar_header_error) == 0
 
         finally:
             # Restore previous CWD.
