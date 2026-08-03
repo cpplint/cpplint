@@ -10,6 +10,8 @@ TBA
   declarations that use a calling-convention macro before ``*``, including array declarators
   (e.g. ``typedef int32_t(CALLCONV* Func)(void);`` and
   ``typedef int32_t(CALLCONV* FuncArray[3])(void);``). (https://github.com/cpplint/cpplint/issues/409)
+* We now error on relative include paths (``./``, ``../``). (#432)
+   * This makes ``#include "./foo.h"`` produce two separate errors: that foo.cpp should include foo.h and that relative paths are not allowed.
 
 2.0.2 (2025-04-08)
 ===========

@@ -4,8 +4,9 @@ src/*
 Done processing src/libvlc.c
 Done processing src/libvlc.h
 Done processing src/missing.c
-Total errors found: 599
+Total errors found: 600
 
+src/libvlc.c:40:  Relative paths like . and .. are not allowed.  [build/include] [4]
 src/libvlc.c:41:  Found C system header after other header. Should be: libvlc.h, c system, c++ system, other.  [build/include_order] [4]
 src/libvlc.c:47:  Found C system header after other header. Should be: libvlc.h, c system, c++ system, other.  [build/include_order] [4]
 src/libvlc.c:48:  Found C system header after other header. Should be: libvlc.h, c system, c++ system, other.  [build/include_order] [4]
