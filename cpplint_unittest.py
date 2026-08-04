@@ -223,7 +223,8 @@ class CpplintTestBase:
         error_collector = ErrorCollector(self.assertTrue)
         include_state = cpplint._IncludeState()
         nesting_state = cpplint.NestingState()
-        lines = code.split("\n")
+        raw_lines = code.split("\n")
+        lines = raw_lines
         cpplint.RemoveMultiLineComments(filename, lines, error_collector)
         lines = cpplint.CleansedLines(lines)
         for i in range(lines.NumLines()):
@@ -235,7 +236,10 @@ class CpplintTestBase:
         # have language problems.
 
         # Second, look for missing includes.
-        cpplint.CheckForIncludeWhatYouUse(filename, lines, include_state, error_collector, io)
+        is_c_file = cpplint._IsCFile(filename, raw_lines)
+        cpplint.CheckForIncludeWhatYouUse(
+            filename, lines, include_state, error_collector, io, is_c_file=is_c_file
+        )
         return error_collector.Results()
 
     # Perform lint and make sure one of the errors is what we want
@@ -259,8 +263,8 @@ class CpplintTestBase:
     def TestLanguageRulesCheck(self, file_name, code, expected_message):
         assert expected_message == self.PerformLanguageRulesCheck(file_name, code)
 
-    def TestIncludeWhatYouUse(self, code, expected_message):
-        assert expected_message == self.PerformIncludeWhatYouUse(code)
+    def TestIncludeWhatYouUse(self, code, expected_message, filename="foo.h"):
+        assert expected_message == self.PerformIncludeWhatYouUse(code, filename=filename)
 
     def TestBlankLinesCheck(self, lines, start_errors, end_errors):
         for extension in ["c", "cc", "cpp", "cxx", "c++", "cu"]:
@@ -1290,6 +1294,26 @@ class TestCpplint(CpplintTestBase):
       printf("hello world");""",
             "",
         )  # Avoid false positives w/ c-style include
+        # C files should be told to include the C header (e.g. <stdio.h>) rather
+        # than its C++ counterpart (e.g. <cstdio>). See #399.
+        self.TestIncludeWhatYouUse(
+            'printf("hello world");',
+            "Add #include <stdio.h> for printf  [build/include_what_you_use] [4]",
+            filename="foo.c",
+        )
+        # C++ files are unaffected.
+        self.TestIncludeWhatYouUse(
+            'printf("hello world");',
+            "Add #include <cstdio> for printf  [build/include_what_you_use] [4]",
+            filename="foo.cpp",
+        )
+        # The "C header already included" behaviour is preserved for C files.
+        self.TestIncludeWhatYouUse(
+            """#include <stdio.h>
+      printf("hello world");""",
+            "",
+            filename="foo.c",
+        )
         self.TestIncludeWhatYouUse(
             "void a(const string &foobar);",
             "Add #include <string> for string  [build/include_what_you_use] [4]",
