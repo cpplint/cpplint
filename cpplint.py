@@ -7158,7 +7158,9 @@ def FilesBelongToSameModule(filename_cc, filename_h):
     return files_belong_to_same_module, common_path
 
 
-def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error, io=codecs, is_c_file=False):
+def CheckForIncludeWhatYouUse(
+    filename, clean_lines, include_state, error, io=codecs, is_c_file=False
+):
     """Reports for missing stl includes.
 
     This function will output warnings to make sure you are including the headers
@@ -7625,9 +7627,7 @@ def ProcessFileData(filename, file_extension, lines, error, extra_check_function
         )
 
     is_c_file = _IsCFile(filename, clean_lines.raw_lines)
-    CheckForIncludeWhatYouUse(
-        filename, clean_lines, include_state, error, is_c_file=is_c_file
-    )
+    CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error, is_c_file=is_c_file)
 
     # Check that the .cc file has included its header if it exists.
     if _IsSourceExtension(file_extension):
