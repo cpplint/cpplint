@@ -1674,6 +1674,14 @@ class TestCpplint(CpplintTestBase):
             self.TestMultiLineLint(
                 """
           class Foo {
+            template <class T>
+            Foo(T value) requires Integral<T>;
+          };""",
+                "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
             Foo(int f) throw() = delete;
           };""",
                 "",
