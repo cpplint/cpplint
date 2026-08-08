@@ -50,6 +50,8 @@ cpplint can also be run as a pre-commit hook by adding this to `.pre-commit-conf
         args:
           - --filter=-whitespace/line_length,-whitespace/parens
 
+cpplint also ships out of the box in `MegaLinter <https://megalinter.io/>`_, an open-source linters aggregator for CI (see its `cpplint documentation <https://megalinter.io/latest/descriptors/c_cpplint/>`_).
+
 Usage
 -----
 .. code-block:: bash
