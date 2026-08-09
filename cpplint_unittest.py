@@ -7298,6 +7298,7 @@ class TestConfigOverrides:
             ("baz.cc", "^baz[.]cc$", False),
             ("bar/baz.cc", "^bar/baz[.]cc$", False),
             ("bar/qux.cc", "^bar/baz[.]cc$", True),
+            ("bar/baz.cc", "^bar$", True),
             ("bar/baz.cc", "^bar/", False),
         ],
     )

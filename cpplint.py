@@ -270,7 +270,8 @@ Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
     "exclude_files" allows to specify a regular expression to be matched against
     the file path relative to the CPPLINT.cfg directory. Paths use "/" as the
     separator on all platforms. If the expression matches, the file is skipped
-    and not run through the linter.
+    and not run through the linter. To exclude a directory subtree, use a prefix
+    pattern such as "^bar/" rather than an anchored directory pattern like "^bar$".
 
     "linelength" allows to specify the allowed line length for the project.
 
