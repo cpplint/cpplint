@@ -268,8 +268,9 @@ Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
     through --filter command-line flag.
 
     "exclude_files" allows to specify a regular expression to be matched against
-    a file name. If the expression matches, the file is skipped and not run
-    through the linter.
+    the file path relative to the CPPLINT.cfg directory. Paths use "/" as the
+    separator on all platforms. If the expression matches, the file is skipped
+    and not run through the linter.
 
     "linelength" allows to specify the allowed line length for the project.
 
@@ -7602,12 +7603,14 @@ def ProcessConfigOverrides(filename):
     """
 
     abs_filename = os.path.abspath(filename)
+    relative_filename = ""
     cfg_filters = []
     keep_looking = True
     while keep_looking:
         abs_path, base_name = os.path.split(abs_filename)
         if not base_name:
             break  # Reached the root directory.
+        relative_filename = f"{base_name}/{relative_filename}" if relative_filename else base_name
 
         cfg_file = os.path.join(abs_path, _config_filename)
         abs_filename = abs_path
@@ -7629,24 +7632,20 @@ def ProcessConfigOverrides(filename):
                     elif name == "filter":
                         cfg_filters.append(val)
                     elif name == "exclude_files":
-                        # When matching exclude_files pattern, use the base_name of
-                        # the current file name or the directory name we are processing.
+                        # Match the target path relative to this configuration file.
                         # For example, if we are checking for lint errors in /foo/bar/baz.cc
-                        # and we found the .cfg file at /foo/CPPLINT.cfg, then the config
-                        # file's "exclude_files" filter is meant to be checked against "bar"
-                        # and not "baz" nor "bar/baz.cc".
-                        if base_name:
-                            pattern = re.compile(val)
-                            if pattern.match(base_name):
-                                if _cpplint_state.quiet:
-                                    # Suppress "Ignoring file" warning when using --quiet.
-                                    return False
-                                _cpplint_state.PrintInfo(
-                                    f'Ignoring "{filename}": file excluded by "{cfg_file}". '
-                                    'File path component "%s" matches '
-                                    'pattern "%s"\n' % (base_name, val)
-                                )
+                        # and we found the .cfg file at /foo/CPPLINT.cfg, match against
+                        # "bar/baz.cc". Use forward slashes consistently across platforms.
+                        pattern = re.compile(val)
+                        if pattern.match(relative_filename):
+                            if _cpplint_state.quiet:
+                                # Suppress "Ignoring file" warning when using --quiet.
                                 return False
+                            _cpplint_state.PrintInfo(
+                                f'Ignoring "{filename}": file excluded by "{cfg_file}". '
+                                'File path "%s" matches pattern "%s"\n' % (relative_filename, val)
+                            )
+                            return False
                     elif name == "linelength":
                         global _line_length
                         try:
