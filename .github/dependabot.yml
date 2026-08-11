@@ -11,3 +11,5 @@ updates:
           - "*"  # Group all Actions updates into a single larger pull request
     schedule:
       interval: weekly
+    cooldown:  # https://nesbitt.io/2026/03/04/package-managers-need-to-cool-down.html
+      default-days: 7
