@@ -210,3 +210,7 @@ tmp_path_retention_policy = "all"
 
 [tool.coverage]
 run.patch = [ "subprocess" ]
+
+[tool.towncrier]
+directory = "changes"
+type = [ { name = "Breaking" }, { name = "Feature" }, { name = "Bugfix" }, { name = "Refactor" } ]

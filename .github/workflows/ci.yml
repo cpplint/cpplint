@@ -1,14 +1,33 @@
-name: Test
+name: Validation
 on:
   pull_request:
-  push:
-    branches: [master, develop]
-  workflow_dispatch:
+    types: [opened, reopened, synchronize, labeled]
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
+  choose-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            nondoc:
+              - '!**/*.rst'
+            hasLog:
+              - added: 'changes/*'
+            py:
+              - '*.py'
+    outputs:
+      shouldTest: ${{ steps.filter.outputs.nondoc == 'true' }}
+      needsLog: ${{ steps.filter.outputs.py == 'true' }}
+      changelogged: ${{ steps.filter.outputs.hasLog == 'true' }}
+
   build-test:
+    name: Continuous Integration
+    needs: choose-jobs
+    if: needs.choose-jobs.outputs.shouldTest
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -20,8 +39,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
         with:
@@ -34,3 +51,30 @@ jobs:
           pip install --editable ".[dev]"
       - name: Test with tox
         run: tox -e py
+
+  changelog:
+    name: Changelog requirement
+    needs: choose-jobs
+    if: |
+      needs.choose-jobs.outputs.needsLog &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-changelog') &&
+      !contains(github.event.pull_request.labels.*.name, 'dependencies') &&
+      github.event.pull_request.user.name != 'pre-commit-ci'
+    # impossible to make pre-commit-ci add label "at least not for free tier"
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          exit $([[ ${{ needs.choose-jobs.outputs.changelogged }} == 'true' ]])
+
+  pass:
+    name: Summary
+    needs: [ build-test, changelog ]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if changelog ran and failed
+        if: ${{ needs.changelog.result == 'failure' }}
+        run: echo "Please follow instructions under https://github.com/cpplint/cpplint/blob/crytown/CONTRIBUTING.rst#pull-requests to add a changelog entry\nor request the `skip-changelog` label if you believe the changes should not be in the changelog." >> $GITHUB_STEP_SUMMARY; exit 1
+      - name: Fail if build-test ran and failed
+        if: ${{ needs.build-test.result == 'failure' }}
+        run: echo "Failed required test(s).\nSee https://github.com/cpplint/cpplint/blob/develop/CONTRIBUTING.rst#testing for help on testing." >> $GITHUB_STEP_SUMMARY; exit 1
