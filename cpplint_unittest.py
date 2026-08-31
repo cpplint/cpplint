@@ -3226,6 +3226,10 @@ class TestCpplint(CpplintTestBase):
             "static auto const&&  [abc, def] = func();",
             "Extra space before [  [whitespace/braces] [5]",
         )
+        self.TestLint(
+            "auto [key, value] = values [index];",
+            "Extra space before [  [whitespace/braces] [5]",
+        )
 
     def testLambda(self):
         self.TestLint("auto x = []() {};", "")
