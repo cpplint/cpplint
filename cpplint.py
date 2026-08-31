@@ -4416,22 +4416,24 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
     # In these cases, the left square bracket should be preceded by exactly one space. For the
     # specificatio of structured bindings, see
     # https://en.cppreference.com/cpp/language/structured_binding.
-    if re.search(r"\w\s\[", line) and not (
-        re.search(r"\w\s\[\[", line)  # Attribute
-        or re.search(r"(?:delete|return)\s\[", line)
-        or re.search(
-            r"""
+    matches = re.finditer(r"[^\[]*\w\s\[(?!\[)", line)
+    for match in matches:
+        print(f"HERE{match.group()}")
+        if not (
+            re.search(r"(?:delete|return)\s\[", match.group())
+            or re.search(
+                r"""
 (?:((constexpr\s+)|(constint\s+)|(static\s+)|(thread_local\s+)|(const\s+)|(volatile\s+))*)
 auto
 (?:((\s+constexpr)|(\s+constint)|(\s+static)|(\s+thread_local)|(\s+const)|(\s+volatile))*)
 (?:(\&|\&\&)?)
 \s\[
 """,
-            line,
-            re.VERBOSE,
-        )  # Structured binding
-    ):
-        error(filename, linenum, "whitespace/braces", 5, "Extra space before [")
+                match.group(),
+                re.VERBOSE,
+            )  # Structured binding
+        ):
+            error(filename, linenum, "whitespace/braces", 5, "Extra space before [")
 
     # In range-based for, we wanted spaces before and after the colon, but
     # not around "::" tokens that might appear.
