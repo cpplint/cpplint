@@ -4418,7 +4418,6 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
     # https://en.cppreference.com/cpp/language/structured_binding.
     matches = re.finditer(r"[^\[]*\w\s\[(?!\[)", line)
     for match in matches:
-        print(f"HERE{match.group()}")
         if not (
             re.search(r"(?:delete|return)\s\[", match.group())
             or re.search(
