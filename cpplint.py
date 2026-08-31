@@ -4401,9 +4401,36 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
     # get rid of comments and strings
     line = clean_lines.elided[linenum]
 
-    # You shouldn't have spaces before your brackets, except for C++11 attributes
-    # or maybe after 'delete []', 'return []() {};', or 'auto [abc, ...] = ...;'.
-    if re.search(r"\w\s+\[(?!\[)", line) and not re.search(r"(?:auto&?|delete|return)\s+\[", line):
+    # Other than due to indentation, you shouldn't have more than one space before
+    # a left square bracket.
+    if re.search(r"\S\s{2,}\[", line):
+        error(filename, linenum, "whitespace/braces", 5, "Extra space before [")
+
+    # After a word character, you shouldn't have any spaces before a left square bracket, except
+    # for:
+    # * before C++11 attributes, in which case the first left square bracket will be immediately
+    #   followed by another;
+    # * after "delete" or "return"; or
+    # * inside of a structured binding, such as `auto const& [abc, ...] = ...;`.
+    #
+    # In these cases, the left square bracket should be preceded by exactly one space. For the
+    # specificatio of structured bindings, see
+    # https://en.cppreference.com/cpp/language/structured_binding.
+    if re.search(r"\w\s\[", line) and not (
+        re.search(r"\w\s\[\[", line)  # Attribute
+        or re.search(r"(?:delete|return)\s\[", line)
+        or re.search(
+            r"""
+(?:((constexpr\s+)|(constint\s+)|(static\s+)|(thread_local\s+)|(const\s+)|(volatile\s+))*)
+auto
+(?:((\s+constexpr)|(\s+constint)|(\s+static)|(\s+thread_local)|(\s+const)|(\s+volatile))*)
+(?:(\&|\&\&)?)
+\s\[
+""",
+            line,
+            re.VERBOSE,
+        )  # Structured binding
+    ):
         error(filename, linenum, "whitespace/braces", 5, "Extra space before [")
 
     # In range-based for, we wanted spaces before and after the colon, but
