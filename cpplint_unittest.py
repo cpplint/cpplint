@@ -3178,6 +3178,7 @@ class TestCpplint(CpplintTestBase):
         self.TestLint("static auto&& [abc, def] = func();", "")
         self.TestLint("auto const&& [abc, def] = func();", "")
         self.TestLint("static auto const&& [abc, def] = func();", "")
+        self.TestLint("auto constinit [x, y] = value;", "")
 
         # multiple spaces not allowed before before braces
         self.TestLint(
@@ -3228,6 +3229,10 @@ class TestCpplint(CpplintTestBase):
         )
         self.TestLint(
             "auto [key, value] = values [index];",
+            "Extra space before [  [whitespace/braces] [5]",
+        )
+        self.TestLint(
+            "auto constinit  [x, y] = value;",
             "Extra space before [  [whitespace/braces] [5]",
         )
 
