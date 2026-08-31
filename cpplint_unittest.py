@@ -3157,10 +3157,75 @@ class TestCpplint(CpplintTestBase):
         self.TestLint(
             "int numbers [] = { 1, 2, 3 };", "Extra space before [  [whitespace/braces] [5]"
         )
-        # space allowed in some cases
-        self.TestLint("auto [abc, def] = func();", "")
+
+        # space due to indentation is allowed
+        self.TestLint("      [[nodiscard]] bool func();", "")
+
+        # single space allowed in some cases
         self.TestLint("#define NODISCARD [[nodiscard]]", "")
         self.TestLint("void foo(int param [[maybe_unused]]);", "")
+        self.TestLint("return [a, b]", "")
+        self.TestLint("delete [c]", "")
+        self.TestLint("auto [abc, def] = func();", "")
+        self.TestLint("static auto [abc, def] = func();", "")
+        self.TestLint("auto const [abc, def] = func();", "")
+        self.TestLint("static auto const [abc, def] = func();", "")
+        self.TestLint("auto& [abc, def] = func();", "")
+        self.TestLint("static auto& [abc, def] = func();", "")
+        self.TestLint("auto const& [abc, def] = func();", "")
+        self.TestLint("static auto const& [abc, def] = func();", "")
+        self.TestLint("auto&& [abc, def] = func();", "")
+        self.TestLint("static auto&& [abc, def] = func();", "")
+        self.TestLint("auto const&& [abc, def] = func();", "")
+        self.TestLint("static auto const&& [abc, def] = func();", "")
+
+        # multiple spaces not allowed before before braces
+        self.TestLint(
+            "#define NODISCARD  [[nodiscard]]", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "void foo(int param  [[maybe_unused]]);",
+            "Extra space before [  [whitespace/braces] [5]",
+        )
+        self.TestLint("return  [a, b]", "Extra space before [  [whitespace/braces] [5]")
+        self.TestLint("delete  [c]", "Extra space before [  [whitespace/braces] [5]")
+        self.TestLint("auto  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]")
+        self.TestLint(
+            "static auto  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "auto const  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "static auto const  [abc, def] = func();",
+            "Extra space before [  [whitespace/braces] [5]",
+        )
+        self.TestLint(
+            "auto&  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "static auto&  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "auto const&  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "static auto const&  [abc, def] = func();",
+            "Extra space before [  [whitespace/braces] [5]",
+        )
+        self.TestLint(
+            "auto&&  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "static auto&&  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "auto const&&  [abc, def] = func();", "Extra space before [  [whitespace/braces] [5]"
+        )
+        self.TestLint(
+            "static auto const&&  [abc, def] = func();",
+            "Extra space before [  [whitespace/braces] [5]",
+        )
 
     def testLambda(self):
         self.TestLint("auto x = []() {};", "")
