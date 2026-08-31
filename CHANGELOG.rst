@@ -10,7 +10,7 @@ TBA
    * This makes ``#include "./foo.h"`` produce two separate errors: that foo.cpp should include foo.h and that relative paths are not allowed.
 * Update and add checks for whitespace before left square brackets. In particular:
    * A single whitespace character is allowed before the left square bracket in structured binding.
-   * No more than one whitespaces character is allowed before the left square bracket, regardless of what character comes before the space (apart from whitespace due to indentation). Previously, whitespace characters were only complained about if they were preceded by a word character.
+   * No more than one whitespace character is allowed before the left square bracket, regardless of what character comes before the space (apart from whitespace due to indentation). Previously, whitespace characters were only complained about if they were preceded by a word character.
 
 2.0.2 (2025-04-08)
 ===========
