@@ -4422,9 +4422,9 @@ def CheckSpacing(filename, clean_lines, linenum, nesting_state, error):
             re.search(r"(?:delete|return)\s\[", match.group())
             or re.search(
                 r"""
-(?:((constexpr\s+)|(constint\s+)|(static\s+)|(thread_local\s+)|(const\s+)|(volatile\s+))*)
+(?:((constexpr\s+)|(constinit\s+)|(static\s+)|(thread_local\s+)|(const\s+)|(volatile\s+))*)
 auto
-(?:((\s+constexpr)|(\s+constint)|(\s+static)|(\s+thread_local)|(\s+const)|(\s+volatile))*)
+(?:((\s+constexpr)|(\s+constinit)|(\s+static)|(\s+thread_local)|(\s+const)|(\s+volatile))*)
 (?:(\&|\&\&)?)
 \s\[
 """,
