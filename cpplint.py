@@ -3792,16 +3792,26 @@ def _GetConstructorSuffix(clean_lines, linenum, match_end):
     paren_depth = 0
     bracket_depth = 0
     brace_depth = 0
+    in_requires_clause = False
+    requires_expression = False
     suffix_line = clean_lines.elided[linenum][match_end:]
     next_line = linenum + 1
 
     while True:
-        for char in suffix_line:
-            if char == ";" and not paren_depth and not bracket_depth and not brace_depth:
-                constructor_suffix.append(char)
-                return "".join(constructor_suffix)
-            if char == "{" and not paren_depth and not bracket_depth and not brace_depth:
-                return "".join(constructor_suffix)
+        for char in re.findall(r"\w+|[^\w]", suffix_line):
+            if not paren_depth and not bracket_depth and not brace_depth:
+                if char == ";":
+                    constructor_suffix.append(char)
+                    return "".join(constructor_suffix)
+                if char == "{" and not requires_expression:
+                    return "".join(constructor_suffix)
+                if char == "requires":
+                    # The first keyword starts the clause; subsequent ones
+                    # introduce expressions whose braces belong to the suffix.
+                    requires_expression = in_requires_clause
+                    in_requires_clause = True
+                elif not char.isspace() and char != "(":
+                    requires_expression = False
 
             constructor_suffix.append(char)
             if char == "(":
