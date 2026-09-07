@@ -5851,8 +5851,16 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
     # We also make an exception for Lua headers, which follow google
     # naming convention but not the include convention.
     match = re.match(r'#include\s*"([^/]+\.(.*))"', line)
+    same_dir_header = ""
+    if match:
+        same_dir_header = os.path.join(os.path.dirname(fileinfo.FullName()), match.group(1))
     if (
         match
+        and (
+            not os.path.isfile(same_dir_header)
+            or os.path.normcase(os.path.normpath(same_dir_header))
+            == os.path.normcase(os.path.normpath(fileinfo.FullName()))
+        )
         and IsHeaderExtension(match.group(2))
         and not _third_party_headers_pattern.match(match.group(1))
     ):

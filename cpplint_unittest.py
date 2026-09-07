@@ -5846,13 +5846,39 @@ func2();""",
             cpplint._repository = None
             cpplint._root = None
 
-    def testBuildInclude(self):
+    def testBuildInclude(self, tmp_path):
         # Test that include statements have slashes in them.
-        self.TestLint(
+        repo = tmp_path / "repo"
+        repo.mkdir()
+        (repo / ".git").mkdir()
+        root_source = repo / "foo.cc"
+        root_source.write_text("")
+        root_header = repo / "foo.h"
+        root_header.write_text("")
+        source_dir = repo / "src"
+        source_dir.mkdir()
+        nested_source = source_dir / "foo.cc"
+        nested_source.write_text("")
+        same_dir_header = source_dir / "utils.hpp"
+        same_dir_header.write_text("")
+
+        self.TestLanguageRulesCheck(
+            str(root_source),
+            '#include "foo.h"',
+            "",
+        )
+        self.TestLanguageRulesCheck(
+            str(nested_source),
+            '#include "utils.hpp"',
+            "",
+        )
+        self.TestLanguageRulesCheck(
+            str(nested_source),
             '#include "foo.h"',
             "Include the directory when naming header files  [build/include_subdir] [4]",
         )
-        self.TestLint(
+        self.TestLanguageRulesCheck(
+            str(nested_source),
             '#include "bar.hh"',
             "Include the directory when naming header files  [build/include_subdir] [4]",
         )
