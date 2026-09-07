@@ -7414,5 +7414,10 @@ def run_around_tests(pytestconfig: pytest.Config):
         ErrorCollector(None).VerifyAllCategoriesAreSeen()
 
 
+def test_github_command_escaping():
+    assert cpplint._EscapeGithubCommandData("100%\r\n") == "100%25%0D%0A"
+    assert cpplint._EscapeGithubCommandProperty("a,b:c") == "a%2Cb%3Ac"
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

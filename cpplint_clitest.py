@@ -271,5 +271,20 @@ def test_third_party_headers_config(tmp_path):
     assert b"build/include_subdir" in err
 
 
+def test_github_output(tmp_path):
+    cpp = tmp_path / "test.cpp"
+    cpp.write_text("// Copyright 2026 cpplint\nint main() {\n  return 0; \n}\n")
+
+    status, out, err = run_shell_command(BASE_CMD, "--output=github test.cpp", cwd=str(tmp_path))
+
+    assert status == 1
+    assert err == b""
+    assert out == (
+        b"::warning file=test.cpp,line=3,title=cpplint::"
+        b"Line ends in whitespace.  Consider deleting these extra spaces.  "
+        b"[whitespace/end_of_line] [4]\n"
+    )
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
