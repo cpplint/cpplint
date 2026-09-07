@@ -1632,8 +1632,10 @@ class TestCpplint(CpplintTestBase):
             "requires requires(T value) { value + value; }",
             "requires requires\n                (T value)\n                { value + value; }",
             "requires requires(T value) { { value + value }; }",
-            "requires requires { typename T::type; }\n"
-            "      && requires(T value) { value + value; }",
+            (
+                "requires requires { typename T::type; }\n"
+                "      && requires(T value) { value + value; }"
+            ),
         )
         for suffix in suffixes:
             for ending, expected in (
