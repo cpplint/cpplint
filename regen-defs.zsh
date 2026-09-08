@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 # Input the path of cpplint here
-cpplint="$HOME/Documents/cpplint/cpplint.py"
+cpplint="$HOME/Projects/cpplint/cpplint.py"
 
 cd samples/ || exit 74  # EX_IOERROR
 
@@ -23,8 +23,15 @@ for folder in $folders; do
     stdout_file=$(mktemp)
     stderr_file=$(mktemp)
 
+    # Cleanup on interruption
+    cleanup() {
+      rm "$stdout_file" "$stderr_file"
+      exit $((128 + $1))
+    }
+    trap cleanup INT TERM
+
     # Execute the command and capture stdout and stderr
-    uv run "$cpplint" $cmd > "$stdout_file" 2> "$stderr_file"
+    eval uv run "$cpplint" $cmd > "$stdout_file" 2> "$stderr_file"
     ret_code=$?
 
     # Count the number of lines in stdout
@@ -42,7 +49,7 @@ for folder in $folders; do
     } > "$file"
 
     # Clean up temporary files
-    rm "$stdout_file" "$stderr_file"
+    cleanup
   done
   cd ..
 done
