@@ -6,6 +6,10 @@ TBA
 ===
 
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
+* Fixed false positives in readability/casting for function-pointer typedefs and alias
+  declarations that use a calling-convention macro before ``*``, including array declarators
+  (e.g. ``typedef int32_t(CALLCONV* Func)(void);`` and
+  ``typedef int32_t(CALLCONV* FuncArray[3])(void);``). (https://github.com/cpplint/cpplint/issues/409)
 * We now error on relative include paths (``./``, ``../``). (#432)
    * This makes ``#include "./foo.h"`` produce two separate errors: that foo.cpp should include foo.h and that relative paths are not allowed.
 
