@@ -1648,6 +1648,13 @@ class TestCpplint(CpplintTestBase):
                     expected,
                 )
 
+    def testNonDeletedConstructorSuffixes(self):
+        for suffix in ("noexcept", "noexcept(noexcept(T{}))", "throw()"):
+            self.TestMultiLineLint(
+                f"class Foo {{\n  Foo(int value) {suffix};\n}};",
+                "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+            )
+
     def testConstructorSuffixStopsAtBody(self):
         for suffix in (
             "requires (sizeof(T) > 0)",
