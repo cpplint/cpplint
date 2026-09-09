@@ -5,6 +5,7 @@ Changelog
 TBA
 ===
 
+* To match how we group test cases, JUnit output ``failures`` count is now the amount of files with errors. (#431)
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
 * We now error on relative include paths (``./``, ``../``). (#432)
    * This makes ``#include "./foo.h"`` produce two separate errors: that foo.cpp should include foo.h and that relative paths are not allowed.
