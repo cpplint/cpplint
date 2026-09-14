@@ -6203,10 +6203,10 @@ class TestCleansedLines:
 
 class TestOrderOfIncludes(CpplintTestBase):
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def setUp(self, monkeypatch):
         CpplintTestBase.setUp(self)
         self.include_state = cpplint._IncludeState()
-        os.path.abspath = lambda value: value
+        monkeypatch.setattr(os.path, "abspath", lambda value: value)
 
     def testCheckNextIncludeOrder_OtherThenCpp(self):
         assert self.include_state.CheckNextIncludeOrder(cpplint._OTHER_HEADER) == ""
@@ -6486,6 +6486,13 @@ class TestOrderOfIncludes(CpplintTestBase):
         self.TestLanguageRulesCheck(
             "foo/foo.cc", Format(["<string>", '"Python.h"', "<vector>"]), ""
         )
+
+
+class TestFileInfo:
+    def test_full_name_uses_absolute_path(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+
+        assert cpplint.FileInfo("source.cc").FullName() == (tmp_path / "source.cc").as_posix()
 
 
 class TestCheckForFunctionLengths(CpplintTestBase):
