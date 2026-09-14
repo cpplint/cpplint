@@ -7644,7 +7644,7 @@ def ProcessConfigOverrides(filename):
                                 return False
                             _cpplint_state.PrintInfo(
                                 f'Ignoring "{filename}": file excluded by "{cfg_file}". '
-                                'File path "%s" matches pattern "%s"\n' % (relative_filename, val)
+                                f'File path "{relative_filename}" matches pattern "{val}"\n'
                             )
                             return False
                     elif name == "linelength":

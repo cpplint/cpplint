@@ -7314,6 +7314,39 @@ class TestConfigOverrides:
 
         assert cpplint.ProcessConfigOverrides(str(source)) is should_process
 
+    @pytest.mark.parametrize("quiet", [False, True])
+    @pytest.mark.parametrize(
+        ("config_dir", "relative_path", "pattern"),
+        [
+            ("project", "percent%2f/baz.cc", "^percent%2f/baz[.]cc$"),
+            ("config%2f", "bar/baz.cc", "^bar/baz[.]cc$"),
+            ("project", "bar/baz.cc", "^bar/baz[.]cc(?:%s)?$"),
+        ],
+    )
+    def test_exclude_files_preserves_percent_in_diagnostic(
+        self, tmp_path, monkeypatch, capsys, config_dir, relative_path, pattern, quiet
+    ):
+        config_root = tmp_path / config_dir
+        cfg_file = config_root / "CPPLINT.cfg"
+        source = config_root.joinpath(*relative_path.split("/"))
+        self._write_file(source)
+        self._write_file(cfg_file, f"set noparent\nexclude_files={pattern}\n")
+        monkeypatch.setattr(cpplint, "_cpplint_state", cpplint._CppLintState())
+        monkeypatch.setattr(cpplint, "_quiet", False)
+        cpplint._cpplint_state.SetQuiet(quiet)
+
+        assert not cpplint.ProcessConfigOverrides(str(source))
+
+        captured = capsys.readouterr()
+        assert captured.err == ""
+        if quiet:
+            assert captured.out == ""
+        else:
+            assert captured.out == (
+                f'Ignoring "{source}": file excluded by "{cfg_file}". '
+                f'File path "{relative_path}" matches pattern "{pattern}"\n'
+            )
+
     def test_parent_exclude_applies_through_nested_config(self, tmp_path):
         source = tmp_path / "deps" / "library" / "source.cc"
         self._write_file(source)
