@@ -5073,6 +5073,50 @@ def CheckBraces(filename, clean_lines, linenum, error):
                         )
 
 
+def MatchLambdaCapture(clean_lines, linenum, line_prefix):
+    """Matches a lambda capture before an optional template parameter list."""
+    capture = re.match(r"^(.*\])\s*$", line_prefix)
+    if capture or not re.search(r">\s*$", line_prefix):
+        return capture
+
+    template_end = line_prefix.rfind(">")
+    template_start = ReverseCloseExpression(clean_lines, linenum, template_end)
+    if template_start[2] < 0:
+        return None
+
+    capture_prefix = template_start[0][0 : template_start[2]]
+    if not capture_prefix.strip() and template_start[1] > 0:
+        capture_prefix = GetPreviousNonBlankLine(clean_lines, template_start[1])[0]
+    return re.match(r"^(.*\])\s*$", capture_prefix)
+
+
+def MatchLambdaRequiresClause(clean_lines, linenum):
+    """Matches the lambda capture preceding a multiline requires-clause."""
+    while linenum >= 0:
+        line = clean_lines.elided[linenum]
+        if requires := re.search(r"\brequires\b", line):
+            capture = MatchLambdaCapture(
+                clean_lines,
+                linenum,
+                line[0 : requires.start()],
+            )
+            if capture:
+                return capture
+            template_line, template_linenum = GetPreviousNonBlankLine(
+                clean_lines,
+                linenum,
+            )
+            return MatchLambdaCapture(
+                clean_lines,
+                template_linenum,
+                template_line,
+            )
+        if re.search(r"[;{}]\s*$", line):
+            return None
+        _, linenum = GetPreviousNonBlankLine(clean_lines, linenum)
+    return None
+
+
 def CheckTrailingSemicolon(filename, clean_lines, linenum, error):
     """Looks for redundant trailing semicolon.
 
@@ -5163,7 +5207,11 @@ def CheckTrailingSemicolon(filename, clean_lines, linenum, error):
         if opening_parenthesis[2] > -1:
             line_prefix = opening_parenthesis[0][0 : opening_parenthesis[2]]
             macro = re.search(r"\b([A-Z_][A-Z0-9_]*)\s*$", line_prefix)
-            func = re.match(r"^(.*\])\s*$", line_prefix)
+            func = MatchLambdaCapture(
+                clean_lines,
+                opening_parenthesis[1],
+                line_prefix,
+            )
             if (
                 (
                     macro
@@ -5187,13 +5235,24 @@ def CheckTrailingSemicolon(filename, clean_lines, linenum, error):
                 or re.search(r"\s+=\s*$", line_prefix)
             ):
                 match = None
-        if (
-            match
-            and opening_parenthesis[1] > 1
-            and re.search(r"\]\s*$", clean_lines.elided[opening_parenthesis[1] - 1])
-        ):
-            # Multi-line lambda-expression
-            match = None
+        if match and opening_parenthesis[1] > 0:
+            previous_line, previous_linenum = GetPreviousNonBlankLine(
+                clean_lines,
+                opening_parenthesis[1],
+            )
+            func = MatchLambdaCapture(
+                clean_lines,
+                previous_linenum,
+                previous_line,
+            )
+            if not func:
+                func = MatchLambdaRequiresClause(
+                    clean_lines,
+                    previous_linenum,
+                )
+            if func and not re.search(r"\boperator\s*\[\s*\]", func.group(1)):
+                # Multi-line lambda-expression
+                match = None
 
     else:
         # Try matching cases 2-3.
