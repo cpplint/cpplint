@@ -63,7 +63,7 @@ _valid_extensions: set[str] = set()
 __VERSION__ = "2.0.3-dev0"
 
 _USAGE = """
-Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
+Syntax: cpplint.py [--verbose=#|-v#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
                    [--filter=-x,+y,...]
                    [--counting=total|toplevel|detailed] [--root=subdir]
                    [--repository=path]
@@ -114,7 +114,7 @@ Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
       format. Sed commands are written to stdout, not stderr, so you should be
       able to pipe output straight to a shell to run the fixes.
 
-    verbose=#
+    verbose=# | -v#
       Specify a number 0-5 to restrict errors to certain verbosity levels.
       Errors with lower verbosity levels have lower confidence and are more
       likely to be false positives.
@@ -7793,7 +7793,7 @@ def ParseArguments(args):
     try:
         (opts, filenames) = getopt.getopt(
             args,
-            "",
+            "v:",
             [
                 "help",
                 "output=",
@@ -7838,7 +7838,7 @@ def ParseArguments(args):
             output_format = val
         elif opt == "--quiet":
             quiet = True
-        elif opt in {"--verbose", "--v"}:
+        elif opt in {"-v", "--verbose", "--v"}:
             verbosity = int(val)
         elif opt == "--filter":
             filters = val
