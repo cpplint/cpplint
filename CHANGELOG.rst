@@ -7,6 +7,7 @@ TBA
 
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
 * We now error on relative include paths (``./``, ``../``). (#432)
+* For C files, build/include_what_you_use now suggests the C header (e.g. ``<stdio.h>``) instead of its C++ counterpart (e.g. ``<cstdio>``). (#399)
    * This makes ``#include "./foo.h"`` produce two separate errors: that foo.cpp should include foo.h and that relative paths are not allowed.
 
 2.0.2 (2025-04-08)

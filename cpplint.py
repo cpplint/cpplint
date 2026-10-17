@@ -916,6 +916,45 @@ _SEARCH_C_FILE = re.compile(
     r"vim?:\s*.*(\s*|:)filetype=c(\s*|:|$))"
 )
 
+# Maps the C++ C-library headers to their C equivalents so that, for C files,
+# build/include_what_you_use suggests the C header (e.g. <stdio.h> rather than
+# <cstdio>). See https://github.com/cpplint/cpplint/issues/399.
+_C_LIBRARY_CPP_HEADERS = {
+    "<cassert>": "<assert.h>",
+    "<cctype>": "<ctype.h>",
+    "<cerrno>": "<errno.h>",
+    "<cfenv>": "<fenv.h>",
+    "<cfloat>": "<float.h>",
+    "<cinttypes>": "<inttypes.h>",
+    "<climits>": "<limits.h>",
+    "<clocale>": "<locale.h>",
+    "<cmath>": "<math.h>",
+    "<csetjmp>": "<setjmp.h>",
+    "<csignal>": "<signal.h>",
+    "<cstdarg>": "<stdarg.h>",
+    "<cstddef>": "<stddef.h>",
+    "<cstdint>": "<stdint.h>",
+    "<cstdio>": "<stdio.h>",
+    "<cstdlib>": "<stdlib.h>",
+    "<cstring>": "<string.h>",
+    "<ctime>": "<time.h>",
+    "<cuchar>": "<uchar.h>",
+    "<cwchar>": "<wchar.h>",
+    "<cwctype>": "<wctype.h>",
+}
+
+
+def _IsCFile(filename: str, lines: list[str]) -> bool:
+    """Whether the file is a C file: a .c/.cu extension or a LINT_C_FILE marker.
+
+    Single source of truth shared by the C-specific error suppression and the
+    C-vs-C++ header suggestion, so the two never drift. See #399.
+    """
+    return filename.lower().endswith((".c", ".cu")) or any(
+        _SEARCH_C_FILE.search(line) for line in lines
+    )
+
+
 # Match string that indicates we're working on a Linux Kernel file.
 _SEARCH_KERNEL_FILE = re.compile(r"\b(?:LINT_KERNEL_FILE)")
 
@@ -1206,10 +1245,10 @@ def ProcessGlobalSuppressions(filename: str, lines: list[str]) -> None:
              last element being empty if the file is terminated with a newline.
       filename: str, the name of the input file.
     """
+    if _IsCFile(filename, lines):
+        for category in _DEFAULT_C_SUPPRESSED_CATEGORIES:
+            _error_suppressions.AddGlobalSuppression(category)
     for line in lines:
-        if _SEARCH_C_FILE.search(line) or filename.lower().endswith((".c", ".cu")):
-            for category in _DEFAULT_C_SUPPRESSED_CATEGORIES:
-                _error_suppressions.AddGlobalSuppression(category)
         if _SEARCH_KERNEL_FILE.search(line):
             for category in _DEFAULT_KERNEL_SUPPRESSED_CATEGORIES:
                 _error_suppressions.AddGlobalSuppression(category)
@@ -7119,7 +7158,9 @@ def FilesBelongToSameModule(filename_cc, filename_h):
     return files_belong_to_same_module, common_path
 
 
-def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error, io=codecs):
+def CheckForIncludeWhatYouUse(
+    filename, clean_lines, include_state, error, io=codecs, is_c_file=False
+):
     """Reports for missing stl includes.
 
     This function will output warnings to make sure you are including the headers
@@ -7183,12 +7224,19 @@ def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error, io=co
         if header_stripped not in include_dict and not (
             header_stripped[0] == "c" and (header_stripped[1:] + ".h") in include_dict
         ):
+            # For C files, suggest the C header (e.g. <stdio.h>) rather than
+            # the C++ one (e.g. <cstdio>). See #399.
+            suggested = (
+                _C_LIBRARY_CPP_HEADERS[header]
+                if is_c_file and header in _C_LIBRARY_CPP_HEADERS
+                else header
+            )
             error(
                 filename,
                 required[header][0],
                 "build/include_what_you_use",
                 4,
-                "Add #include " + header + " for " + template,
+                "Add #include " + suggested + " for " + template,
             )
 
 
@@ -7578,7 +7626,8 @@ def ProcessFileData(filename, file_extension, lines, error, extra_check_function
             "NONLINT block never ended",
         )
 
-    CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error)
+    is_c_file = _IsCFile(filename, clean_lines.raw_lines)
+    CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error, is_c_file=is_c_file)
 
     # Check that the .cc file has included its header if it exists.
     if _IsSourceExtension(file_extension):
