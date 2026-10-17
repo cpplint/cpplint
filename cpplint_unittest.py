@@ -3097,6 +3097,14 @@ class TestCpplint(CpplintTestBase):
 
     def testSpacingBeforeBraces(self):
         self.TestLint("if (foo){", "Missing space before {  [whitespace/braces] [5]")
+        self.TestLint(
+            "concept C = requires(T t){ t.foo(); } && true;",
+            "Missing space before {  [whitespace/braces] [5]",
+        )
+        self.TestLint(
+            "concept C = requires { typename T::value_type; } && true;",
+            "",
+        )
         self.TestLint("for{", "Missing space before {  [whitespace/braces] [5]")
         self.TestLint("for {", "")
         self.TestLint("EXPECT_DEBUG_DEATH({", "")
@@ -3212,6 +3220,36 @@ class TestCpplint(CpplintTestBase):
         self.TestLint('static_assert(Max7String{}.IsValid(), "");', "")
         self.TestLint("map_of_pairs[{1, 2}] = 3;", "")
         self.TestLint("ItemView{has_offer() ? new Offer{offer()} : nullptr", "")
+        # Nested brace initialization may be followed by an operator.
+        # Regression test for #373.
+        self.TestLint(
+            'return std::optional{pmr_string{a} + " " + b};',
+            "",
+        )
+        for operator in [
+            "+",
+            "-",
+            "*",
+            "/",
+            "%",
+            "&",
+            "|",
+            "^",
+            "==",
+            "!=",
+            "<",
+            "<=",
+            ">",
+            ">=",
+            "<<",
+            ">>",
+            "&&",
+            "||",
+        ]:
+            self.TestLint(
+                f"return Wrapper{{Value{{a}} {operator} b}};",
+                "",
+            )
         self.TestLint("template <class T, EnableIf<::std::is_const<T>{}> = 0>", "")
 
         self.TestMultiLineLint("std::unique_ptr<Foo> foo{\n  new Foo{}\n};\n", "")

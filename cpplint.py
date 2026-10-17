@@ -4745,8 +4745,15 @@ def CheckBracesSpacing(filename, clean_lines, linenum, nesting_state, error):
         # We also suppress warnings for `uint64_t{expression}` etc., as the style
         # guide recommends brace initialization for integral types to avoid
         # overflow/truncation.
-        if not re.match(r"^[\s}]*[{.;,)<>\]:]", trailing_text) and not _IsType(
-            clean_lines, nesting_state, leading_text
+        operator_after_braced_value = (
+            re.match(r"^[\s}]*[+*/%&|^=!?-]", trailing_text)
+            and re.search(r"(?:\w|>)$", leading_text)
+            and not re.search(r"\brequires\s*$", leading_text)
+        )
+        if (
+            not re.match(r"^[\s}]*[{.;,)<>\]:]", trailing_text)
+            and not operator_after_braced_value
+            and not _IsType(clean_lines, nesting_state, leading_text)
         ):
             error(filename, linenum, "whitespace/braces", 5, "Missing space before {")
 
