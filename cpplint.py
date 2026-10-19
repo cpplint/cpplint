@@ -3786,6 +3786,53 @@ class NestingState:
         return None
 
 
+def _GetConstructorSuffix(clean_lines, linenum, match_end):
+    """Returns the constructor declaration suffix up to its top-level terminator."""
+    constructor_suffix = []
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    in_requires_clause = False
+    requires_expression = False
+    suffix_line = clean_lines.elided[linenum][match_end:]
+    next_line = linenum + 1
+
+    while True:
+        for char in re.findall(r"\w+|[^\w]", suffix_line):
+            if not paren_depth and not bracket_depth and not brace_depth:
+                if char == ";":
+                    constructor_suffix.append(char)
+                    return "".join(constructor_suffix)
+                if char == "{" and not requires_expression:
+                    return "".join(constructor_suffix)
+                if char == "requires":
+                    # The first keyword starts the clause; subsequent ones
+                    # introduce expressions whose braces belong to the suffix.
+                    requires_expression = in_requires_clause
+                    in_requires_clause = True
+                elif not char.isspace() and char != "(":
+                    requires_expression = False
+
+            constructor_suffix.append(char)
+            if char == "(":
+                paren_depth += 1
+            elif char == ")":
+                paren_depth -= 1
+            elif char == "[":
+                bracket_depth += 1
+            elif char == "]":
+                bracket_depth -= 1
+            elif char == "{":
+                brace_depth += 1
+            elif char == "}":
+                brace_depth -= 1
+
+        if next_line >= clean_lines.NumLines():
+            return "".join(constructor_suffix)
+        suffix_line = "\n" + clean_lines.elided[next_line]
+        next_line += 1
+
+
 def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state, error):
     r"""Logs an error if we see certain non-ANSI constructs ignored by gcc-2.
 
@@ -3932,6 +3979,16 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
 
     if explicit_constructor_match:
         is_marked_explicit = explicit_constructor_match.group(1)
+        constructor_suffix = _GetConstructorSuffix(
+            clean_lines, linenum, explicit_constructor_match.end()
+        )
+        is_deleted = bool(
+            re.search(
+                r"=\s*delete\s*(?:\(.*\))?\s*;\s*$",
+                constructor_suffix,
+                re.DOTALL,
+            )
+        )
 
         if not explicit_constructor_match.group(2):
             constructor_args = []
@@ -3990,6 +4047,7 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
 
         if (
             not is_marked_explicit
+            and not is_deleted
             and onearg_constructor
             and not initializer_list_constructor
             and not copy_constructor
