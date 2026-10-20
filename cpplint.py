@@ -63,7 +63,7 @@ _valid_extensions: set[str] = set()
 __VERSION__ = "2.0.3-dev0"
 
 _USAGE = """
-Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
+Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|github|junit|sed|gsed]
                    [--filter=-x,+y,...]
                    [--counting=total|toplevel|detailed] [--root=subdir]
                    [--repository=path]
@@ -103,11 +103,12 @@ Syntax: cpplint.py [--verbose=#] [--output=emacs|eclipse|vs7|junit|sed|gsed]
 
   Flags:
 
-    output=emacs|eclipse|vs7|junit|sed|gsed
+    output=emacs|eclipse|vs7|github|junit|sed|gsed
       By default, the output is formatted to ease emacs parsing.  Visual Studio
       compatible output (vs7) may also be used.  Further support exists for
-      eclipse (eclipse), and JUnit (junit). XML parsers such as those used
-      in Jenkins and Bamboo may also be used.
+      eclipse (eclipse), GitHub Actions annotations (github), and JUnit (junit).
+      XML parsers such as those used in Jenkins and Bamboo may also be used.
+      The github format writes workflow-command warning annotations to stdout.
       The sed format outputs sed commands that should fix some of the errors.
       Note that this requires gnu sed. If that is installed as gsed on your
       system (common e.g. on macOS with homebrew) you can use the gsed output
@@ -372,7 +373,7 @@ _ERROR_CATEGORIES = [
 ]
 
 # keywords to use with --outputs which generate stdout for machine processing
-_MACHINE_OUTPUTS = ["junit", "sed", "gsed"]
+_MACHINE_OUTPUTS = ["github", "junit", "sed", "gsed"]
 
 # These error categories are no longer enforced by cpplint, but for backwards-
 # compatibility they may still appear in NOLINT comments.
@@ -1437,6 +1438,7 @@ class _CppLintState:
         # "eclipse" - format that eclipse can parse
         # "vs7" - format that Microsoft Visual Studio 7 can parse
         # "junit" - format that Jenkins, Bamboo, etc can parse
+        # "github" - GitHub Actions workflow-command annotations
         # "sed" - returns a gnu sed command to fix the problem
         # "gsed" - like sed, but names the command gsed, e.g. for macOS homebrew users
         self.output_format = "emacs"
@@ -1878,6 +1880,16 @@ def _ShouldPrintError(category, confidence, filename, linenum):
     return not is_filtered
 
 
+def _EscapeGithubCommandData(value):
+    """Escapes workflow-command message data for GitHub Actions."""
+    return str(value).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def _EscapeGithubCommandProperty(value):
+    """Escapes a workflow-command property value for GitHub Actions."""
+    return _EscapeGithubCommandData(value).replace(":", "%3A").replace(",", "%2C")
+
+
 def Error(filename, linenum, category, confidence, message):
     """Logs the fact we've found a lint error.
 
@@ -1910,6 +1922,13 @@ def Error(filename, linenum, category, confidence, message):
             sys.stderr.write(
                 f"{filename}:{linenum}: warning: {message}  [{category}] [{confidence}]\n"
             )
+        elif _cpplint_state.output_format == "github":
+            properties = f"file={_EscapeGithubCommandProperty(filename)}"
+            if linenum > 0:
+                properties += f",line={linenum}"
+            properties += ",title=cpplint"
+            data = _EscapeGithubCommandData(f"{message}  [{category}] [{confidence}]")
+            sys.stdout.write(f"::warning {properties}::{data}\n")
         elif _cpplint_state.output_format == "junit":
             _cpplint_state.AddJUnitFailure(filename, linenum, message, category, confidence)
         elif _cpplint_state.output_format in ["sed", "gsed"]:
@@ -7831,9 +7850,18 @@ def ParseArguments(args):
         if opt == "--version":
             PrintVersion()
         elif opt == "--output":
-            if val not in ("emacs", "vs7", "eclipse", "junit", "sed", "gsed"):
+            if val not in (
+                "emacs",
+                "vs7",
+                "eclipse",
+                "github",
+                "junit",
+                "sed",
+                "gsed",
+            ):
                 PrintUsage(
-                    "The only allowed output formats are emacs, vs7, eclipse sed, gsed and junit."
+                    "The only allowed output formats are emacs, vs7, eclipse, github, "
+                    "sed, gsed and junit."
                 )
             output_format = val
         elif opt == "--quiet":
