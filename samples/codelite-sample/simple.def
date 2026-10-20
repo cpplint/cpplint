@@ -3,10 +3,9 @@ src/*
 4
 Done processing src/pptable.cpp
 Done processing src/pptable.h
-Total errors found: 675
+Total errors found: 674
 
 src/pptable.cpp:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
-src/pptable.cpp:1:  Include the directory when naming header files  [build/include_subdir] [4]
 src/pptable.cpp:6:  { should almost always be at the end of the previous line  [whitespace/braces] [4]
 src/pptable.cpp:7:  Tab found; better to use spaces  [whitespace/tab] [1]
 src/pptable.cpp:8:  Tab found; better to use spaces  [whitespace/tab] [1]

@@ -5856,13 +5856,31 @@ def CheckIncludeLine(filename, clean_lines, linenum, include_state, error):
         and IsHeaderExtension(match.group(2))
         and not _third_party_headers_pattern.match(match.group(1))
     ):
-        error(
-            filename,
-            linenum,
-            "build/include_subdir",
-            4,
-            "Include the directory when naming header files",
-        )
+        source_path = os.path.realpath(filename)
+        same_dir_header = os.path.join(os.path.dirname(source_path), match.group(1))
+        if not os.path.isfile(same_dir_header):
+            error(
+                filename,
+                linenum,
+                "build/include_subdir",
+                4,
+                "Include the directory when naming header files",
+            )
+        else:
+            try:
+                is_same_file = os.path.samefile(same_dir_header, filename)
+            except (OSError, ValueError):
+                is_same_file = os.path.normcase(
+                    os.path.normpath(same_dir_header)
+                ) == os.path.normcase(os.path.normpath(source_path))
+            if is_same_file:
+                error(
+                    filename,
+                    linenum,
+                    "build/include_subdir",
+                    4,
+                    "Include the directory when naming header files",
+                )
 
     # we shouldn't include a file more than once. actually, there are a
     # handful of instances where doing so is okay, but in general it's
