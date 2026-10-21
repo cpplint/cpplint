@@ -3,7 +3,7 @@
 1
 
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="123" name="cpplint" tests="123"><testcase name="src/sillycode.cpp"><failure>0: No copyright message found.  You should have a line: "Copyright [year] &lt;Copyright Owner&gt;" [legal/copyright] [5]
+<testsuite errors="0" failures="2" name="cpplint" tests="2"><testcase name="src/sillycode.cpp"><failure>0: No copyright message found.  You should have a line: "Copyright [year] &lt;Copyright Owner&gt;" [legal/copyright] [5]
 1: Include the directory when naming header files [build/include_subdir] [4]
 3: At least two spaces is best between code and comments [whitespace/comments] [2]
 3: Should have a space between // and comment [whitespace/comments] [4]
