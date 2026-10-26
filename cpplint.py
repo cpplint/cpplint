@@ -4909,10 +4909,14 @@ def CheckBraces(filename, clean_lines, linenum, error):
         # previous line starts a preprocessor block. We also allow a brace on the
         # following line if it is part of an array initialization and would not fit
         # within the 80 character limit of the preceding line.
-        prevline = GetPreviousNonBlankLine(clean_lines, linenum)[0]
+        prevline, prevlinenum = GetPreviousNonBlankLine(clean_lines, linenum)
+        # Follow continuations back to the start of the preprocessor directive.
+        while prevlinenum > 0 and clean_lines.raw_lines[prevlinenum - 1].endswith("\\"):
+            prevlinenum -= 1
+        is_preprocessor = prevlinenum >= 0 and re.match(r"\s*#", clean_lines.elided[prevlinenum])
         if (
             not re.search(r"[,;:}{(]\s*$", prevline)
-            and not re.match(r"\s*#", prevline)
+            and not is_preprocessor
             and not (GetLineWidth(prevline) > _line_length - 2 and "[]" in prevline)
         ):
             error(

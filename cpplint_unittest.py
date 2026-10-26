@@ -2971,6 +2971,39 @@ class TestCpplint(CpplintTestBase):
             "",
         )
 
+    @pytest.mark.parametrize(
+        "directive",
+        [
+            "#pragma omp parallel num_threads(thread_count)",
+            (
+                "#pragma omp parallel num_threads(thread_count) \\\n"
+                "    default(none) shared(thread_count)"
+            ),
+            (
+                "#pragma omp parallel \\\n"
+                "    num_threads(thread_count) \\\n"
+                "    default(none) shared(thread_count)"
+            ),
+            "#pragma omp parallel \\\n    num_threads(thread_count)  // Comment\n\n",
+        ],
+    )
+    def testBraceAfterPreprocessorDirective(self, directive):
+        self.TestMultiLineLint(directive + "\n{\n}", "")
+
+    @pytest.mark.parametrize(
+        "code",
+        [
+            "if (condition \\\n    && other_condition)",
+            "#pragma omp parallel\nif (condition)",
+            "#pragma omp parallel \\\n\nif (condition)",
+        ],
+    )
+    def testBraceAfterPreprocessorDirectiveDoesNotSuppressOtherCode(self, code):
+        self.TestMultiLineLint(
+            code + "\n{\n  Work();\n}",
+            "{ should almost always be at the end of the previous line  [whitespace/braces] [4]",
+        )
+
     def testInlineControlBodyWithLambda(self):
         self.TestLint("if (all_of(v, [](auto b) { return b == 0; })) {", "")
         self.TestLint(
