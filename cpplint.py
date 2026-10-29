@@ -2160,6 +2160,11 @@ class CleansedLines:
         """Returns the number of lines represented."""
         return self.num_lines
 
+    def GetLineWithSpaceForComments(self, linenum):
+        """Returns an elided line with comments replaced by spaces."""
+        line = self._CollapseStrings(self.lines_without_raw_strings[linenum])
+        return CleanseComments(re.sub(_RE_PATTERN_C_COMMENTS, " ", line))
+
     @staticmethod
     def _CollapseStrings(elided):
         """Collapses strings and chars on a line to simple "" or '' blocks.
@@ -4547,9 +4552,11 @@ def CheckParenthesisSpacing(filename, clean_lines, linenum, error):
     """
     line = clean_lines.elided[linenum]
 
-    # No spaces after an if, while, switch, or for
-    match = re.search(r" (if\(|for\(|while\(|switch\()", line)
-    if match:
+    # Require a space after if, while, switch, or for.
+    # Comments separate tokens even when CleanseComments removes adjacent spaces.
+    spacing_line = clean_lines.GetLineWithSpaceForComments(linenum)
+    match = re.search(r"(?:^|\s)(if\(|for\(|while\(|switch\()", spacing_line)
+    if match and not re.match(r"\s*#\s*if\b", spacing_line):
         error(
             filename, linenum, "whitespace/parens", 5, f"Missing space before ( in {match.group(1)}"
         )
