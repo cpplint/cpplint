@@ -5,6 +5,7 @@ Changelog
 TBA
 ===
 
+* Detect missing spaces before control-statement parentheses at the start of a line or after tabs. (#226)
 * Use path-aware prefix checks instead of deprecated os.path.commonprefix(). (#445)
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
 * We now error on relative include paths (``./``, ``../``). (#432)
