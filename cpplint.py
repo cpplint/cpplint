@@ -5155,6 +5155,7 @@ def CheckTrailingSemicolon(filename, clean_lines, linenum, error):
         #  - Compound literals
         #  - Lambdas
         #  - alignas specifier with anonymous structs
+        #  - references to anonymous struct or union
         #  - decltype
         #  - concepts (requires expression)
         closing_brace_pos = match.group(1).rfind(")")
@@ -5180,6 +5181,12 @@ def CheckTrailingSemicolon(filename, clean_lines, linenum, error):
                     )
                 )
                 or (func and not re.search(r"\boperator\s*\[\s*\]", func.group(1)))
+                or (
+                    re.search(r"&\s*$", line_prefix)
+                    and re.match(
+                        r"(?:struct|union)\s", opening_parenthesis[0][opening_parenthesis[2] + 1 :]
+                    )
+                )
                 or re.search(r"\b(?:struct|union)\s+alignas\s*$", line_prefix)
                 or re.search(r"\bdecltype$", line_prefix)
                 or re.search(r"\brequires.*$", line_prefix)
