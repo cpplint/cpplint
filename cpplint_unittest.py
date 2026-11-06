@@ -1068,6 +1068,7 @@ class TestCpplint(CpplintTestBase):
     )
     @pytest.mark.parametrize("separator", ["\n", "\n\n", "\n// Unused argument.\n"])
     def testUnnamedParamBeforeMultilineBody(self, signature, separator):
+        """Keep unnamed parameters before multiline function bodies free of cast warnings."""
         code = signature + separator + "{\n  return;\n}"
         clean_lines = cpplint.CleansedLines(code.split("\n"))
         error_collector = ErrorCollector(self.assertTrue)
@@ -1102,6 +1103,7 @@ class TestCpplint(CpplintTestBase):
         ],
     )
     def testMultilineCStyleCast(self, code, cast_type, type_name):
+        """Retain diagnostics for multiline casts, compound literals, and incomplete casts."""
         clean_lines = cpplint.CleansedLines(code.split("\n"))
         error_collector = ErrorCollector(self.assertTrue)
         for linenum in range(clean_lines.NumLines()):
