@@ -5,6 +5,7 @@ Changelog
 TBA
 ===
 
+* Avoid casting warnings for unnamed parameters when a function body starts on the next line. (#131)
 * Use path-aware prefix checks instead of deprecated os.path.commonprefix(). (#445)
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
 * We now error on relative include paths (``./``, ``../``). (#432)

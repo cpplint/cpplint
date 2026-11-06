@@ -6802,6 +6802,16 @@ def CheckCStyleCast(filename, clean_lines, linenum, cast_type, pattern, error):
     if re.match(r"^\s*(?:;|const\b|throw\b|final\b|override\b|[=>{),]|->)", remainder):
         return False
 
+    # A function body can start on the next non-blank line. Only accept an
+    # opening brace here, so a cast with its operand on the next line still warns.
+    if not remainder.strip():
+        for next_linenum in range(linenum + 1, clean_lines.NumLines()):
+            next_line = clean_lines.elided[next_linenum].strip()
+            if next_line:
+                if next_line.startswith("{"):
+                    return False
+                break
+
     # At this point, all that should be left is actual casts.
     error(
         filename,
