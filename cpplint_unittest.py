@@ -1120,6 +1120,21 @@ class TestCpplint(CpplintTestBase):
         self.TestLint("typedef set<int64_t, bool(*)(int64_t, int64_t)> SortedIdSet", "")
         self.TestLint("bool TraverseNode(T *Node, bool(VisitorBase:: *traverse) (T *t)) {}", "")
 
+        # Function pointers with a calling-convention macro before '*' should
+        # not be flagged as deprecated/C-style casts. (https://github.com/cpplint/cpplint/issues/409)
+        self.TestLint(
+            "typedef int32_t(NAPI_CDECL* node_api_addon_get_api_version_func)(void);",
+            "",
+        )
+        self.TestLint(
+            "using node_api_addon_get_api_version_func = int32_t(NAPI_CDECL *)(void);",
+            "",
+        )
+        self.TestLint("typedef int32_t(CALLCONV* Func)(int);", "")
+        self.TestLint("using Func = int32_t(CALLCONV *)(int, int);", "")
+        self.TestLint("typedef int32_t(CALLCONV* FuncArray[3])(void);", "")
+        self.TestLint("typedef int32_t(*FuncArray[3])(void);", "")
+
     # The second parameter to a gMock method definition is a function signature
     # that often looks like a bad cast but should not picked up by lint.
     def testMockMethod(self):
