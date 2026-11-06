@@ -1055,7 +1055,16 @@ class TestCpplint(CpplintTestBase):
         self.TestLint("void f(int /*unused*/) final {", "")
 
     @pytest.mark.parametrize(
-        "signature", ["void Func(int)", "void Func(int*)", "auto func = [](int)"]
+        "signature",
+        [
+            "void Func(int)",
+            "void Func(int*)",
+            "const Foo* Func(int)",
+            "void ns::Func(int)",
+            "auto func = [](int)",
+            "auto func = [value](int)",
+            "return [](int)",
+        ],
     )
     @pytest.mark.parametrize("separator", ["\n", "\n\n", "\n// Unused argument.\n"])
     def testUnnamedParamBeforeMultilineBody(self, signature, separator):
@@ -1073,12 +1082,30 @@ class TestCpplint(CpplintTestBase):
             ("int* ptr = (int*)\n    value;", "reinterpret_cast", "int*"),
             ("int value = (int)\n// Cast operand.\n    1.5;", "static_cast", "int"),
             ("int value = (int)\n", "static_cast", "int"),
+            ("int value = (int)\n{1};", "static_cast", "int"),
+            ("return (int)\n{1};", "static_cast", "int"),
+            ("return(int)\n{1};", "static_cast", "int"),
+            ("throw (int)\n{1};", "static_cast", "int"),
+            ("else return (int)\n{1};", "static_cast", "int"),
+            ("else throw (int)\n{1};", "static_cast", "int"),
+            ("else delete (int*)\n{0};", "reinterpret_cast", "int*"),
+            ("delete [] (int*)\n{0};", "reinterpret_cast", "int*"),
+            ("return __extension__ (int)\n{1};", "static_cast", "int"),
+            ("int* ptr = (int*)\n{0};", "reinterpret_cast", "int*"),
+            ("int value = 1 bitand (int)\n{1};", "static_cast", "int"),
+            ("int value = not (int)\n{1};", "static_cast", "int"),
+            (
+                "void Func(int)\n{\n  int value = (int)\n  {1};\n}",
+                "static_cast",
+                "int",
+            ),
         ],
     )
     def testMultilineCStyleCast(self, code, cast_type, type_name):
         clean_lines = cpplint.CleansedLines(code.split("\n"))
         error_collector = ErrorCollector(self.assertTrue)
-        cpplint.CheckCasts("foo.cc", clean_lines, 0, error_collector)
+        for linenum in range(clean_lines.NumLines()):
+            cpplint.CheckCasts("foo.cc", clean_lines, linenum, error_collector)
         assert error_collector.Results() == (
             f"Using C-style cast.  Use {cast_type}<{type_name}>(...) instead"
             "  [readability/casting] [4]"
