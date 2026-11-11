@@ -5,6 +5,7 @@ Changelog
 TBA
 ===
 
+* Added the standard short ``-v`` option as an alias for ``--verbose`` and ``--v``. (#331)
 * Use path-aware prefix checks instead of deprecated os.path.commonprefix(). (#445)
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
 * We now error on relative include paths (``./``, ``../``). (#432)

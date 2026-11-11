@@ -4936,6 +4936,16 @@ func2();""",
             cpplint._valid_extensions = old_valid_extensions
             cpplint._hpp_headers = old_headers
 
+    def testShortVerboseArgument(self):
+        old_verbose_level = cpplint._cpplint_state.verbose_level
+        try:
+            assert cpplint.ParseArguments(["-v", "2", "foo.cc"]) == ["foo.cc"]
+            assert cpplint._cpplint_state.verbose_level == 2
+            assert cpplint.ParseArguments(["-v3", "foo.h"]) == ["foo.h"]
+            assert cpplint._cpplint_state.verbose_level == 3
+        finally:
+            cpplint._cpplint_state.verbose_level = old_verbose_level
+
     def testRecursiveArgument(self):
         working_dir = os.getcwd()
         temp_dir = os.path.realpath(tempfile.mkdtemp())
