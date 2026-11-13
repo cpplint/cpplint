@@ -3942,14 +3942,16 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
         i = 0
         while i < len(constructor_args):
             constructor_arg = constructor_args[i]
-            # Shift/comparison operators may leave unmatched '<' characters,
-            # so only merge with an argument that actually exists.
+            # Ignore relational operators inside macro/parameter parentheses
+            # and shift operators when counting template angle brackets.
+            angle_text = re.sub(r"\([^()]*\)", "", constructor_arg).replace("<<", "")
             while i + 1 < len(constructor_args) and (
-                constructor_arg.count("<") > constructor_arg.count(">")
+                angle_text.count("<") > angle_text.count(">")
                 or constructor_arg.count("(") > constructor_arg.count(")")
             ):
                 constructor_arg += "," + constructor_args[i + 1]
                 del constructor_args[i + 1]
+                angle_text = re.sub(r"\([^()]*\)", "", constructor_arg).replace("<<", "")
             constructor_args[i] = constructor_arg
             i += 1
 
