@@ -271,5 +271,38 @@ def test_third_party_headers_config(tmp_path):
     assert b"build/include_subdir" in err
 
 
+@pytest.mark.parametrize("with_bom", [False, True])
+def test_utf8_bom_before_first_include(tmp_path, with_bom):
+    """A BOM must not hide the first include from the own-header check."""
+    (tmp_path / "sample.h").write_text("// Copyright 2026\n", encoding="utf-8")
+    source = tmp_path / "sample.cc"
+    bom = b"\xef\xbb\xbf" if with_bom else b""
+    source.write_bytes(bom + b'#include "sample.h"\n')
+
+    status, out, err = run_shell_command(
+        BASE_CMD,
+        f"--filter=-,+build/include,-build/include_subdir {source.name}",
+        cwd=str(tmp_path),
+    )
+    assert status == 0, (out, err)
+    assert b"[build/include]" not in err
+
+
+@pytest.mark.parametrize("with_bom", [False, True])
+def test_utf8_bom_still_reports_missing_own_header(tmp_path, with_bom):
+    """Stripping the signature must not disable legitimate own-header errors."""
+    (tmp_path / "sample.h").write_text("// Copyright 2026\n", encoding="utf-8")
+    source = tmp_path / "sample.cc"
+    bom = b"\xef\xbb\xbf" if with_bom else b""
+    source.write_bytes(bom + b'#include "unrelated.h"\n')
+
+    status, out, err = run_shell_command(
+        BASE_CMD,
+        f"--filter=-,+build/include,-build/include_subdir {source.name}",
+        cwd=str(tmp_path),
+    )
+    assert status == 1, (out, err)
+    assert b"[build/include]" in err
+
 if __name__ == "__main__":
     pytest.main([__file__])
