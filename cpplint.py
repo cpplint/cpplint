@@ -3942,9 +3942,12 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
         i = 0
         while i < len(constructor_args):
             constructor_arg = constructor_args[i]
-            while constructor_arg.count("<") > constructor_arg.count(">") or constructor_arg.count(
-                "("
-            ) > constructor_arg.count(")"):
+            # Shift/comparison operators may leave unmatched '<' characters,
+            # so only merge with an argument that actually exists.
+            while i + 1 < len(constructor_args) and (
+                constructor_arg.count("<") > constructor_arg.count(">")
+                or constructor_arg.count("(") > constructor_arg.count(")")
+            ):
                 constructor_arg += "," + constructor_args[i + 1]
                 del constructor_args[i + 1]
             constructor_args[i] = constructor_arg
