@@ -1645,6 +1645,22 @@ class TestCpplint(CpplintTestBase):
           };""",
             "",
         )
+        # A parenthesized comparison must not combine separate arguments.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(_Pre_satisfies_(hr < 0) HRESULT hr, int code);
+          };""",
+            "",
+        )
+        # A shift inside a template non-type argument is not a template opener.
+        self.TestMultiLineLint(
+            """
+          class Foo {
+            Foo(Wrapper<int, (1 << 1)> value, int other);
+          };""",
+            "",
+        )
         # Actual commas in template argument lists must still be grouped.
         self.TestMultiLineLint(
             """
@@ -1652,6 +1668,14 @@ class TestCpplint(CpplintTestBase):
             Foo(Wrapper<int, int> value);
           };""",
             "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+        )
+        # A multi-argument constructor callable with one argument still warns.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(int a, int b = 1 << 1, int c = 2);
+          };""",
+            "Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]",
         )
 
     # Test non-explicit single-argument constructors
