@@ -304,5 +304,6 @@ def test_utf8_bom_still_reports_missing_own_header(tmp_path, with_bom):
     assert status == 1, (out, err)
     assert b"[build/include]" in err
 
+
 if __name__ == "__main__":
     pytest.main([__file__])
