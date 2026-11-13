@@ -7711,7 +7711,9 @@ def ProcessFile(filename, vlevel, extra_check_functions=None):
         if filename == "-":
             lines = sys.stdin.read().split("\n")
         else:
-            with open(filename, encoding="utf-8-sig", errors="replace", newline=None) as target_file:
+            with open(
+                filename, encoding="utf-8-sig", errors="replace", newline=None
+            ) as target_file:
                 lines = target_file.read().split("\n")
 
     except OSError:
