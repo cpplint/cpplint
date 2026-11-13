@@ -1629,6 +1629,31 @@ class TestCpplint(CpplintTestBase):
             # One per line.
             assert error_collector.ResultList().count(multiline_string_error_message) == 2
 
+    def testConstructorParametersWithLessThanOperators(self):
+        # Regression tests for #223 and #232: '<' need not open a template.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(int b, int c, int a = 1 << 1) {}
+          };""",
+            "",
+        )
+        self.TestMultiLineLint(
+            """
+          class ResultException {
+            explicit ResultException(_Pre_satisfies_(hr < 0) HRESULT hr);
+          };""",
+            "",
+        )
+        # Actual commas in template argument lists must still be grouped.
+        self.TestMultiLineLint(
+            """
+          class Foo {
+            Foo(Wrapper<int, int> value);
+          };""",
+            "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+        )
+
     # Test non-explicit single-argument constructors
     def testExplicitSingleArgumentConstructors(self):
         old_verbose_level = cpplint._cpplint_state.verbose_level
