@@ -1675,7 +1675,10 @@ class TestCpplint(CpplintTestBase):
           class A {
             A(int a, int b = 1 << 1, int c = 2);
           };""",
-            "Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]",
+            (
+                "Constructors callable with one argument should be marked explicit."
+                "  [runtime/explicit] [4]"
+            ),
         )
 
     # Test non-explicit single-argument constructors
