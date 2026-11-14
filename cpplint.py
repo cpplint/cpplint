@@ -3794,13 +3794,22 @@ def SplitConstructorArguments(argument_text):
     current = []
     angle_depth = 0
     paren_depth = 0
+    previous_significant = ""
     index = 0
     while index < len(argument_text):
         char = argument_text[index]
-        # Shift and <= operators never open template parameter lists.
-        if char == "<" and argument_text[index : index + 2] in ("<<", "<="):
-            current.append(argument_text[index : index + 2])
+        token = argument_text[index : index + 2]
+        # Shifts and two-character comparisons are not template delimiters.
+        if token in ("<<", "<=", ">="):
+            current.append(token)
+            previous_significant = token[-1]
             index += 2
+            continue
+        # A numeric or parenthesized left operand makes '<' relational.
+        if char == "<" and (previous_significant.isdigit() or previous_significant == ")"):
+            current.append(char)
+            previous_significant = char
+            index += 1
             continue
 
         if char == "(":
@@ -3818,8 +3827,11 @@ def SplitConstructorArguments(argument_text):
             current = []
             angle_depth = 0
             paren_depth = 0
+            previous_significant = ""
         else:
             current.append(char)
+            if not char.isspace():
+                previous_significant = char
         index += 1
 
     arguments.append("".join(current))
