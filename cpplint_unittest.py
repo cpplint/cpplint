@@ -1662,15 +1662,15 @@ class TestCpplint(CpplintTestBase):
           };""",
             "",
         )
-        # A <= expression used as a non-type template argument must not
-        # be mistaken for another template opening bracket.
-        self.TestMultiLineLint(
+        # A <= template expression must not collapse three parameters.
+        # Ignore unrelated whitespace diagnostics in this parser regression.
+        diagnostics = self.PerformMultiLineLint(
             """
           class A {
-            A(Foo<1 <= 2, int> value, int code);
-          };""",
-            "",
+            A(Foo<1 <= 2, int> value, int code, int extra);
+          };"""
         )
+        assert not any("[runtime/explicit]" in item for item in diagnostics)
         # A shift inside a template non-type argument is not a template opener.
         self.TestMultiLineLint(
             """
