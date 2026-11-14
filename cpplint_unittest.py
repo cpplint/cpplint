@@ -1712,6 +1712,40 @@ class TestCpplint(CpplintTestBase):
             ),
         )
 
+    def testSplitConstructorArgumentsLinear(self):
+        # Exercise comma, template, paren and operator interactions directly.
+        cases = [
+            ("", []),
+            ("int a", ["int a"]),
+            ("int a, int b", ["int a", " int b"]),
+            ("Foo<(1 < 2), int> value, int code", ["Foo<(1 < 2), int> value", " int code"]),
+            ("Foo<1 <= 2, int> value, int code", ["Foo<1 <= 2, int> value", " int code"]),
+            ("Foo<1 == 2, int> value, int code", ["Foo<1 == 2, int> value", " int code"]),
+            ("A(int, int) fn, int code", ["A(int, int) fn", " int code"]),
+            (
+                "_Pre_satisfies_(hr < 0) HRESULT hr, int code",
+                ["_Pre_satisfies_(hr < 0) HRESULT hr", " int code"],
+            ),
+            ("int a, int b = f(1, 2)", ["int a", " int b = f(1, 2)"]),
+            ("int a, int b = 1 << 1, int c", ["int a", " int b = 1 << 1", " int c"]),
+            (
+                "Wrapper<int, (1 << 1)> value, int other",
+                ["Wrapper<int, (1 << 1)> value", " int other"],
+            ),
+            (
+                "std::map<int, std::vector<int>> value, int other",
+                ["std::map<int, std::vector<int>> value", " int other"],
+            ),
+            (
+                "std::array<int, 2> value, double other",
+                ["std::array<int, 2> value", " double other"],
+            ),
+            ("int a = (value <<= 1), int b = 0", ["int a = (value <<= 1)", " int b = 0"]),
+            ("int a, bool b = 1 <= 1, int c", ["int a", " bool b = 1 <= 1", " int c"]),
+        ]
+        for source, expected in cases:
+            assert cpplint.SplitConstructorArguments(source) == expected
+
     # Test non-explicit single-argument constructors
     def testExplicitSingleArgumentConstructors(self):
         old_verbose_level = cpplint._cpplint_state.verbose_level
