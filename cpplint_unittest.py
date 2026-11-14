@@ -1679,7 +1679,10 @@ class TestCpplint(CpplintTestBase):
           class A {
             A(int code, bool predicate = 1 <= 2);
           };""",
-            "Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]",
+            (
+                "Constructors callable with one argument should be marked explicit."
+                "  [runtime/explicit] [4]"
+            ),
         )
         # A shift inside a template non-type argument is not a template opener.
         self.TestMultiLineLint(
