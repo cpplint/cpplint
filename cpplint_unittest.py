@@ -1653,6 +1653,15 @@ class TestCpplint(CpplintTestBase):
           };""",
             "",
         )
+        # A parenthesized comparison within a template value must not
+        # make a two-parameter constructor look like a single-parameter one.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(Foo<(1 < 2), int> value, int code);
+          };""",
+            "",
+        )
         # A shift inside a template non-type argument is not a template opener.
         self.TestMultiLineLint(
             """
