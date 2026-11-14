@@ -3785,6 +3785,13 @@ class NestingState:
         return None
 
 
+def HasDefaultConstructorInitializer(argument):
+    """Detect default arguments without treating comparison operators as '='."""
+    if "=" not in argument:
+        return False
+    return re.search(r"(?<![<>=!])=(?!=)", argument) is not None
+
+
 def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state, error):
     r"""Logs an error if we see certain non-ANSI constructs ignored by gcc-2.
 
@@ -3962,7 +3969,7 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
         variadic_args = [arg for arg in constructor_args if "&&..." in arg]
         # Comparisons within template arguments are not default initializers.
         defaulted_args = [
-            arg for arg in constructor_args if "=" in arg and re.search(r"(?<![<>=!])=(?!=)", arg)
+            arg for arg in constructor_args if HasDefaultConstructorInitializer(arg)
         ]
         noarg_constructor = (
             not constructor_args  # empty arg list
