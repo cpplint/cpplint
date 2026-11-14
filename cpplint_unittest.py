@@ -1662,15 +1662,25 @@ class TestCpplint(CpplintTestBase):
           };""",
             "",
         )
-        # A <= template expression must not collapse three parameters.
-        # Ignore unrelated whitespace diagnostics in this parser regression.
-        diagnostics = self.PerformMultiLineLint(
+        # Template comparisons must not masquerade as default arguments.
+        # Ignore separate whitespace diagnostics in these parser regressions.
+        for expression in ("1 <= 2", "1 == 2"):
+            diagnostics = self.PerformMultiLineLint(
+                f"""
+          class A {{
+            A(Foo<{expression}, int> value, int code);
+          }};"""
+            )
+            assert not any("[runtime/explicit]" in item for item in diagnostics)
+        # A genuine default initializer still makes this constructor
+        # callable with one argument and requires explicit.
+        self.TestMultiLineLint(
             """
           class A {
-            A(Foo<1 <= 2, int> value, int code, int extra);
-          };"""
+            A(int code, bool predicate = 1 <= 2);
+          };""",
+            "Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]",
         )
-        assert not any("[runtime/explicit]" in item for item in diagnostics)
         # A shift inside a template non-type argument is not a template opener.
         self.TestMultiLineLint(
             """
