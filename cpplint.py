@@ -3785,6 +3785,47 @@ class NestingState:
         return None
 
 
+def SplitConstructorArguments(argument_text):
+    """Split on top-level commas without repeatedly scanning merged fragments."""
+    if not argument_text:
+        return []
+
+    arguments = []
+    current = []
+    angle_depth = 0
+    paren_depth = 0
+    index = 0
+    while index < len(argument_text):
+        char = argument_text[index]
+        # Shift and <= operators never open template parameter lists.
+        if char == "<" and argument_text[index : index + 2] in ("<<", "<="):
+            current.append(argument_text[index : index + 2])
+            index += 2
+            continue
+
+        if char == "(":
+            paren_depth += 1
+        elif char == ")":
+            paren_depth -= 1
+        elif paren_depth == 0:
+            if char == "<":
+                angle_depth += 1
+            elif char == ">":
+                angle_depth -= 1
+
+        if char == "," and angle_depth <= 0 and paren_depth <= 0:
+            arguments.append("".join(current))
+            current = []
+            angle_depth = 0
+            paren_depth = 0
+        else:
+            current.append(char)
+        index += 1
+
+    arguments.append("".join(current))
+    return arguments
+
+
 def HasDefaultConstructorInitializer(argument):
     """Detect default arguments without treating comparison operators as '='."""
     if "=" not in argument:
@@ -3939,32 +3980,8 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
     if explicit_constructor_match:
         is_marked_explicit = explicit_constructor_match.group(1)
 
-        if not explicit_constructor_match.group(2):
-            constructor_args = []
-        else:
-            constructor_args = explicit_constructor_match.group(2).split(",")
-
-        # collapse arguments so that commas in template parameter lists and function
-        # argument parameter lists don't split arguments in two
-        i = 0
-        while i < len(constructor_args):
-            constructor_arg = constructor_args[i]
-            # Ignore parenthesized comparisons, shifts and the <= operator
-            # when counting template angle brackets.
-            angle_text = (
-                re.sub(r"\([^()]*\)", "", constructor_arg).replace("<<", "").replace("<=", "")
-            )
-            while i + 1 < len(constructor_args) and (
-                angle_text.count("<") > angle_text.count(">")
-                or constructor_arg.count("(") > constructor_arg.count(")")
-            ):
-                constructor_arg += "," + constructor_args[i + 1]
-                del constructor_args[i + 1]
-                angle_text = (
-                    re.sub(r"\([^()]*\)", "", constructor_arg).replace("<<", "").replace("<=", "")
-                )
-            constructor_args[i] = constructor_arg
-            i += 1
+        # Preserve commas nested inside templates and parenthesized expressions.
+        constructor_args = SplitConstructorArguments(explicit_constructor_match.group(2))
 
         variadic_args = [arg for arg in constructor_args if "&&..." in arg]
         # Comparisons within template arguments are not default initializers.
