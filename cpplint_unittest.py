@@ -1671,7 +1671,7 @@ class TestCpplint(CpplintTestBase):
             A(Foo<{expression}, int> value, int code);
           }};"""
             )
-            assert not any("[runtime/explicit]" in item for item in diagnostics)
+            assert "[runtime/explicit]" not in str(diagnostics)
         # A genuine default initializer still makes this constructor
         # callable with one argument and requires explicit.
         self.TestMultiLineLint(
