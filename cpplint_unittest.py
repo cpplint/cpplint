@@ -1662,6 +1662,16 @@ class TestCpplint(CpplintTestBase):
           };""",
             "",
         )
+        # Regression: a bare relational operator in a valid non-type
+        # template argument must not merge two required constructor args.
+        for expression in ("1 < 2", "sizeof(int) < 4", "1 >= 2"):
+            diagnostics = self.PerformMultiLineLint(
+                f"""
+          class A {{
+            A(Foo<{expression}, int> value, int code);
+          }};"""
+            )
+            assert "[runtime/explicit]" not in str(diagnostics)
         # Template comparisons must not masquerade as default arguments.
         # Ignore separate whitespace diagnostics in these parser regressions.
         for expression in ("1 <= 2", "1 == 2"):
@@ -1719,6 +1729,12 @@ class TestCpplint(CpplintTestBase):
             ("int a", ["int a"]),
             ("int a, int b", ["int a", " int b"]),
             ("Foo<(1 < 2), int> value, int code", ["Foo<(1 < 2), int> value", " int code"]),
+            ("Foo<1 < 2, int> value, int code", ["Foo<1 < 2, int> value", " int code"]),
+            (
+                "Foo<sizeof(int) < 4, int> value, int code",
+                ["Foo<sizeof(int) < 4, int> value", " int code"],
+            ),
+            ("Foo<1 >= 2, int> value, int code", ["Foo<1 >= 2, int> value", " int code"]),
             ("Foo<1 <= 2, int> value, int code", ["Foo<1 <= 2, int> value", " int code"]),
             ("Foo<1 == 2, int> value, int code", ["Foo<1 == 2, int> value", " int code"]),
             ("A(int, int) fn, int code", ["A(int, int) fn", " int code"]),
