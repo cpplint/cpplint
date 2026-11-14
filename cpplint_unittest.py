@@ -1662,6 +1662,15 @@ class TestCpplint(CpplintTestBase):
           };""",
             "",
         )
+        # A <= expression used as a non-type template argument must not
+        # be mistaken for another template opening bracket.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(Foo<1 <= 2, int> value, int code);
+          };""",
+            "",
+        )
         # A shift inside a template non-type argument is not a template opener.
         self.TestMultiLineLint(
             """
