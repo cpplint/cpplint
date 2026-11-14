@@ -1629,6 +1629,86 @@ class TestCpplint(CpplintTestBase):
             # One per line.
             assert error_collector.ResultList().count(multiline_string_error_message) == 2
 
+    def testConstructorParametersWithLessThanOperators(self):
+        # Regression tests for #223 and #232: '<' need not open a template.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(int b, int c, int a = 1 << 1) {}
+          };""",
+            "",
+        )
+        self.TestMultiLineLint(
+            """
+          class ResultException {
+            explicit ResultException(_Pre_satisfies_(hr < 0) HRESULT hr);
+          };""",
+            "",
+        )
+        # A parenthesized comparison must not combine separate arguments.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(_Pre_satisfies_(hr < 0) HRESULT hr, int code);
+          };""",
+            "",
+        )
+        # A parenthesized comparison within a template value must not
+        # make a two-parameter constructor look like a single-parameter one.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(Foo<(1 < 2), int> value, int code);
+          };""",
+            "",
+        )
+        # Template comparisons must not masquerade as default arguments.
+        # Ignore separate whitespace diagnostics in these parser regressions.
+        for expression in ("1 <= 2", "1 == 2"):
+            diagnostics = self.PerformMultiLineLint(
+                f"""
+          class A {{
+            A(Foo<{expression}, int> value, int code);
+          }};"""
+            )
+            assert "[runtime/explicit]" not in str(diagnostics)
+        # A genuine default initializer still makes this constructor
+        # callable with one argument and requires explicit.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(int code, bool predicate = 1 <= 2);
+          };""",
+            "Constructors callable with one argument should be marked explicit.  [runtime/explicit] [4]",
+        )
+        # A shift inside a template non-type argument is not a template opener.
+        self.TestMultiLineLint(
+            """
+          class Foo {
+            Foo(Wrapper<int, (1 << 1)> value, int other);
+          };""",
+            "",
+        )
+        # Actual commas in template argument lists must still be grouped.
+        self.TestMultiLineLint(
+            """
+          class Foo {
+            Foo(Wrapper<int, int> value);
+          };""",
+            "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+        )
+        # A multi-argument constructor callable with one argument still warns.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(int a, int b = 1 << 1, int c = 2);
+          };""",
+            (
+                "Constructors callable with one argument should be marked explicit."
+                "  [runtime/explicit] [4]"
+            ),
+        )
+
     # Test non-explicit single-argument constructors
     def testExplicitSingleArgumentConstructors(self):
         old_verbose_level = cpplint._cpplint_state.verbose_level

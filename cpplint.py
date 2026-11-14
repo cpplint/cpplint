@@ -3785,6 +3785,13 @@ class NestingState:
         return None
 
 
+def HasDefaultConstructorInitializer(argument):
+    """Detect default arguments without treating comparison operators as '='."""
+    if "=" not in argument:
+        return False
+    return re.search(r"(?<![<>=!])=(?!=)", argument) is not None
+
+
 def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state, error):
     r"""Logs an error if we see certain non-ANSI constructs ignored by gcc-2.
 
@@ -3942,16 +3949,26 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
         i = 0
         while i < len(constructor_args):
             constructor_arg = constructor_args[i]
-            while constructor_arg.count("<") > constructor_arg.count(">") or constructor_arg.count(
-                "("
-            ) > constructor_arg.count(")"):
+            # Ignore parenthesized comparisons, shifts and the <= operator
+            # when counting template angle brackets.
+            angle_text = (
+                re.sub(r"\([^()]*\)", "", constructor_arg).replace("<<", "").replace("<=", "")
+            )
+            while i + 1 < len(constructor_args) and (
+                angle_text.count("<") > angle_text.count(">")
+                or constructor_arg.count("(") > constructor_arg.count(")")
+            ):
                 constructor_arg += "," + constructor_args[i + 1]
                 del constructor_args[i + 1]
+                angle_text = (
+                    re.sub(r"\([^()]*\)", "", constructor_arg).replace("<<", "").replace("<=", "")
+                )
             constructor_args[i] = constructor_arg
             i += 1
 
         variadic_args = [arg for arg in constructor_args if "&&..." in arg]
-        defaulted_args = [arg for arg in constructor_args if "=" in arg]
+        # Comparisons within template arguments are not default initializers.
+        defaulted_args = [arg for arg in constructor_args if HasDefaultConstructorInitializer(arg)]
         noarg_constructor = (
             not constructor_args  # empty arg list
             or
