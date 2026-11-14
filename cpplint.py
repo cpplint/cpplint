@@ -3785,6 +3785,66 @@ class NestingState:
         return None
 
 
+def SplitConstructorArguments(argument_text):
+    """Split on top-level commas without repeatedly scanning merged fragments."""
+    if not argument_text:
+        return []
+
+    arguments = []
+    current = []
+    angle_depth = 0
+    paren_depth = 0
+    previous_significant = ""
+    index = 0
+    while index < len(argument_text):
+        char = argument_text[index]
+        token = argument_text[index : index + 2]
+        # Shifts and two-character comparisons are not template delimiters.
+        if token in ("<<", "<=", ">="):
+            current.append(token)
+            previous_significant = token[-1]
+            index += 2
+            continue
+        # A numeric or parenthesized left operand makes '<' relational.
+        if char == "<" and (previous_significant.isdigit() or previous_significant == ")"):
+            current.append(char)
+            previous_significant = char
+            index += 1
+            continue
+
+        if char == "(":
+            paren_depth += 1
+        elif char == ")":
+            paren_depth -= 1
+        elif paren_depth == 0:
+            if char == "<":
+                angle_depth += 1
+            elif char == ">":
+                angle_depth -= 1
+
+        if char == "," and angle_depth <= 0 and paren_depth <= 0:
+            arguments.append("".join(current))
+            current = []
+            angle_depth = 0
+            paren_depth = 0
+            previous_significant = ""
+        else:
+            current.append(char)
+            if not char.isspace():
+                previous_significant = char
+        index += 1
+
+    arguments.append("".join(current))
+    return arguments
+
+
+def HasDefaultConstructorInitializer(argument):
+    """Detect default arguments without treating comparison operators as '='."""
+    if "=" not in argument:
+        return False
+    return re.search(r"(?<![<>=!])=(?!=)", argument) is not None
+
+
 def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state, error):
     r"""Logs an error if we see certain non-ANSI constructs ignored by gcc-2.
 
@@ -3932,26 +3992,12 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum, nesting_state,
     if explicit_constructor_match:
         is_marked_explicit = explicit_constructor_match.group(1)
 
-        if not explicit_constructor_match.group(2):
-            constructor_args = []
-        else:
-            constructor_args = explicit_constructor_match.group(2).split(",")
-
-        # collapse arguments so that commas in template parameter lists and function
-        # argument parameter lists don't split arguments in two
-        i = 0
-        while i < len(constructor_args):
-            constructor_arg = constructor_args[i]
-            while constructor_arg.count("<") > constructor_arg.count(">") or constructor_arg.count(
-                "("
-            ) > constructor_arg.count(")"):
-                constructor_arg += "," + constructor_args[i + 1]
-                del constructor_args[i + 1]
-            constructor_args[i] = constructor_arg
-            i += 1
+        # Preserve commas nested inside templates and parenthesized expressions.
+        constructor_args = SplitConstructorArguments(explicit_constructor_match.group(2))
 
         variadic_args = [arg for arg in constructor_args if "&&..." in arg]
-        defaulted_args = [arg for arg in constructor_args if "=" in arg]
+        # Comparisons within template arguments are not default initializers.
+        defaulted_args = [arg for arg in constructor_args if HasDefaultConstructorInitializer(arg)]
         noarg_constructor = (
             not constructor_args  # empty arg list
             or

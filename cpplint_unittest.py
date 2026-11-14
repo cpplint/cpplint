@@ -1629,6 +1629,139 @@ class TestCpplint(CpplintTestBase):
             # One per line.
             assert error_collector.ResultList().count(multiline_string_error_message) == 2
 
+    def testConstructorParametersWithLessThanOperators(self):
+        # Regression tests for #223 and #232: '<' need not open a template.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(int b, int c, int a = 1 << 1) {}
+          };""",
+            "",
+        )
+        self.TestMultiLineLint(
+            """
+          class ResultException {
+            explicit ResultException(_Pre_satisfies_(hr < 0) HRESULT hr);
+          };""",
+            "",
+        )
+        # A parenthesized comparison must not combine separate arguments.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(_Pre_satisfies_(hr < 0) HRESULT hr, int code);
+          };""",
+            "",
+        )
+        # A parenthesized comparison within a template value must not
+        # make a two-parameter constructor look like a single-parameter one.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(Foo<(1 < 2), int> value, int code);
+          };""",
+            "",
+        )
+        # Regression: a bare relational operator in a valid non-type
+        # template argument must not merge two required constructor args.
+        for expression in ("1 < 2", "sizeof(int) < 4", "1 >= 2"):
+            diagnostics = self.PerformMultiLineLint(
+                f"""
+          class A {{
+            A(Foo<{expression}, int> value, int code);
+          }};"""
+            )
+            assert "[runtime/explicit]" not in str(diagnostics)
+        # Template comparisons must not masquerade as default arguments.
+        # Ignore separate whitespace diagnostics in these parser regressions.
+        for expression in ("1 <= 2", "1 == 2"):
+            diagnostics = self.PerformMultiLineLint(
+                f"""
+          class A {{
+            A(Foo<{expression}, int> value, int code);
+          }};"""
+            )
+            assert "[runtime/explicit]" not in str(diagnostics)
+        # A genuine default initializer still makes this constructor
+        # callable with one argument and requires explicit.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(int code, bool predicate = 1 <= 2);
+          };""",
+            (
+                "Constructors callable with one argument should be marked explicit."
+                "  [runtime/explicit] [4]"
+            ),
+        )
+        # A shift inside a template non-type argument is not a template opener.
+        self.TestMultiLineLint(
+            """
+          class Foo {
+            Foo(Wrapper<int, (1 << 1)> value, int other);
+          };""",
+            "",
+        )
+        # Actual commas in template argument lists must still be grouped.
+        self.TestMultiLineLint(
+            """
+          class Foo {
+            Foo(Wrapper<int, int> value);
+          };""",
+            "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+        )
+        # A multi-argument constructor callable with one argument still warns.
+        self.TestMultiLineLint(
+            """
+          class A {
+            A(int a, int b = 1 << 1, int c = 2);
+          };""",
+            (
+                "Constructors callable with one argument should be marked explicit."
+                "  [runtime/explicit] [4]"
+            ),
+        )
+
+    def testSplitConstructorArgumentsLinear(self):
+        # Exercise comma, template, paren and operator interactions directly.
+        cases = [
+            ("", []),
+            ("int a", ["int a"]),
+            ("int a, int b", ["int a", " int b"]),
+            ("Foo<(1 < 2), int> value, int code", ["Foo<(1 < 2), int> value", " int code"]),
+            ("Foo<1 < 2, int> value, int code", ["Foo<1 < 2, int> value", " int code"]),
+            (
+                "Foo<sizeof(int) < 4, int> value, int code",
+                ["Foo<sizeof(int) < 4, int> value", " int code"],
+            ),
+            ("Foo<1 >= 2, int> value, int code", ["Foo<1 >= 2, int> value", " int code"]),
+            ("Foo<1 <= 2, int> value, int code", ["Foo<1 <= 2, int> value", " int code"]),
+            ("Foo<1 == 2, int> value, int code", ["Foo<1 == 2, int> value", " int code"]),
+            ("A(int, int) fn, int code", ["A(int, int) fn", " int code"]),
+            (
+                "_Pre_satisfies_(hr < 0) HRESULT hr, int code",
+                ["_Pre_satisfies_(hr < 0) HRESULT hr", " int code"],
+            ),
+            ("int a, int b = f(1, 2)", ["int a", " int b = f(1, 2)"]),
+            ("int a, int b = 1 << 1, int c", ["int a", " int b = 1 << 1", " int c"]),
+            (
+                "Wrapper<int, (1 << 1)> value, int other",
+                ["Wrapper<int, (1 << 1)> value", " int other"],
+            ),
+            (
+                "std::map<int, std::vector<int>> value, int other",
+                ["std::map<int, std::vector<int>> value", " int other"],
+            ),
+            (
+                "std::array<int, 2> value, double other",
+                ["std::array<int, 2> value", " double other"],
+            ),
+            ("int a = (value <<= 1), int b = 0", ["int a = (value <<= 1)", " int b = 0"]),
+            ("int a, bool b = 1 <= 1, int c", ["int a", " bool b = 1 <= 1", " int c"]),
+        ]
+        for source, expected in cases:
+            assert cpplint.SplitConstructorArguments(source) == expected
+
     # Test non-explicit single-argument constructors
     def testExplicitSingleArgumentConstructors(self):
         old_verbose_level = cpplint._cpplint_state.verbose_level
