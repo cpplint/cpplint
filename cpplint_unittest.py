@@ -3126,6 +3126,7 @@ class TestCpplint(CpplintTestBase):
                     for identifier in ["", " x"]:
                         self.TestLint(keyword + align + typename + " {}" + identifier + ";", "")
 
+        self.TestLint("struct mount_attr *attr = &(struct mount_attr){};", "")
         self.TestLint("class X : public Y {};", "")
         self.TestLint("class X : public MACRO() {};", "")
         self.TestLint("class X : public decltype(expr) {};", "")
