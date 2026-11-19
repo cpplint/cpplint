@@ -6802,6 +6802,27 @@ def CheckCStyleCast(filename, clean_lines, linenum, cast_type, pattern, error):
     if re.match(r"^\s*(?:;|const\b|throw\b|final\b|override\b|[=>{),]|->)", remainder):
         return False
 
+    # A function body can start on the next non-blank line. Require a return
+    # type and function name, or a lambda capture, so a compound literal's
+    # opening brace is not mistaken for a body.
+    signature_context = ReplaceAlternateTokens(line[: match.start(0)])
+    signature = re.search(r"(?:\b[\w:<>]+[\s*&]+(?:\w+::)*\w+|\])\s*$", signature_context)
+    if (
+        not remainder.strip()
+        and signature
+        and not re.search(
+            r"\b(?:return|throw|co_return|co_yield|co_await|delete|else|__extension__)\b",
+            signature.group(0),
+        )
+        and not re.search(r"\bdelete\s*\[\s*\]\s*$", signature_context)
+    ):
+        for next_linenum in range(linenum + 1, clean_lines.NumLines()):
+            next_line = clean_lines.elided[next_linenum].strip()
+            if next_line:
+                if next_line.startswith("{"):
+                    return False
+                break
+
     # At this point, all that should be left is actual casts.
     error(
         filename,
