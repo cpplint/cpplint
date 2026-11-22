@@ -5,6 +5,7 @@ Changelog
 TBA
 ===
 
+* Recognize UTF-8 BOM-prefixed source files when checking their first-line includes. (#158)
 * Added the standard short ``-v`` option as an alias for ``--verbose`` and ``--v``. (#331)
 * Use path-aware prefix checks instead of deprecated os.path.commonprefix(). (#445)
 * Fixed a whitespace/newline false positive for control conditions containing lambdas. (#410)
