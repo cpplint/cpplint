@@ -1629,6 +1629,49 @@ class TestCpplint(CpplintTestBase):
             # One per line.
             assert error_collector.ResultList().count(multiline_string_error_message) == 2
 
+    def testConstrainedDeletedConstructors(self):
+        warning = "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]"
+        suffixes = (
+            "requires requires { typename T::type; }",
+            "requires requires(T value) { value + value; }",
+            "requires requires\n                (T value)\n                { value + value; }",
+            "requires requires(T value) { { value + value }; }",
+            (
+                "requires requires { typename T::type; }\n"
+                "      && requires(T value) { value + value; }"
+            ),
+        )
+        for suffix in suffixes:
+            for ending, expected in (
+                (" = delete;", ""),
+                (";", warning),
+                (" {}", warning),
+            ):
+                self.TestMultiLineLint(
+                    f"class Foo {{\n  template <class T>\n  Foo(T value) {suffix}{ending}\n}};",
+                    expected,
+                )
+
+    def testNonDeletedConstructorSuffixes(self):
+        for suffix in ("noexcept", "noexcept(noexcept(T{}))", "throw()"):
+            self.TestMultiLineLint(
+                f"class Foo {{\n  Foo(int value) {suffix};\n}};",
+                "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+            )
+
+    def testConstructorSuffixStopsAtBody(self):
+        for suffix in (
+            "requires (sizeof(T) > 0)",
+            "requires Integral<T>",
+            "requires requires { typename T::type; }",
+            "requires requires(T value) { value + value; }",
+        ):
+            declaration = f"Foo(T value) {suffix} {{}}\nFoo(int) = delete;"
+            clean_lines = cpplint.CleansedLines(declaration.splitlines())
+            assert cpplint._GetConstructorSuffix(clean_lines, 0, len("Foo(T value)")) == (
+                f" {suffix} "
+            )
+
     # Test non-explicit single-argument constructors
     def testExplicitSingleArgumentConstructors(self):
         old_verbose_level = cpplint._cpplint_state.verbose_level
@@ -1642,6 +1685,68 @@ class TestCpplint(CpplintTestBase):
             Foo(int f);
           };""",
                 "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+            )
+            # Deleted constructors cannot be called implicitly.
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) = delete;
+          };""",
+                "",
+            )
+            # Deleted constructors may include a noexcept suffix or split the
+            # deleted marker across lines.
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) noexcept = delete;
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) noexcept(noexcept(T{})) = delete;
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            template <class T>
+            Foo(T value) requires Integral<T> = delete;
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            template <class T>
+            Foo(T value) requires Integral<T>;
+          };""",
+                "Single-parameter constructors should be marked explicit.  [runtime/explicit] [4]",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) throw() = delete;
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f) = delete("use Bar instead");
+          };""",
+                "",
+            )
+            self.TestMultiLineLint(
+                """
+          class Foo {
+            Foo(int f)
+                = delete;
+          };""",
+                "",
             )
             # missing explicit is bad, even with whitespace
             self.TestMultiLineLint(
